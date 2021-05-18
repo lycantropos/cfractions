@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  cfractions-pypy:
+    build:
+      context: .
+      args:
+        - IMAGE_NAME=${PYPY_IMAGE_NAME}
+        - IMAGE_VERSION=${PYPY_IMAGE_VERSION}
+    image: lycantropos/cfractions-pypy:0.0.0
+    volumes:
+      - ./cfractions:/opt/cfractions/cfractions
+      - ./pytest.ini:/opt/cfractions/pytest.ini
+      - ./README.md:/opt/cfractions/README.md
+      - ./requirements-tests.txt:/opt/cfractions/requirements-tests.txt
+      - ./requirements.txt:/opt/cfractions/requirements.txt
+      - ./setup.py:/opt/cfractions/setup.py
+      - ./tests:/opt/cfractions/tests
+    entrypoint: pytest
