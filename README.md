@@ -1,7 +1,7 @@
 cfractions
 ==========
 
-[![](https://dev.azure.com/lycantropos/cfractions/_apis/build/status/lycantropos.cfractions?branchName=master)](https://dev.azure.com/lycantropos/cfractions/_build/latest?branchName=master "Azure Pipelines")
+[![](https://dev.azure.com/lycantropos/cfractions/_apis/build/status/lycantropos.cfractions?branchName=master)](https://dev.azure.com/lycantropos/cfractions/_build/latest?definitionId=36&branchName=master "Azure Pipelines")
 [![](https://codecov.io/gh/lycantropos/cfractions/branch/master/graph/badge.svg)](https://codecov.io/gh/lycantropos/cfractions "Codecov")
 [![](https://img.shields.io/github/license/lycantropos/cfractions.svg)](https://github.com/lycantropos/cfractions/blob/master/LICENSE "License")
 [![](https://badge.fury.io/py/cfractions.svg)](https://badge.fury.io/py/cfractions "PyPI")
