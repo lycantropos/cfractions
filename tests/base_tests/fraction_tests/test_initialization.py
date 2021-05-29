@@ -1,3 +1,4 @@
+import pytest
 from hypothesis import given
 
 from cfractions.base import Fraction
@@ -20,3 +21,9 @@ def test_properties(numerator: int, denominator: int) -> None:
 
     assert bool(numerator) is bool(result.numerator)
     assert numerator * result.denominator == result.numerator * denominator
+
+
+@given(strategies.numerators, strategies.zeros)
+def test_zero_denominator(numerator: int, denominator: int) -> None:
+    with pytest.raises(ZeroDivisionError):
+        Fraction(numerator, denominator)
