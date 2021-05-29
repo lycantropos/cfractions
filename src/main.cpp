@@ -213,9 +213,7 @@ class Int {
 
   Int& operator-=(const Int& other) { return *this = *this - other; }
 
-  Int abs() const {
-    return *this < 0 ? -(*this) : *this;
-  }
+  Int abs() const { return *this < 0 ? -(*this) : *this; }
 
  private:
   Object _object;
@@ -248,9 +246,7 @@ class Fraction {
     }
   };
 
-  Fraction abs() const {
-    return Fraction(numerator().abs(), denominator());
-  }
+  Fraction abs() const { return Fraction(numerator().abs(), denominator()); }
 
   const Int& numerator() const { return _numerator; }
 
@@ -267,9 +263,8 @@ class Fraction {
 
 static std::ostream& operator<<(std::ostream& stream,
                                 const Fraction& fraction) {
-  return stream << C_STR(MODULE_NAME) "." FRACTION_NAME << "("
-                << fraction.numerator() << ", " << fraction.denominator()
-                << ")";
+  return stream << FRACTION_NAME << "(" << fraction.numerator() << ", "
+                << fraction.denominator() << ")";
 }
 
 PYBIND11_MODULE(MODULE_NAME, m) {
@@ -280,7 +275,8 @@ PYBIND11_MODULE(MODULE_NAME, m) {
       .def(py::init(
                [](const py::handle& numerator, const py::handle& denominator) {
                  if (!PyObject_IsTrue(denominator.ptr())) {
-                   PyErr_SetString(PyExc_ZeroDivisionError, "Denominator should be non-zero.");
+                   PyErr_SetString(PyExc_ZeroDivisionError,
+                                   "Denominator should be non-zero.");
                    throw py::error_already_set();
                  }
                  return Fraction(Object(numerator.ptr()),
