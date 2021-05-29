@@ -2,6 +2,8 @@
 #include <pybind11/pybind11.h>
 
 #include <memory>
+#include <sstream>
+#include <string>
 #include <type_traits>
 
 namespace py = pybind11;
@@ -13,6 +15,13 @@ namespace py = pybind11;
 #ifndef VERSION_INFO
 #define VERSION_INFO "dev"
 #endif
+
+template <class Object>
+std::string to_repr(const Object& object) {
+  std::ostringstream stream;
+  stream << object;
+  return stream.str();
+}
 
 template <typename Raw, std::enable_if_t<std::is_integral<Raw>::value, int> = 0>
 static PyObject* pack_integer(Raw value) {
@@ -84,9 +93,25 @@ class Object {
     return PyObject_RichCompareBool(ptr(), other.ptr(), Py_LT);
   }
 
+  std::string repr() const {
+    PyObject* str_value = PyObject_Repr(ptr());
+    if (!str_value) throw py::error_already_set();
+    PyObject* temp = PyUnicode_AsUTF8String(str_value);
+    if (!temp) throw py::error_already_set();
+    char* buffer;
+    ssize_t length;
+    if (PyBytes_AsStringAndSize(temp, &buffer, &length))
+      throw py::error_already_set();
+    return std::string(buffer, static_cast<std::size_t>(length));
+  }
+
  private:
   std::shared_ptr<PyObject> _ptr;
 };
+
+static std::ostream& operator<<(std::ostream& stream, const Object& object) {
+  return stream << object.repr();
+}
 
 class Int {
  public:
@@ -192,6 +217,10 @@ class Int {
   Object _object;
 };
 
+static std::ostream& operator<<(std::ostream& stream, const Int& int_) {
+  return stream << int_.object();
+}
+
 static Int to_gcd(const Int& left, const Int& right) {
   Int result = std::max(left, right), remainder = std::min(left, right);
   while (remainder) {
@@ -206,13 +235,13 @@ class Fraction {
  public:
   Fraction(const Int& numerator, const Int& denominator)
       : _numerator(numerator), _denominator(denominator) {
+    auto gcd = to_gcd(_numerator, _denominator);
+    _numerator /= gcd;
+    _denominator /= gcd;
     if (_denominator < 0) {
       _denominator = -_denominator;
       _numerator = -_numerator;
     }
-    auto gcd = to_gcd(_numerator, _denominator);
-    _numerator /= gcd;
-    _denominator /= gcd;
   };
 
   const Int& numerator() const { return _numerator; }
@@ -228,6 +257,13 @@ class Fraction {
   Int _numerator, _denominator;
 };
 
+static std::ostream& operator<<(std::ostream& stream,
+                                const Fraction& fraction) {
+  return stream << C_STR(MODULE_NAME) "." FRACTION_NAME << "("
+                << fraction.numerator() << ", " << fraction.denominator()
+                << ")";
+}
+
 PYBIND11_MODULE(MODULE_NAME, m) {
   m.doc() = R"pbdoc(Python C API alternative to `fractions` module.)pbdoc";
   m.attr("__version__") = C_STR(VERSION_INFO);
@@ -242,6 +278,7 @@ PYBIND11_MODULE(MODULE_NAME, m) {
                }),
            py::arg("numerator"), py::arg("denominator"))
       .def(py::self == py::self)
+      .def("__repr__", to_repr<Fraction>)
       .def_property_readonly("denominator",
                              [](const Fraction& self) {
                                return py::reinterpret_borrow<py::int_>(
