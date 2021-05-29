@@ -279,8 +279,10 @@ PYBIND11_MODULE(MODULE_NAME, m) {
   py::class_<Fraction>(m, FRACTION_NAME)
       .def(py::init(
                [](const py::handle& numerator, const py::handle& denominator) {
-                 if (!PyObject_IsTrue(denominator.ptr()))
-                   throw py::value_error("Denominator should be non-zero.");
+                 if (!PyObject_IsTrue(denominator.ptr())) {
+                   PyErr_SetString(PyExc_ZeroDivisionError, "Denominator should be non-zero.");
+                   throw py::error_already_set();
+                 }
                  return Fraction(Object(numerator.ptr()),
                                  Object(denominator.ptr()));
                }),
