@@ -213,6 +213,10 @@ class Int {
 
   Int& operator-=(const Int& other) { return *this = *this - other; }
 
+  Int abs() const {
+    return *this < 0 ? -(*this) : *this;
+  }
+
  private:
   Object _object;
 };
@@ -243,6 +247,10 @@ class Fraction {
       _numerator = -_numerator;
     }
   };
+
+  Fraction abs() const {
+    return Fraction(numerator().abs(), denominator());
+  }
 
   const Int& numerator() const { return _numerator; }
 
@@ -278,6 +286,7 @@ PYBIND11_MODULE(MODULE_NAME, m) {
                }),
            py::arg("numerator"), py::arg("denominator"))
       .def(py::self == py::self)
+      .def("__abs__", &Fraction::abs)
       .def("__repr__", to_repr<Fraction>)
       .def_property_readonly("denominator",
                              [](const Fraction& self) {
