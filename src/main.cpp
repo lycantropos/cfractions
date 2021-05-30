@@ -55,6 +55,8 @@ class Object {
     if (borrowed) increase_reference_count(ptr);
   }
 
+  Object(const py::handle& handle): Object(handle.ptr()) {}
+
   Object(const Object& other) : _ptr(other._ptr) {}
 
   Object(Object&& other) : _ptr(std::move(other._ptr)) {}
@@ -268,7 +270,7 @@ static Int to_gcd(const Int& left, const Int& right) {
 class Fraction {
  public:
   Fraction(const Int& numerator, const Int& denominator)
-      : _numerator(numerator), _denominator(denominator) {
+      : _denominator(denominator), _numerator(numerator) {
     auto gcd = to_gcd(_numerator, _denominator);
     _numerator /= gcd;
     _denominator /= gcd;
@@ -280,17 +282,25 @@ class Fraction {
 
   Fraction abs() const { return Fraction(numerator().abs(), denominator()); }
 
-  const Int& numerator() const { return _numerator; }
-
   const Int& denominator() const { return _denominator; }
+
+  const Int& numerator() const { return _numerator; }
 
   bool operator==(const Fraction& other) const {
     return numerator() == other.numerator() &&
            denominator() == other.denominator();
   }
 
+  bool operator>=(const Fraction& other) const {
+    return numerator() * other.denominator() >= other.numerator() * denominator();
+  }
+
+  bool operator>=(const Object& other) const {
+    return numerator() >= denominator() * other;
+  }
+
  private:
-  Int _numerator, _denominator;
+  Int _denominator, _numerator;
 };
 
 static std::ostream& operator<<(std::ostream& stream,
@@ -311,11 +321,12 @@ PYBIND11_MODULE(MODULE_NAME, m) {
                                    "Denominator should be non-zero.");
                    throw py::error_already_set();
                  }
-                 return Fraction(Object(numerator.ptr()),
-                                 Object(denominator.ptr()));
+                 return Fraction(Object(numerator), Object(denominator));
                }),
            py::arg("numerator"), py::arg("denominator"))
       .def(py::self == py::self)
+      .def(py::self >= py::self)
+      .def(py::self >= py::handle{})
       .def("__abs__", &Fraction::abs)
       .def("__repr__", to_repr<Fraction>)
       .def_property_readonly("denominator",
