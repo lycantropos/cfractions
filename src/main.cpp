@@ -305,6 +305,15 @@ class Fraction {
     return from_parts(numerator() + denominator() * other, denominator());
   }
 
+  Fraction operator*(const Fraction& other) const {
+    return from_parts(numerator() * other.numerator(),
+                      denominator() * other.denominator());
+  }
+
+  Fraction operator*(const Int& other) const {
+    return from_parts(numerator() * other, denominator());
+  }
+
   Fraction abs() const { return Fraction(numerator().abs(), denominator()); }
 
  private:
@@ -337,6 +346,8 @@ PYBIND11_MODULE(MODULE_NAME, m) {
       .def(py::self == py::self)
       .def(py::self >= py::self)
       .def(py::self >= py::handle{})
+      .def(py::self * py::self)
+      .def(py::self * py::handle{})
       .def("__abs__", &Fraction::abs)
       .def("__repr__", to_repr<Fraction>)
       .def_property_readonly("denominator",
