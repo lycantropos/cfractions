@@ -55,7 +55,7 @@ class Object {
     if (borrowed) increase_reference_count(ptr);
   }
 
-  Object(const py::handle& handle): Object(handle.ptr()) {}
+  Object(const py::handle& handle) : Object(handle.ptr()) {}
 
   Object(const Object& other) : _ptr(other._ptr) {}
 
@@ -167,47 +167,35 @@ class Int {
     return *this >= Int(value);
   }
 
-  Int operator+(const Int& other) const {
-    return *this + other.object();
-  }
+  Int operator+(const Int& other) const { return *this + other.object(); }
 
   Int operator+(const Object& other) const {
     PyObject* result_ptr = PyNumber_Add(object().ptr(), other.ptr());
-    if (!result_ptr)
-      throw py::error_already_set();
+    if (!result_ptr) throw py::error_already_set();
     return Object(result_ptr, false);
   }
 
-  Int operator/(const Int& other) const {
-    return *this / other.object();
-  }
+  Int operator/(const Int& other) const { return *this / other.object(); }
 
   Int operator/(const Object& other) const {
     PyObject* result_ptr = PyNumber_FloorDivide(object().ptr(), other.ptr());
-    if (!result_ptr)
-      throw py::error_already_set();
+    if (!result_ptr) throw py::error_already_set();
     return Object(result_ptr, false);
   }
 
-  Int operator%(const Int& other) const {
-    return *this % other.object();
-  }
+  Int operator%(const Int& other) const { return *this % other.object(); }
 
   Int operator%(const Object& other) const {
     PyObject* result_ptr = PyNumber_Remainder(object().ptr(), other.ptr());
-    if (!result_ptr)
-      throw py::error_already_set();
+    if (!result_ptr) throw py::error_already_set();
     return Object(result_ptr, false);
   }
 
-  Int operator*(const Int& other) const {
-    return *this * other.object();
-  }
+  Int operator*(const Int& other) const { return *this * other.object(); }
 
   Int operator*(const Object& other) const {
     PyObject* result_ptr = PyNumber_Multiply(object().ptr(), other.ptr());
-    if (!result_ptr)
-      throw py::error_already_set();
+    if (!result_ptr) throw py::error_already_set();
     return Object(result_ptr, false);
   }
 
@@ -218,8 +206,7 @@ class Int {
 
   Int operator-(const Object& other) const {
     PyObject* result_ptr = PyNumber_Subtract(object().ptr(), other.ptr());
-    if (!result_ptr)
-      throw py::error_already_set();
+    if (!result_ptr) throw py::error_already_set();
     return Object(result_ptr, false);
   }
 
@@ -270,17 +257,18 @@ static Int to_gcd(const Int& left, const Int& right) {
 class Fraction {
  public:
   Fraction(const Int& numerator, const Int& denominator)
-      : _denominator(denominator), _numerator(numerator) {
-    auto gcd = to_gcd(_numerator, _denominator);
-    _numerator /= gcd;
-    _denominator /= gcd;
-    if (_denominator < 0) {
-      _denominator = -_denominator;
-      _numerator = -_numerator;
-    }
-  };
+      : _denominator(denominator), _numerator(numerator){};
 
-  Fraction abs() const { return Fraction(numerator().abs(), denominator()); }
+  static Fraction from_parts(const Int& numerator, const Int& denominator) {
+    auto gcd = to_gcd(numerator, denominator);
+    Int normalized_numerator = numerator / gcd;
+    Int normalized_denominator = denominator / gcd;
+    if (normalized_denominator < 0) {
+      normalized_denominator = -normalized_denominator;
+      normalized_numerator = -normalized_numerator;
+    }
+    return Fraction(normalized_numerator, normalized_denominator);
+  };
 
   const Int& denominator() const { return _denominator; }
 
@@ -292,12 +280,25 @@ class Fraction {
   }
 
   bool operator>=(const Fraction& other) const {
-    return numerator() * other.denominator() >= other.numerator() * denominator();
+    return numerator() * other.denominator() >=
+           other.numerator() * denominator();
   }
 
   bool operator>=(const Object& other) const {
     return numerator() >= denominator() * other;
   }
+
+  Fraction operator+(const Fraction& other) const {
+    return from_parts(
+        numerator() * other.denominator() + other.numerator() * denominator(),
+        denominator() * other.denominator());
+  }
+
+  Fraction operator+(const Object& other) const {
+    return from_parts(numerator() + denominator() * other, denominator());
+  }
+
+  Fraction abs() const { return Fraction(numerator().abs(), denominator()); }
 
  private:
   Int _denominator, _numerator;
@@ -321,9 +322,12 @@ PYBIND11_MODULE(MODULE_NAME, m) {
                                    "Denominator should be non-zero.");
                    throw py::error_already_set();
                  }
-                 return Fraction(Object(numerator), Object(denominator));
+                 return Fraction::from_parts(Object(numerator),
+                                             Object(denominator));
                }),
            py::arg("numerator"), py::arg("denominator"))
+      .def(py::self + py::self)
+      .def(py::self + py::handle{})
       .def(py::self == py::self)
       .def(py::self >= py::self)
       .def(py::self >= py::handle{})
