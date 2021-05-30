@@ -21,6 +21,7 @@ def test_properties(numerator: int, denominator: int) -> None:
 
     assert bool(numerator) is bool(result.numerator)
     assert numerator * result.denominator == result.numerator * denominator
+    assert result.denominator > 0
 
 
 @given(strategies.numerators, strategies.zeros)
