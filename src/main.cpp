@@ -329,8 +329,7 @@ PYBIND11_MODULE(MODULE_NAME, m) {
                                    "Denominator should be non-zero.");
                    throw py::error_already_set();
                  }
-                 return Fraction::from_parts(Object(numerator),
-                                             Object(denominator));
+                 return Fraction::from_parts(numerator, denominator);
                }),
            py::arg("numerator"), py::arg("denominator"))
       .def(py::self + py::self)
