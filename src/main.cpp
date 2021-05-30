@@ -128,6 +128,13 @@ class Int {
   template <class Raw, std::enable_if_t<std::is_integral<Raw>::value, int> = 0>
   Int(Raw raw) : _object(pack_integer(raw), false) {}
 
+  Int(const py::handle& handle) : _object(handle) {
+    if (!PyLong_Check(object().ptr())) {
+      PyErr_SetString(PyExc_TypeError, "Is not an integer.");
+      throw py::error_already_set();
+    }
+  }
+
   const Object& object() const { return _object; }
 
   operator bool() const { return bool(object()); }
@@ -294,7 +301,7 @@ class Fraction {
         denominator() * other.denominator());
   }
 
-  Fraction operator+(const Object& other) const {
+  Fraction operator+(const Int& other) const {
     return from_parts(numerator() + denominator() * other, denominator());
   }
 
