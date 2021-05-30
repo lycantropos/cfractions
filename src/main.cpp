@@ -166,22 +166,47 @@ class Int {
   }
 
   Int operator+(const Int& other) const {
-    return Object(PyNumber_Add(object().ptr(), other.object().ptr()), false);
+    return *this + other.object();
+  }
+
+  Int operator+(const Object& other) const {
+    PyObject* result_ptr = PyNumber_Add(object().ptr(), other.ptr());
+    if (!result_ptr)
+      throw py::error_already_set();
+    return Object(result_ptr, false);
   }
 
   Int operator/(const Int& other) const {
-    return Object(PyNumber_FloorDivide(object().ptr(), other.object().ptr()),
-                  false);
+    return *this / other.object();
+  }
+
+  Int operator/(const Object& other) const {
+    PyObject* result_ptr = PyNumber_FloorDivide(object().ptr(), other.ptr());
+    if (!result_ptr)
+      throw py::error_already_set();
+    return Object(result_ptr, false);
   }
 
   Int operator%(const Int& other) const {
-    return Object(PyNumber_Remainder(object().ptr(), other.object().ptr()),
-                  false);
+    return *this % other.object();
+  }
+
+  Int operator%(const Object& other) const {
+    PyObject* result_ptr = PyNumber_Remainder(object().ptr(), other.ptr());
+    if (!result_ptr)
+      throw py::error_already_set();
+    return Object(result_ptr, false);
   }
 
   Int operator*(const Int& other) const {
-    return Object(PyNumber_Multiply(object().ptr(), other.object().ptr()),
-                  false);
+    return *this * other.object();
+  }
+
+  Int operator*(const Object& other) const {
+    PyObject* result_ptr = PyNumber_Multiply(object().ptr(), other.ptr());
+    if (!result_ptr)
+      throw py::error_already_set();
+    return Object(result_ptr, false);
   }
 
   Int operator-(const Int& other) const {
@@ -189,12 +214,19 @@ class Int {
                   false);
   }
 
+  Int operator-(const Object& other) const {
+    PyObject* result_ptr = PyNumber_Subtract(object().ptr(), other.ptr());
+    if (!result_ptr)
+      throw py::error_already_set();
+    return Object(result_ptr, false);
+  }
+
   Int operator-() const {
     return Object(PyNumber_Negative(object().ptr()), false);
   }
 
   Int& operator=(Int&& other) {
-    _object = other.object();
+    _object = std::move(other.object());
     return *this;
   }
 
