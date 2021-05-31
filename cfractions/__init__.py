@@ -9,4 +9,8 @@ except ImportError:
 
 
     class Fraction(_Fraction):
-        pass
+        def __abs__(self) -> 'Fraction':
+            return Fraction(abs(self.numerator), self.denominator)
+
+        def __neg__(self) -> 'Fraction':
+            return Fraction(-self.numerator, self.denominator)
