@@ -1,7 +1,7 @@
 from hypothesis import given
 
-from cfractions import base
-from cfractions.base import Fraction
+import cfractions
+from cfractions import Fraction
 from . import strategies
 
 
@@ -16,4 +16,4 @@ def test_basic(fraction: Fraction) -> None:
 def test_round_trip(fraction: Fraction) -> None:
     result = repr(fraction)
 
-    assert eval(result, vars(base)) == fraction
+    assert eval(result, vars(cfractions)) == fraction

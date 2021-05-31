@@ -3,7 +3,7 @@ import sys
 import pytest
 from hypothesis import given
 
-from cfractions.base import Fraction
+from cfractions import Fraction
 from . import strategies
 
 

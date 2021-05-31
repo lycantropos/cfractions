@@ -1,6 +1,6 @@
 from hypothesis import given
 
-from cfractions.base import Fraction
+from cfractions import Fraction
 from tests.utils import (equivalence,
                          implication)
 from . import strategies

@@ -2,7 +2,7 @@ import math
 
 from hypothesis import strategies
 
-from cfractions.base import Fraction
+from cfractions import Fraction
 
 finite_floats = strategies.floats(allow_infinity=False,
                                   allow_nan=False)
