@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 from hypothesis import given
 
@@ -22,6 +24,25 @@ def test_finite_float_argument(value: float) -> None:
     numerator, denominator = value.as_integer_ratio()
     assert result.numerator == numerator
     assert result.denominator == denominator
+
+
+@given(strategies.non_interned_numerators,
+       strategies.non_interned_denominators)
+def test_reference_counter(numerator: int, denominator: int) -> None:
+    denominator_refcount_before = sys.getrefcount(denominator)
+    numerator_refcount_before = sys.getrefcount(numerator)
+
+    result = Fraction(numerator, denominator)
+
+    denominator_refcount_after = sys.getrefcount(denominator)
+    numerator_refcount_after = sys.getrefcount(numerator)
+    assert (denominator_refcount_after
+            == (denominator_refcount_before
+                + (result.denominator == denominator)
+                + (result.numerator == denominator)))
+    assert numerator_refcount_after == (numerator_refcount_before
+                                        + (result.denominator == numerator)
+                                        + (result.numerator == numerator))
 
 
 @given(strategies.numerators, strategies.denominators)
