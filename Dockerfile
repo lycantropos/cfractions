@@ -7,7 +7,6 @@ RUN pip install --upgrade pip setuptools
 
 WORKDIR /opt/cfractions
 
-COPY requirements-setup.txt .
 COPY requirements-tests.txt .
 RUN pip install -r requirements-tests.txt
 COPY requirements.txt .
