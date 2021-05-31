@@ -64,21 +64,34 @@ static int Fraction_init(FractionObject *self, PyObject *args) {
     Py_DECREF(tmp);
 
     gcd = _PyLong_GCD(numerator, denominator);
-    if (!gcd) return -1;
+    if (!gcd) {
+      Py_DECREF(denominator);
+      Py_DECREF(numerator);
+      return -1;
+    }
+
     tmp = PyLong_FromLong(1);
     if (PyObject_RichCompareBool(gcd, tmp, Py_NE)) {
+      Py_DECREF(tmp);
+      tmp = numerator;
       numerator = PyNumber_FloorDivide(numerator, gcd);
+      Py_DECREF(tmp);
       if (!numerator) {
+        Py_DECREF(denominator);
         Py_DECREF(gcd);
         return -1;
       }
+      tmp = denominator;
       denominator = PyNumber_FloorDivide(denominator, gcd);
+      Py_DECREF(tmp);
       if (!denominator) {
+        Py_DECREF(numerator);
         Py_DECREF(gcd);
         return -1;
       }
+    } else {
+      Py_DECREF(tmp);
     }
-    Py_DECREF(tmp);
     Py_DECREF(gcd);
 
     tmp = self->numerator;
