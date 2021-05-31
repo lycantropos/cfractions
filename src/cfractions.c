@@ -252,12 +252,12 @@ static PyMemberDef Fraction_members[] = {
 };
 
 static PyObject *Fraction_negative(FractionObject *self) {
-  PyObject *numerator_modulus, *result;
-  numerator_modulus = PyNumber_Negative(self->numerator);
-  if (!numerator_modulus) return NULL;
+  PyObject *numerator_negative, *result;
+  numerator_negative = PyNumber_Negative(self->numerator);
+  if (!numerator_negative) return NULL;
   result = PyObject_CallFunction((PyObject *)&FractionType, "OO",
-                                 numerator_modulus, self->denominator);
-  Py_DECREF(numerator_modulus);
+                                 numerator_negative, self->denominator);
+  Py_DECREF(numerator_negative);
   return result;
 }
 
