@@ -15,6 +15,15 @@ def test_basic(numerator: int, denominator: int) -> None:
             or not denominator % result.denominator)
 
 
+@given(strategies.finite_floats)
+def test_finite_float_argument(value: float) -> None:
+    result = Fraction(value)
+
+    numerator, denominator = value.as_integer_ratio()
+    assert result.numerator == numerator
+    assert result.denominator == denominator
+
+
 @given(strategies.numerators, strategies.denominators)
 def test_properties(numerator: int, denominator: int) -> None:
     result = Fraction(numerator, denominator)
