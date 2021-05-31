@@ -3,6 +3,8 @@
 #include <math.h>
 #include <structmember.h>
 
+#define PY39_OR_MORE PY_VERSION_HEX >= 0x03090000
+
 typedef struct {
   PyObject_HEAD PyObject *numerator;
   PyObject *denominator;
@@ -92,8 +94,12 @@ static PyObject *Fraction_richcompare(FractionObject *self, PyObject *other,
   } else if (PyFloat_Check(other)) {
     PyObject *other_fraction, *result;
     if (!isfinite(PyFloat_AS_DOUBLE(other))) Py_RETURN_FALSE;
+#if PY39_OR_MORE
+    other_fraction = PyObject_CallOneArg((PyObject *)&FractionType, other);
+#else
     other_fraction =
         PyObject_CallFunctionObjArgs((PyObject *)&FractionType, other, NULL);
+#endif
     if (!other_fraction) return NULL;
     result = Fractions_richcompare(self, (FractionObject *)other_fraction, op);
     Py_DECREF(other_fraction);
@@ -328,8 +334,13 @@ static int mark_as_rational(PyObject *python_type) {
     return -1;
   }
   PyObject *register_method_name = PyUnicode_FromString("register");
+#if PY39_OR_MORE
+  tmp = PyObject_CallMethodOneArg(rational_interface, register_method_name,
+                                  python_type);
+#else
   tmp = PyObject_CallMethodObjArgs(rational_interface, register_method_name,
                                    python_type, NULL);
+#endif
   if (!tmp) {
     Py_DECREF(register_method_name);
     Py_DECREF(rational_interface);
