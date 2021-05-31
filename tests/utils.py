@@ -11,7 +11,7 @@ def implication(antecedent: bool, consequent: bool) -> bool:
     return not antecedent or consequent
 
 
-skip_reference_counter_test = pytest.mark.skip_reference_counter_test(
+skip_reference_counter_test = pytest.mark.skip_if(
         platform.python_implementation() == 'PyPy',
         reason='PyPy\'s garbage collection '
                'is not based on reference counting.')
