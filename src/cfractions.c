@@ -130,13 +130,19 @@ static int Fraction_init(FractionObject *self, PyObject *args) {
 
     tmp = PyLong_FromLong(0);
     if (PyObject_RichCompareBool(denominator, tmp, Py_LT)) {
-      denominator = PyNumber_Negative(denominator);
+      Py_DECREF(tmp);
       numerator = PyNumber_Negative(numerator);
+      if (!numerator) return -1;
+      denominator = PyNumber_Negative(denominator);
+      if (!denominator) {
+        Py_DECREF(numerator);
+        return -1;
+      }
     } else {
+      Py_DECREF(tmp);
       Py_INCREF(numerator);
       Py_INCREF(denominator);
     }
-    Py_DECREF(tmp);
 
     gcd = _PyLong_GCD(numerator, denominator);
     if (!gcd) {
