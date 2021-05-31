@@ -9,4 +9,4 @@ except ImportError:
 
 
     class Fraction(_Fraction):
-        __module__ = __name__
+        pass
