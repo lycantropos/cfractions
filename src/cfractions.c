@@ -92,7 +92,8 @@ static PyObject *Fraction_richcompare(FractionObject *self, PyObject *other,
   } else if (PyFloat_Check(other)) {
     PyObject *other_fraction, *result;
     if (!isfinite(PyFloat_AS_DOUBLE(other))) Py_RETURN_FALSE;
-    other_fraction = PyObject_CallOneArg((PyObject *)&FractionType, other);
+    other_fraction =
+        PyObject_CallFunctionObjArgs((PyObject *)&FractionType, other, NULL);
     if (!other_fraction) return NULL;
     result = Fractions_richcompare(self, (FractionObject *)other_fraction, op);
     Py_DECREF(other_fraction);
@@ -327,8 +328,8 @@ static int mark_as_rational(PyObject *python_type) {
     return -1;
   }
   PyObject *register_method_name = PyUnicode_FromString("register");
-  tmp = PyObject_CallMethodOneArg(rational_interface, register_method_name,
-                                  python_type);
+  tmp = PyObject_CallMethodObjArgs(rational_interface, register_method_name,
+                                   python_type, NULL);
   if (!tmp) {
     Py_DECREF(register_method_name);
     Py_DECREF(rational_interface);
