@@ -90,17 +90,12 @@ static PyObject *Fraction_richcompare(FractionObject *self, PyObject *other,
       return result;
     }
   } else if (PyFloat_Check(other)) {
-    PyObject *arglist, *other_fraction, *result;
+    PyObject *other_fraction, *result;
     if (!isfinite(PyFloat_AS_DOUBLE(other))) Py_RETURN_FALSE;
-    arglist = Py_BuildValue("(O)", other);
-    if (!arglist) return NULL;
-    other_fraction = PyObject_CallObject((PyObject *)&FractionType, arglist);
-    if (!other_fraction) {
-      Py_DECREF(arglist);
+    other_fraction = PyObject_CallOneArg((PyObject *)&FractionType, other);
+    if (!other_fraction)
       return NULL;
-    }
     result = Fractions_richcompare(self, (FractionObject *)other_fraction, op);
-    Py_DECREF(arglist);
     Py_DECREF(other_fraction);
     return result;
   }
