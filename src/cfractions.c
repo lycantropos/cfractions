@@ -291,6 +291,57 @@ static int Fraction_bool(FractionObject *self) {
   return PyObject_IsTrue(self->numerator);
 }
 
+static Py_hash_t Fraction_hash(FractionObject *self) {
+  PyObject *hash_modulus, *hash_, *inverted_denominator_hash, *tmp;
+  Py_hash_t result;
+  hash_modulus = PyLong_FromSize_t(_PyHASH_MODULUS);
+  if (!hash_modulus)
+    return -1;
+  tmp = PyLong_FromSize_t(_PyHASH_MODULUS - 2);
+  inverted_denominator_hash =
+      PyNumber_Power(self->denominator, tmp, hash_modulus);
+  Py_DECREF(tmp);
+  if (!inverted_denominator_hash) {
+    Py_DECREF(hash_modulus);
+    return -1;
+  }
+  if (PyObject_Not(inverted_denominator_hash)) {
+    Py_DECREF(inverted_denominator_hash);
+    Py_DECREF(hash_modulus);
+    return _PyHASH_INF;
+  }
+  else {
+    PyObject *numerator_modulus;
+    numerator_modulus = PyNumber_Absolute(self->numerator);
+    if (!numerator_modulus) {
+      Py_DECREF(inverted_denominator_hash);
+      Py_DECREF(hash_modulus);
+      return -1;
+    }
+    tmp = PyNumber_Multiply(numerator_modulus, inverted_denominator_hash);
+    hash_ = PyNumber_Remainder(tmp, hash_modulus);
+    Py_DECREF(tmp);
+    Py_DECREF(numerator_modulus);
+    Py_DECREF(inverted_denominator_hash);
+    Py_DECREF(hash_modulus);
+    if (!hash_)
+      return -1;
+  }
+  tmp = PyLong_FromLong(0);
+  if (PyObject_RichCompareBool(self->numerator, tmp, Py_LT)) {
+    Py_DECREF(tmp);
+    tmp = hash_;
+    hash_ = PyNumber_Negative(hash_);
+    Py_DECREF(tmp);
+    if (!hash_) return -1;
+  }
+  Py_DECREF(tmp);
+  result = PyLong_AsSsize_t(hash_);
+  if (PyErr_Occurred())
+    return -1;
+  return result == -1 ? -2 : result;
+}
+
 static PyNumberMethods Fraction_as_number = {
     .nb_absolute = (unaryfunc)Fraction_abs,
     .nb_bool = (inquiry)Fraction_bool,
@@ -311,6 +362,7 @@ static PyTypeObject FractionType = {
     .tp_new = Fraction_new,
     .tp_init = (initproc)Fraction_init,
     .tp_dealloc = (destructor)Fraction_dealloc,
+    .tp_hash = (hashfunc)Fraction_hash,
     .tp_members = Fraction_members,
     .tp_richcompare = (richcmpfunc)Fraction_richcompare,
     .tp_as_number = &Fraction_as_number,
