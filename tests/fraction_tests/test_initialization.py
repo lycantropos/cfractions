@@ -1,3 +1,4 @@
+import platform
 import sys
 
 import pytest
@@ -26,6 +27,9 @@ def test_finite_float_argument(value: float) -> None:
     assert result.denominator == denominator
 
 
+@pytest.mark.skipif(platform.python_implementation() == 'PyPy',
+                    reason='PyPy\'s garbage collection '
+                           'is not based on reference counting.')
 @given(strategies.non_interned_numerators,
        strategies.non_interned_denominators)
 def test_reference_counter(numerator: int, denominator: int) -> None:
