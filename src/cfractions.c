@@ -1,5 +1,6 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
+#include <math.h>
 #include <structmember.h>
 
 typedef struct {
@@ -52,8 +53,7 @@ static int Fraction_init(FractionObject *self, PyObject *args) {
       return -1;
     }
     gcd = _PyLong_GCD(numerator, denominator);
-    if (!gcd)
-      return -1;
+    if (!gcd) return -1;
     tmp = PyLong_FromLong(1);
     if (PyObject_RichCompareBool(gcd, tmp, Py_NE)) {
       numerator = PyNumber_FloorDivide(numerator, gcd);
@@ -81,14 +81,73 @@ static int Fraction_init(FractionObject *self, PyObject *args) {
     self->denominator = denominator;
     Py_XDECREF(tmp);
   } else if (numerator) {
-    if (!PyLong_Check(numerator)) {
+    if (PyLong_Check(numerator))
+      Py_INCREF(numerator);
+    else if (PyFloat_Check(numerator)) {
+      double value = PyFloat_AS_DOUBLE(numerator);
+      int exponent;
+      PyObject *exponent_object;
+      size_t index;
+      if (isinf(value)) {
+        PyErr_SetString(PyExc_OverflowError,
+                        "Cannot construct Fraction from infinity.");
+        return -1;
+      }
+      if (isnan(value)) {
+        PyErr_SetString(PyExc_ValueError,
+                        "Cannot construct Fraction from NaN.");
+        return -1;
+      }
+      value = frexp(value, &exponent);
+      for (index = 0; index < 300 && value != floor(value); ++index) {
+        value *= 2.0;
+        exponent--;
+      }
+      numerator = PyLong_FromDouble(value);
+      if (!numerator) return -1;
+      denominator = PyLong_FromLong(1);
+      if (!denominator) {
+        Py_DECREF(numerator);
+        return -1;
+      }
+      exponent_object = PyLong_FromLong(abs(exponent));
+      if (!exponent_object) {
+        Py_DECREF(numerator);
+        Py_DECREF(denominator);
+        return -1;
+      }
+      if (exponent > 0) {
+        tmp = numerator;
+        numerator = PyNumber_Lshift(numerator, exponent_object);
+        Py_DECREF(tmp);
+        if (!numerator) {
+          Py_DECREF(denominator);
+          Py_DECREF(exponent_object);
+          return -1;
+        }
+      } else {
+        tmp = denominator;
+        denominator = PyNumber_Lshift(denominator, exponent_object);
+        Py_DECREF(tmp);
+        if (!denominator) {
+          Py_DECREF(numerator);
+          Py_DECREF(exponent_object);
+          return -1;
+        }
+      }
+      Py_DECREF(exponent_object);
+
+      tmp = self->denominator;
+      self->denominator = denominator;
+      Py_XDECREF(tmp);
+    } else {
       PyErr_SetString(PyExc_TypeError,
-                      "Numerator should be an integer "
+                      "Numerator should be either an integer "
+                      "or a floating point number "
                       "when denominator is not specified.");
       return -1;
     }
     tmp = self->numerator;
-    Py_INCREF(numerator);
     self->numerator = numerator;
     Py_XDECREF(tmp);
   }
