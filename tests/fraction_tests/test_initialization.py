@@ -1,10 +1,10 @@
-import platform
 import sys
 
 import pytest
 from hypothesis import given
 
 from cfractions import Fraction
+from tests.utils import skip_reference_counter_test
 from . import strategies
 
 
@@ -27,9 +27,7 @@ def test_finite_float_argument(value: float) -> None:
     assert result.denominator == denominator
 
 
-@pytest.mark.skipif(platform.python_implementation() == 'PyPy',
-                    reason='PyPy\'s garbage collection '
-                           'is not based on reference counting.')
+@skip_reference_counter_test
 @given(strategies.non_interned_numerators,
        strategies.non_interned_denominators)
 def test_reference_counter(numerator: int, denominator: int) -> None:
@@ -49,6 +47,7 @@ def test_reference_counter(numerator: int, denominator: int) -> None:
                                         + (result.numerator == numerator))
 
 
+@skip_reference_counter_test
 @given(strategies.finite_floats)
 def test_float_reference_counter(value: int) -> None:
     value_refcount_before = sys.getrefcount(value)
