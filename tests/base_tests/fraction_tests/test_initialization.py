@@ -45,6 +45,16 @@ def test_reference_counter(numerator: int, denominator: int) -> None:
                                         + (result.numerator == numerator))
 
 
+@given(strategies.finite_floats)
+def test_float_reference_counter(value: int) -> None:
+    value_refcount_before = sys.getrefcount(value)
+
+    result = Fraction(value)
+
+    value_refcount_after = sys.getrefcount(value)
+    assert value_refcount_after == value_refcount_before
+
+
 @given(strategies.numerators, strategies.denominators)
 def test_properties(numerator: int, denominator: int) -> None:
     result = Fraction(numerator, denominator)
@@ -58,3 +68,15 @@ def test_properties(numerator: int, denominator: int) -> None:
 def test_zero_denominator(numerator: int, denominator: int) -> None:
     with pytest.raises(ZeroDivisionError):
         Fraction(numerator, denominator)
+
+
+@given(strategies.infinite_floats)
+def test_infinite_float_argument(value: float) -> None:
+    with pytest.raises(OverflowError):
+        Fraction(value)
+
+
+@given(strategies.nans)
+def test_nan_float_argument(value: float) -> None:
+    with pytest.raises(ValueError):
+        Fraction(value)
