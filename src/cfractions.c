@@ -303,7 +303,7 @@ static PyObject *Fraction_repr(FractionObject *self) {
 }
 
 static PyTypeObject FractionType = {
-    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "_cfractions.Fraction",
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "cfractions.Fraction",
     .tp_doc = "Represents rational numbers in the exact form.",
     .tp_basicsize = sizeof(FractionObject),
     .tp_itemsize = 0,
@@ -319,7 +319,7 @@ static PyTypeObject FractionType = {
 
 static PyModuleDef _cfractions_module = {
     PyModuleDef_HEAD_INIT,
-    .m_name = "_cfractions",
+    .m_name = "cfractions",
     .m_doc = "Python C API alternative to `fractions` module.",
     .m_size = -1,
 };
