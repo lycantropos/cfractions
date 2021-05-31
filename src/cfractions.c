@@ -52,6 +52,17 @@ static int Fraction_init(FractionObject *self, PyObject *args) {
                       "Denominator should be non-zero.");
       return -1;
     }
+
+    tmp = PyLong_FromLong(0);
+    if (PyObject_RichCompareBool(denominator, tmp, Py_LT)) {
+      denominator = PyNumber_Negative(denominator);
+      numerator = PyNumber_Negative(numerator);
+    } else {
+      Py_INCREF(numerator);
+      Py_INCREF(denominator);
+    }
+    Py_DECREF(tmp);
+
     gcd = _PyLong_GCD(numerator, denominator);
     if (!gcd) return -1;
     tmp = PyLong_FromLong(1);
@@ -66,9 +77,6 @@ static int Fraction_init(FractionObject *self, PyObject *args) {
         Py_DECREF(gcd);
         return -1;
       }
-    } else {
-      Py_INCREF(numerator);
-      Py_INCREF(denominator);
     }
     Py_DECREF(tmp);
     Py_DECREF(gcd);
