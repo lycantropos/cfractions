@@ -14,15 +14,10 @@ static void Fraction_dealloc(FractionObject *self) {
   Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
-static FractionObject *_Fraction_new(PyTypeObject *cls) {
-  FractionObject *self;
-  self = (FractionObject *)(cls->tp_alloc(cls, 0));
-  return self;
-}
-
 static PyObject *Fraction_new(PyTypeObject *cls, PyObject *args,
                               PyObject *kwargs) {
-  FractionObject *self = _Fraction_new(cls);
+  FractionObject *self;
+  self = (FractionObject *)(cls->tp_alloc(cls, 0));
   if (self) {
     self->numerator = PyLong_FromLong(0);
     if (!self->numerator) {
@@ -261,7 +256,7 @@ static FractionObject *Fraction_negative(FractionObject *self) {
   FractionObject *result;
   numerator_negative = PyNumber_Negative(self->numerator);
   if (!numerator_negative) return NULL;
-  result = _Fraction_new((PyTypeObject *)&FractionType);
+  result = PyObject_New(FractionObject, (PyTypeObject *)&FractionType);
   if (!result) {
     Py_DECREF(numerator_negative);
     return NULL;
