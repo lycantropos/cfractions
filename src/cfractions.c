@@ -14,10 +14,15 @@ static void Fraction_dealloc(FractionObject *self) {
   Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
-static PyObject *Fraction_new(PyTypeObject *type, PyObject *args,
-                              PyObject *kwargs) {
+static FractionObject *_Fraction_new(PyTypeObject *cls) {
   FractionObject *self;
-  self = (FractionObject *)type->tp_alloc(type, 0);
+  self = (FractionObject *)(cls->tp_alloc(cls, 0));
+  return self;
+}
+
+static PyObject *Fraction_new(PyTypeObject *cls, PyObject *args,
+                              PyObject *kwargs) {
+  FractionObject *self = _Fraction_new(cls);
   if (self) {
     self->numerator = PyLong_FromLong(0);
     if (!self->numerator) {
@@ -251,23 +256,30 @@ static PyMemberDef Fraction_members[] = {
     {NULL} /* sentinel */
 };
 
-static PyObject *Fraction_negative(FractionObject *self) {
-  PyObject *numerator_negative, *result;
+static FractionObject *Fraction_negative(FractionObject *self) {
+  PyObject *numerator_negative;
+  FractionObject *result;
   numerator_negative = PyNumber_Negative(self->numerator);
   if (!numerator_negative) return NULL;
-  result = PyObject_CallFunction((PyObject *)&FractionType, "OO",
-                                 numerator_negative, self->denominator);
-  Py_DECREF(numerator_negative);
+  result = _Fraction_new((PyTypeObject *)&FractionType);
+  if (!result) {
+    Py_DECREF(numerator_negative);
+    return NULL;
+  }
+  result->numerator = numerator_negative;
+  Py_INCREF(self->denominator);
+  result->denominator = self->denominator;
   return result;
 }
 
-static PyObject *Fraction_abs(FractionObject *self) {
-  PyObject *result, *tmp = PyLong_FromLong(0);
+static FractionObject *Fraction_abs(FractionObject *self) {
+  FractionObject *result;
+  PyObject *tmp = PyLong_FromLong(0);
   if (PyObject_RichCompareBool(self->numerator, tmp, Py_LT))
     result = Fraction_negative(self);
   else {
     Py_INCREF((PyObject *)self);
-    result = (PyObject *)self;
+    result = self;
   }
   Py_DECREF(tmp);
   return result;
