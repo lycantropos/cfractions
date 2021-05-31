@@ -284,38 +284,25 @@ static PyModuleDef _cfractions_module = {
 };
 
 static int mark_as_rational(PyObject *python_type) {
-  PyObject *numbers_module = PyImport_ImportModule("numbers"),
-           *register_rational, *rational_interface, *arglist, *tmp;
+  PyObject *numbers_module, *rational_interface, *tmp;
+  numbers_module = PyImport_ImportModule("numbers");
   if (!numbers_module) return -1;
   rational_interface = PyObject_GetAttrString(numbers_module, "Rational");
   if (!rational_interface) {
     Py_DECREF(numbers_module);
     return -1;
   }
-  register_rational = PyObject_GetAttrString(rational_interface, "register");
-  if (!register_rational) {
-    Py_DECREF(rational_interface);
-    Py_DECREF(numbers_module);
-    return -1;
-  }
-  arglist = Py_BuildValue("(O)", python_type);
-  if (!arglist) {
-    Py_DECREF(register_rational);
-    Py_DECREF(rational_interface);
-    Py_DECREF(numbers_module);
-    return -1;
-  }
-  tmp = PyObject_CallObject(register_rational, arglist);
+  PyObject *register_method_name = PyUnicode_FromString("register");
+  tmp = PyObject_CallMethodOneArg(rational_interface, register_method_name,
+                                  python_type);
   if (!tmp) {
-    Py_DECREF(arglist);
-    Py_DECREF(register_rational);
+    Py_DECREF(register_method_name);
     Py_DECREF(rational_interface);
     Py_DECREF(numbers_module);
     return -1;
   }
   Py_DECREF(tmp);
-  Py_DECREF(arglist);
-  Py_DECREF(register_rational);
+  Py_DECREF(register_method_name);
   Py_DECREF(rational_interface);
   Py_DECREF(numbers_module);
   return 0;
