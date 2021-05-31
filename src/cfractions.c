@@ -93,8 +93,7 @@ static PyObject *Fraction_richcompare(FractionObject *self, PyObject *other,
     PyObject *other_fraction, *result;
     if (!isfinite(PyFloat_AS_DOUBLE(other))) Py_RETURN_FALSE;
     other_fraction = PyObject_CallOneArg((PyObject *)&FractionType, other);
-    if (!other_fraction)
-      return NULL;
+    if (!other_fraction) return NULL;
     result = Fractions_richcompare(self, (FractionObject *)other_fraction, op);
     Py_DECREF(other_fraction);
     return result;
@@ -252,6 +251,20 @@ static PyMemberDef Fraction_members[] = {
     {NULL} /* sentinel */
 };
 
+static PyObject* Fraction_negative(FractionObject* self) {
+    PyObject *numerator_modulus, *result;
+    numerator_modulus = PyNumber_Negative(self->numerator);
+    if (!numerator_modulus) return NULL;
+    result = PyObject_CallFunction((PyObject *)&FractionType, "OO",
+                                   numerator_modulus, self->denominator);
+    Py_DECREF(numerator_modulus);
+    return result;
+}
+
+static PyNumberMethods Fraction_as_number = {
+    .nb_negative = (unaryfunc)Fraction_negative,
+};
+
 static PyObject *Fraction_repr(FractionObject *self) {
   return PyUnicode_FromFormat("Fraction(%R, %R)", self->numerator,
                               self->denominator);
@@ -268,6 +281,7 @@ static PyTypeObject FractionType = {
     .tp_dealloc = (destructor)Fraction_dealloc,
     .tp_members = Fraction_members,
     .tp_richcompare = (richcmpfunc)Fraction_richcompare,
+    .tp_as_number = &Fraction_as_number,
     .tp_repr = (reprfunc)Fraction_repr,
 };
 
