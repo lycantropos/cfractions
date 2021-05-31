@@ -33,8 +33,6 @@ static PyObject *Fraction_new(PyTypeObject *cls, PyObject *args,
   return (PyObject *)self;
 }
 
-static PyTypeObject FractionType;
-
 static PyObject *Fractions_richcompare(FractionObject *self,
                                        FractionObject *other, int op) {
   if (op == Py_EQ) {
@@ -60,6 +58,8 @@ static PyObject *Fractions_richcompare(FractionObject *self,
     return result;
   }
 }
+
+static PyTypeObject FractionType;
 
 static PyObject *Fraction_richcompare(FractionObject *self, PyObject *other,
                                       int op) {
@@ -280,8 +280,13 @@ static FractionObject *Fraction_abs(FractionObject *self) {
   return result;
 }
 
+static int Fraction_bool(FractionObject *self) {
+  return PyObject_IsTrue(self->numerator);
+}
+
 static PyNumberMethods Fraction_as_number = {
     .nb_absolute = (unaryfunc)Fraction_abs,
+    .nb_bool = (inquiry)Fraction_bool,
     .nb_negative = (unaryfunc)Fraction_negative,
 };
 
