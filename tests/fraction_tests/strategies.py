@@ -21,4 +21,5 @@ non_interned_numerators = non_interned_denominators = (
     (strategies.integers(max_value=-256)
      | strategies.integers(min_value=257)).filter(is_not_interned))
 zeros = strategies.just(0)
-fractions = strategies.builds(Fraction, numerators, denominators)
+fractions = (strategies.builds(Fraction, numerators, denominators)
+             | strategies.builds(Fraction, finite_floats))
