@@ -28,6 +28,13 @@ def test_non_negativeness(fraction: Fraction) -> None:
     assert result >= 0
 
 
+@given(strategies.fractions, strategies.fractions)
+def test_multiplicativity(first: Fraction, second: Fraction) -> None:
+    result = abs(first * second)
+
+    assert result == abs(first) * abs(second)
+
+
 @skip_reference_counter_test
 @given(strategies.fractions)
 def test_reference_counter(fraction: Fraction) -> None:
