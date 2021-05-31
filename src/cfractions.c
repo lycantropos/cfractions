@@ -283,6 +283,44 @@ static PyModuleDef _cfractions_module = {
     .m_size = -1,
 };
 
+static int mark_as_rational(PyObject *python_type) {
+  PyObject *numbers_module = PyImport_ImportModule("numbers"),
+           *register_rational, *rational_interface, *arglist, *tmp;
+  if (!numbers_module) return -1;
+  rational_interface = PyObject_GetAttrString(numbers_module, "Rational");
+  if (!rational_interface) {
+    Py_DECREF(numbers_module);
+    return -1;
+  }
+  register_rational = PyObject_GetAttrString(rational_interface, "register");
+  if (!register_rational) {
+    Py_DECREF(rational_interface);
+    Py_DECREF(numbers_module);
+    return -1;
+  }
+  arglist = Py_BuildValue("(O)", python_type);
+  if (!arglist) {
+    Py_DECREF(register_rational);
+    Py_DECREF(rational_interface);
+    Py_DECREF(numbers_module);
+    return -1;
+  }
+  tmp = PyObject_CallObject(register_rational, arglist);
+  if (!tmp) {
+    Py_DECREF(arglist);
+    Py_DECREF(register_rational);
+    Py_DECREF(rational_interface);
+    Py_DECREF(numbers_module);
+    return -1;
+  }
+  Py_DECREF(tmp);
+  Py_DECREF(arglist);
+  Py_DECREF(register_rational);
+  Py_DECREF(rational_interface);
+  Py_DECREF(numbers_module);
+  return 0;
+}
+
 PyMODINIT_FUNC PyInit__cfractions(void) {
   PyObject *result;
   if (PyType_Ready(&FractionType) < 0) return NULL;
@@ -291,6 +329,10 @@ PyMODINIT_FUNC PyInit__cfractions(void) {
   Py_INCREF(&FractionType);
   if (PyModule_AddObject(result, "Fraction", (PyObject *)&FractionType) < 0) {
     Py_DECREF(&FractionType);
+    Py_DECREF(result);
+    return NULL;
+  }
+  if (mark_as_rational((PyObject *)&FractionType)) {
     Py_DECREF(result);
     return NULL;
   }
