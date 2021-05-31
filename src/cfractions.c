@@ -251,17 +251,30 @@ static PyMemberDef Fraction_members[] = {
     {NULL} /* sentinel */
 };
 
-static PyObject* Fraction_negative(FractionObject* self) {
-    PyObject *numerator_modulus, *result;
-    numerator_modulus = PyNumber_Negative(self->numerator);
-    if (!numerator_modulus) return NULL;
-    result = PyObject_CallFunction((PyObject *)&FractionType, "OO",
-                                   numerator_modulus, self->denominator);
-    Py_DECREF(numerator_modulus);
-    return result;
+static PyObject *Fraction_negative(FractionObject *self) {
+  PyObject *numerator_modulus, *result;
+  numerator_modulus = PyNumber_Negative(self->numerator);
+  if (!numerator_modulus) return NULL;
+  result = PyObject_CallFunction((PyObject *)&FractionType, "OO",
+                                 numerator_modulus, self->denominator);
+  Py_DECREF(numerator_modulus);
+  return result;
+}
+
+static PyObject *Fraction_abs(FractionObject *self) {
+  PyObject *result, *tmp = PyLong_FromLong(0);
+  if (PyObject_RichCompareBool(self->numerator, tmp, Py_LT))
+    result = Fraction_negative(self);
+  else {
+    Py_INCREF((PyObject *)self);
+    result = (PyObject *)self;
+  }
+  Py_DECREF(tmp);
+  return result;
 }
 
 static PyNumberMethods Fraction_as_number = {
+    .nb_absolute = (unaryfunc)Fraction_abs,
     .nb_negative = (unaryfunc)Fraction_negative,
 };
 
