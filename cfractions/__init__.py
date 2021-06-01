@@ -19,6 +19,20 @@ except ImportError:
             return Fraction(abs(self.numerator), self.denominator)
 
         @_overload
+        def __add__(self, other: _numbers.Rational) -> 'Fraction':
+            """Returns sum of the fraction with given rational number."""
+
+        @_overload
+        def __add__(self, other: _Number) -> _Number:
+            """Returns sum of the fraction with given number."""
+
+        def __add__(self, other):
+            result = super().__add__(other)
+            return (Fraction(result.numerator, result.denominator)
+                    if isinstance(result, _Fraction)
+                    else result)
+
+        @_overload
         def __mul__(self, other: _numbers.Rational) -> 'Fraction':
             """Returns product of the fraction with given rational number."""
 
