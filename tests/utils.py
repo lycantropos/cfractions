@@ -16,7 +16,8 @@ def implication(antecedent: bool, consequent: bool) -> bool:
 
 def is_fraction_valid(fraction: Fraction) -> bool:
     return (fraction.denominator > 0
-            and math.gcd(fraction.numerator, fraction.denominator) == 1)
+            and math.gcd(fraction.numerator, fraction.denominator) == 1
+            and (bool(fraction.numerator) or fraction.denominator == 1))
 
 
 skip_reference_counter_test = pytest.mark.skipif(
