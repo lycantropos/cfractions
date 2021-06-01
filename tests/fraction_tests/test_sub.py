@@ -19,6 +19,11 @@ def test_basic(first: Fraction, second: Fraction) -> None:
     assert is_fraction_valid(result)
 
 
+@given(strategies.fractions)
+def test_diagonal(fraction: Fraction) -> None:
+    assert not fraction - fraction
+
+
 @given(strategies.fractions, strategies.fractions)
 def test_commutative_case(first: Fraction, second: Fraction) -> None:
     assert equivalence(first - second == second - first, first == second)
@@ -46,6 +51,14 @@ def test_float_argument(first: Fraction, second: float) -> None:
     assert implication(math.isinf(second)
                        or not first and not math.isnan(second),
                        result == -second)
+
+
+@given(strategies.fractions, strategies.fractions)
+def test_alternatives(first: Fraction, second: Fraction) -> None:
+    result = first - second
+
+    assert result == first + (-second)
+    assert result == -((-first) + second)
 
 
 @skip_reference_counter_test
