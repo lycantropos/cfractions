@@ -7,7 +7,8 @@ from . import strategies
 
 
 @given(strategies.finite_non_fraction_numbers, strategies.fractions)
-def test_connection_with_sub(first: Number, second: Fraction) -> None:
+def test_alternatives(first: Number, second: Fraction) -> None:
     result = first - second
 
-    assert result == -(second - first)
+    assert result == first + (-second)
+    assert result == -((-first) + second)
