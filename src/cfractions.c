@@ -288,14 +288,6 @@ static int Fraction_init(FractionObject *self, PyObject *args) {
   return 0;
 }
 
-static PyMemberDef Fraction_members[] = {
-    {"numerator", T_OBJECT_EX, offsetof(FractionObject, numerator), READONLY,
-     "Numerator of the fraction."},
-    {"denominator", T_OBJECT_EX, offsetof(FractionObject, denominator),
-     READONLY, "Denominator of the fraction."},
-    {NULL} /* sentinel */
-};
-
 static FractionObject *Fraction_negative(FractionObject *self) {
   PyObject *numerator_negative;
   FractionObject *result;
@@ -421,6 +413,10 @@ static PyObject *Fraction_add(PyObject *self, PyObject *other) {
 
 static int Fraction_bool(FractionObject *self) {
   return PyObject_IsTrue(self->numerator);
+}
+
+static PyObject *Fraction_floor(FractionObject *self, PyObject *args) {
+  return PyNumber_FloorDivide(self->numerator, self->denominator);
 }
 
 static PyObject *Fractions_floor_divide(FractionObject *self,
@@ -1053,6 +1049,24 @@ static Py_hash_t Fraction_hash(FractionObject *self) {
   return result == -1 ? -2 : result;
 }
 
+static PyObject *Fraction_repr(FractionObject *self) {
+  return PyUnicode_FromFormat("Fraction(%R, %R)", self->numerator,
+                              self->denominator);
+}
+
+static PyMemberDef Fraction_members[] = {
+    {"numerator", T_OBJECT_EX, offsetof(FractionObject, numerator), READONLY,
+     "Numerator of the fraction."},
+    {"denominator", T_OBJECT_EX, offsetof(FractionObject, denominator),
+     READONLY, "Denominator of the fraction."},
+    {NULL} /* sentinel */
+};
+
+static PyMethodDef Fraction_methods[] = {
+    {"__floor__", (PyCFunction)Fraction_floor, METH_NOARGS, NULL},
+    {NULL, NULL} /* sentinel */
+};
+
 static PyNumberMethods Fraction_as_number = {
     .nb_absolute = (unaryfunc)Fraction_abs,
     .nb_add = (binaryfunc)Fraction_add,
@@ -1066,11 +1080,6 @@ static PyNumberMethods Fraction_as_number = {
     .nb_true_divide = (binaryfunc)Fraction_true_divide,
 };
 
-static PyObject *Fraction_repr(FractionObject *self) {
-  return PyUnicode_FromFormat("Fraction(%R, %R)", self->numerator,
-                              self->denominator);
-}
-
 static PyTypeObject FractionType = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "cfractions.Fraction",
     .tp_doc = "Represents rational numbers in the exact form.",
@@ -1082,6 +1091,7 @@ static PyTypeObject FractionType = {
     .tp_dealloc = (destructor)Fraction_dealloc,
     .tp_hash = (hashfunc)Fraction_hash,
     .tp_members = Fraction_members,
+    .tp_methods = Fraction_methods,
     .tp_richcompare = (richcmpfunc)Fraction_richcompare,
     .tp_as_number = &Fraction_as_number,
     .tp_repr = (reprfunc)Fraction_repr,
