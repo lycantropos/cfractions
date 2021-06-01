@@ -47,6 +47,13 @@ def test_float_argument(first: Fraction, second: float) -> None:
                        or not first and not math.isnan(second), not result)
 
 
+@given(strategies.fractions, strategies.non_zero_fractions)
+def test_normalization(first: Fraction, second: Fraction) -> None:
+    result = first / second
+
+    assert result == Fraction(result.numerator, result.denominator)
+
+
 @skip_reference_counter_test
 @given(strategies.fractions, strategies.non_zero_fractions)
 def test_reference_counter(first: Fraction, second: Fraction) -> None:
