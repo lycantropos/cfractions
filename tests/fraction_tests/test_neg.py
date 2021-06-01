@@ -1,4 +1,5 @@
 import sys
+from numbers import Complex
 
 from hypothesis import given
 
@@ -36,6 +37,46 @@ def test_involution(fraction: Fraction) -> None:
     result = -fraction
 
     assert fraction == -result
+
+
+@given(strategies.fractions, strategies.finite_numbers)
+def test_add_operand(first: Fraction, second: Complex) -> None:
+    assert -(first + second) == (-first) + (-second)
+
+
+@given(strategies.finite_non_fraction_numbers, strategies.fractions)
+def test_radd_operand(first: Complex, second: Fraction) -> None:
+    assert -(first + second) == (-first) + (-second)
+
+
+@given(strategies.fractions, strategies.finite_numbers)
+def test_sub_operand(first: Fraction, second: Complex) -> None:
+    assert -(first - second) == (-first) - (-second)
+
+
+@given(strategies.finite_non_fraction_numbers, strategies.fractions)
+def test_rsub_operand(first: Complex, second: Fraction) -> None:
+    assert -(first - second) == (-first) - (-second)
+
+
+@given(strategies.fractions, strategies.finite_numbers)
+def test_mul_operand(first: Fraction, second: Complex) -> None:
+    assert -(first * second) == (-first) * second == first * (-second)
+
+
+@given(strategies.finite_non_fraction_numbers, strategies.fractions)
+def test_rmul_operand(first: Complex, second: Fraction) -> None:
+    assert -(first * second) == (-first) * second == first * (-second)
+
+
+@given(strategies.fractions, strategies.finite_non_zero_numbers)
+def test_truediv_operand(first: Fraction, second: Complex) -> None:
+    assert -(first / second) == (-first) / second == first / (-second)
+
+
+@given(strategies.finite_non_fraction_numbers, strategies.non_zero_fractions)
+def test_rtruediv_operand(first: Complex, second: Fraction) -> None:
+    assert -(first / second) == (-first) / second == first / (-second)
 
 
 @skip_reference_counter_test
