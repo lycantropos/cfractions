@@ -444,7 +444,6 @@ static PyObject *Fractions_floor_divide(FractionObject *self,
                                         FractionObject *other) {
   PyObject *denominator, *divisor, *dividend, *gcd, *numerator,
       *other_denominator, *other_numerator, *result;
-
   gcd = _PyLong_GCD(self->numerator, other->numerator);
   if (!gcd) return NULL;
   numerator = PyNumber_FloorDivide(self->numerator, gcd);
@@ -458,7 +457,6 @@ static PyObject *Fractions_floor_divide(FractionObject *self,
     Py_DECREF(numerator);
     return NULL;
   }
-
   gcd = _PyLong_GCD(other->denominator, self->denominator);
   if (!gcd) return NULL;
   denominator = PyNumber_FloorDivide(self->denominator, gcd);
@@ -476,7 +474,6 @@ static PyObject *Fractions_floor_divide(FractionObject *self,
     Py_DECREF(numerator);
     return NULL;
   }
-
   dividend = PyNumber_Multiply(numerator, other_denominator);
   Py_DECREF(other_denominator);
   Py_DECREF(numerator);
@@ -501,7 +498,6 @@ static PyObject *Fractions_floor_divide(FractionObject *self,
 static PyObject *FractionLong_floor_divide(FractionObject *self,
                                            PyObject *other) {
   PyObject *divisor, *dividend, *gcd, *other_normalized, *result;
-
   gcd = _PyLong_GCD(self->numerator, other);
   if (!gcd) return NULL;
   dividend = PyNumber_FloorDivide(self->numerator, gcd);
@@ -530,7 +526,6 @@ static PyObject *FractionLong_floor_divide(FractionObject *self,
 static PyObject *LongFraction_floor_divide(PyObject *self,
                                            FractionObject *other) {
   PyObject *divisor, *dividend, *gcd, *self_normalized, *result;
-
   gcd = _PyLong_GCD(self, other->numerator);
   if (!gcd) return NULL;
   divisor = PyNumber_FloorDivide(other->numerator, gcd);
