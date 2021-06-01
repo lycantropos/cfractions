@@ -62,6 +62,6 @@ def test_reference_counter(first: Fraction, second: Fraction) -> None:
 
 
 @given(strategies.fractions, strategies.zero_numbers)
-def test_zero_dividend(first: Fraction, second: Number) -> None:
+def test_zero_divisor(first: Fraction, second: Number) -> None:
     with pytest.raises(ZeroDivisionError):
         first / second

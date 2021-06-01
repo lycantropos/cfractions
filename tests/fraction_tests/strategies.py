@@ -13,6 +13,7 @@ finite_floats = strategies.floats(allow_infinity=False,
 infinite_floats = strategies.sampled_from([math.inf, -math.inf])
 nans = strategies.just(math.nan)
 integers = numerators = strategies.integers()
+non_fraction_numbers = integers | floats
 finite_non_fraction_numbers = integers | finite_floats
 denominators = non_zero_integers = (strategies.integers(max_value=-1)
                                     | strategies.integers(min_value=1))
