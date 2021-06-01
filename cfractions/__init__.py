@@ -34,3 +34,17 @@ except ImportError:
 
         def __neg__(self) -> 'Fraction':
             return Fraction(-self.numerator, self.denominator)
+
+        @_overload
+        def __rmul__(self, other: _numbers.Rational) -> 'Fraction':
+            """Returns product of given rational number with the fraction."""
+
+        @_overload
+        def __rmul__(self, other: _Number) -> _Number:
+            """Returns product of given number with the fraction."""
+
+        def __rmul__(self, other):
+            result = super().__rmul__(other)
+            return (Fraction(result.numerator, result.denominator)
+                    if isinstance(result, _Fraction)
+                    else result)
