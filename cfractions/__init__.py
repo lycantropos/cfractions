@@ -16,7 +16,8 @@ except ImportError:
 
     class Fraction(_Fraction):
         def __abs__(self) -> 'Fraction':
-            return Fraction(abs(self.numerator), self.denominator)
+            result = super().__pos__()
+            return Fraction(result.numerator, result.denominator)
 
         @_overload
         def __add__(self, other: _numbers.Rational) -> 'Fraction':
@@ -47,7 +48,12 @@ except ImportError:
                     else result)
 
         def __neg__(self) -> 'Fraction':
-            return Fraction(-self.numerator, self.denominator)
+            result = super().__neg__()
+            return Fraction(result.numerator, result.denominator)
+
+        def __pos__(self) -> 'Fraction':
+            result = super().__pos__()
+            return Fraction(result.numerator, result.denominator)
 
         @_overload
         def __radd__(self, other: _numbers.Rational) -> 'Fraction':
