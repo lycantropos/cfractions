@@ -89,6 +89,25 @@ except ImportError:
                     else result)
 
         @_overload
+        def __rmod__(self, other: _numbers.Rational) -> 'Fraction':
+            """
+            Returns remainder of division of given rational number
+            by the fraction.
+            """
+
+        @_overload
+        def __rmod__(self, other: _Number) -> _Number:
+            """
+            Returns remainder of division of given number by the fraction.
+            """
+
+        def __rmod__(self, other):
+            result = super().__rmod__(other)
+            return (Fraction(result.numerator, result.denominator)
+                    if isinstance(result, _Fraction)
+                    else result)
+
+        @_overload
         def __rmul__(self, other: _numbers.Rational) -> 'Fraction':
             """Returns product of given rational number with the fraction."""
 
