@@ -55,6 +55,11 @@ def test_float_argument(first: Fraction, second: float) -> None:
                        result == second)
 
 
+@given(strategies.fractions, strategies.fractions)
+def test_commutation_with_negation(first: Fraction, second: Fraction) -> None:
+    assert -(first + second) == (-first) + (-second)
+
+
 @skip_reference_counter_test
 @given(strategies.fractions, strategies.fractions)
 def test_reference_counter(first: Fraction, second: Fraction) -> None:
