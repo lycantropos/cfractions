@@ -415,6 +415,19 @@ static int Fraction_bool(FractionObject *self) {
   return PyObject_IsTrue(self->numerator);
 }
 
+static PyObject *Fraction_ceil(FractionObject *self, PyObject *args) {
+  PyObject *result, *tmp;
+  tmp = PyNumber_Negative(self->numerator);
+  if (!tmp) return NULL;
+  result = PyNumber_FloorDivide(tmp, self->denominator);
+  Py_DECREF(tmp);
+  if (!result) return NULL;
+  tmp = result;
+  result = PyNumber_Negative(result);
+  Py_DECREF(tmp);
+  return result;
+}
+
 static PyObject *Fraction_floor(FractionObject *self, PyObject *args) {
   return PyNumber_FloorDivide(self->numerator, self->denominator);
 }
@@ -1063,6 +1076,7 @@ static PyMemberDef Fraction_members[] = {
 };
 
 static PyMethodDef Fraction_methods[] = {
+    {"__ceil__", (PyCFunction)Fraction_ceil, METH_NOARGS, NULL},
     {"__floor__", (PyCFunction)Fraction_floor, METH_NOARGS, NULL},
     {NULL, NULL} /* sentinel */
 };
