@@ -34,6 +34,25 @@ except ImportError:
                     else result)
 
         @_overload
+        def __floordiv__(self, other: _numbers.Rational) -> 'Fraction':
+            """
+            Returns quotient of division of the fraction
+            by given rational number.
+            """
+
+        @_overload
+        def __floordiv__(self, other: _Number) -> _Number:
+            """Returns quotient of division of the fraction by given number."""
+
+        def __floordiv__(self, other):
+            result = (float(self) % other
+                      if isinstance(other, float)
+                      else super().__floordiv__(other))
+            return (Fraction(result.numerator, result.denominator)
+                    if isinstance(result, _Fraction)
+                    else result)
+
+        @_overload
         def __mod__(self, other: _numbers.Rational) -> 'Fraction':
             """
             Returns remainder of division of the fraction
@@ -84,6 +103,25 @@ except ImportError:
 
         def __radd__(self, other):
             result = super().__radd__(other)
+            return (Fraction(result.numerator, result.denominator)
+                    if isinstance(result, _Fraction)
+                    else result)
+
+        @_overload
+        def __rfloordiv__(self, other: _numbers.Rational) -> 'Fraction':
+            """
+            Returns quotient of division of given rational number
+            by the fraction.
+            """
+
+        @_overload
+        def __rfloordiv__(self, other: _Number) -> _Number:
+            """Returns quotient of division of given number by the fraction."""
+
+        def __rfloordiv__(self, other):
+            result = (other % float(self)
+                      if isinstance(other, float)
+                      else super().__rfloordiv__(other))
             return (Fraction(result.numerator, result.denominator)
                     if isinstance(result, _Fraction)
                     else result)
