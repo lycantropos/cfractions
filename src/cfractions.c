@@ -873,6 +873,11 @@ static FractionObject *Fractions_true_divide(FractionObject *self,
   return result;
 }
 
+static FractionObject *Fraction_positive(FractionObject *self) {
+  Py_INCREF((PyObject *)self);
+  return self;
+}
+
 static FractionObject *FractionLong_true_divide(FractionObject *self,
                                                 PyObject *other) {
   if (PyObject_Not(other)) {
@@ -1056,6 +1061,7 @@ static PyNumberMethods Fraction_as_number = {
     .nb_floor_divide = (binaryfunc)Fraction_floor_divide,
     .nb_multiply = (binaryfunc)Fraction_multiply,
     .nb_negative = (unaryfunc)Fraction_negative,
+    .nb_positive = (unaryfunc)Fraction_positive,
     .nb_subtract = (binaryfunc)Fraction_subtract,
     .nb_true_divide = (binaryfunc)Fraction_true_divide,
 };
