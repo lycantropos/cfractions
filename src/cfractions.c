@@ -361,9 +361,9 @@ static FractionObject *Fractions_mul(FractionObject *self,
 
 static PyObject *FractionFloat_mul(FractionObject *self, PyObject *other) {
   PyObject *result, *tmp;
-  tmp = PyNumber_Multiply(other, self->numerator);
+  tmp = PyNumber_TrueDivide(self->numerator, self->denominator);
   if (!tmp) return NULL;
-  result = PyNumber_TrueDivide(tmp, self->denominator);
+  result = PyNumber_Multiply(tmp, other);
   Py_DECREF(tmp);
   return result;
 }
