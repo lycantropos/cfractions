@@ -3,7 +3,8 @@ import sys
 from hypothesis import given
 
 from cfractions import Fraction
-from tests.utils import skip_reference_counter_test
+from tests.utils import (equivalence,
+                         skip_reference_counter_test)
 from . import strategies
 
 
@@ -22,10 +23,17 @@ def test_idempotence(fraction: Fraction) -> None:
 
 
 @given(strategies.fractions)
-def test_non_negativeness(fraction: Fraction) -> None:
+def test_positive_definiteness(fraction: Fraction) -> None:
     result = abs(fraction)
 
-    assert result >= 0
+    assert equivalence(not result, not fraction)
+
+
+@given(strategies.fractions)
+def test_evenness(fraction: Fraction) -> None:
+    result = abs(fraction)
+
+    assert result == abs(-fraction)
 
 
 @given(strategies.fractions, strategies.fractions)
@@ -33,6 +41,13 @@ def test_multiplicativity(first: Fraction, second: Fraction) -> None:
     result = abs(first * second)
 
     assert result == abs(first) * abs(second)
+
+
+@given(strategies.fractions, strategies.fractions)
+def test_triangle_inequality(first: Fraction, second: Fraction) -> None:
+    result = abs(first + second)
+
+    assert result <= abs(first) + abs(second)
 
 
 @skip_reference_counter_test
