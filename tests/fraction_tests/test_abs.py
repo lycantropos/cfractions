@@ -59,4 +59,4 @@ def test_reference_counter(fraction: Fraction) -> None:
 
     fraction_refcount_after = sys.getrefcount(fraction)
     assert fraction_refcount_after == (fraction_refcount_before
-                                       + (fraction == result))
+                                       + (result == fraction))
