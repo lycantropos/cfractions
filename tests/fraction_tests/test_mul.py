@@ -5,6 +5,7 @@ from hypothesis import given
 
 from cfractions import Fraction
 from tests.utils import (equivalence,
+                         is_fraction_valid,
                          skip_reference_counter_test)
 from . import strategies
 
@@ -14,6 +15,7 @@ def test_basic(first: Fraction, second: Fraction) -> None:
     result = first * second
 
     assert isinstance(result, Fraction)
+    assert is_fraction_valid(result)
 
 
 @given(strategies.fractions, strategies.fractions)
@@ -47,13 +49,6 @@ def test_float_argument(first: Fraction, second: float) -> None:
     assert isinstance(result, float)
     assert equivalence(math.isnan(result),
                        math.isnan(second) or not first and math.isinf(second))
-
-
-@given(strategies.fractions, strategies.fractions)
-def test_normalization(first: Fraction, second: Fraction) -> None:
-    result = first * second
-
-    assert result == Fraction(result.numerator, result.denominator)
 
 
 @skip_reference_counter_test

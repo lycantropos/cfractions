@@ -1,6 +1,9 @@
+import math
 import platform
 
 import pytest
+
+from cfractions import Fraction
 
 
 def equivalence(left_statement: bool, right_statement: bool) -> bool:
@@ -9,6 +12,11 @@ def equivalence(left_statement: bool, right_statement: bool) -> bool:
 
 def implication(antecedent: bool, consequent: bool) -> bool:
     return not antecedent or consequent
+
+
+def is_fraction_valid(fraction: Fraction) -> bool:
+    return (fraction.denominator > 0
+            and math.gcd(fraction.numerator, fraction.denominator) == 1)
 
 
 skip_reference_counter_test = pytest.mark.skipif(
