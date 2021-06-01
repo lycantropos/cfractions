@@ -66,7 +66,9 @@ except ImportError:
             """
 
         def __mod__(self, other):
-            result = super().__mod__(other)
+            result = (float(self) % other
+                      if isinstance(other, float)
+                      else super().__mod__(other))
             return (Fraction(result.numerator, result.denominator)
                     if isinstance(result, _Fraction)
                     else result)
@@ -140,7 +142,9 @@ except ImportError:
             """
 
         def __rmod__(self, other):
-            result = super().__rmod__(other)
+            result = (other % float(self)
+                      if isinstance(other, float)
+                      else super().__rmod__(other))
             return (Fraction(result.numerator, result.denominator)
                     if isinstance(result, _Fraction)
                     else result)
