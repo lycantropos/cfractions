@@ -50,6 +50,13 @@ def test_triangle_inequality(first: Fraction, second: Fraction) -> None:
     assert result <= abs(first) + abs(second)
 
 
+@given(strategies.fractions)
+def test_normalization(fraction: Fraction) -> None:
+    result = abs(fraction)
+
+    assert result == Fraction(result.numerator, result.denominator)
+
+
 @skip_reference_counter_test
 @given(strategies.fractions)
 def test_reference_counter(fraction: Fraction) -> None:
