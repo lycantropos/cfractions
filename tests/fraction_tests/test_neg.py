@@ -36,6 +36,13 @@ def test_involution(fraction: Fraction) -> None:
     assert fraction == -result
 
 
+@given(strategies.fractions)
+def test_normalization(fraction: Fraction) -> None:
+    result = -fraction
+
+    assert result == Fraction(result.numerator, result.denominator)
+
+
 @skip_reference_counter_test
 @given(strategies.fractions)
 def test_reference_counter(fraction: Fraction) -> None:
