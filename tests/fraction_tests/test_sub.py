@@ -46,7 +46,7 @@ def test_float_argument(first: Fraction, second: float) -> None:
     result = first - second
 
     assert isinstance(result, float)
-    assert equivalence(math.isfinite(result), math.isfinite(second))
+    assert implication(math.isfinite(result), math.isfinite(second))
     assert equivalence(math.isnan(result), math.isnan(second))
     assert implication(math.isinf(second)
                        or not first and not math.isnan(second),
