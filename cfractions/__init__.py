@@ -102,7 +102,7 @@ except ImportError:
             """Returns division of given number by the fraction."""
 
         def __rtruediv__(self, other):
-            result = super().__truediv__(other)
+            result = super().__rtruediv__(other)
             return (Fraction(result.numerator, result.denominator)
                     if isinstance(result, _Fraction)
                     else result)
