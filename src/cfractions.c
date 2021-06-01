@@ -108,11 +108,12 @@ static PyObject *Fraction_richcompare(FractionObject *self, PyObject *other,
   Py_RETURN_NOTIMPLEMENTED;
 }
 
-static int normalize_Fraction_components(PyObject **result_numerator, PyObject **result_denominator) {
-  PyObject *denominator = *result_denominator, *gcd, *numerator = *result_numerator, *tmp;
+static int normalize_Fraction_components(PyObject **result_numerator,
+                                         PyObject **result_denominator) {
+  PyObject *denominator = *result_denominator, *gcd,
+           *numerator = *result_numerator, *tmp;
   gcd = _PyLong_GCD(numerator, denominator);
-  if (!gcd)
-    return -1;
+  if (!gcd) return -1;
   tmp = PyLong_FromLong(1);
   if (PyObject_RichCompareBool(gcd, tmp, Py_NE)) {
     Py_DECREF(tmp);
@@ -306,20 +307,22 @@ static PyObject *Fraction_float(FractionObject *self) {
 static FractionObject *Fractions_add(FractionObject *self,
                                      FractionObject *other) {
   FractionObject *result;
-  PyObject *denominator, *numerator, *first_numerator_component, *second_numerator_component;
-  first_numerator_component = PyNumber_Multiply(self->numerator, other->denominator);
-  if (!first_numerator_component)
-    return NULL;
-  second_numerator_component = PyNumber_Multiply(other->numerator, self->denominator);
+  PyObject *denominator, *numerator, *first_numerator_component,
+      *second_numerator_component;
+  first_numerator_component =
+      PyNumber_Multiply(self->numerator, other->denominator);
+  if (!first_numerator_component) return NULL;
+  second_numerator_component =
+      PyNumber_Multiply(other->numerator, self->denominator);
   if (!second_numerator_component) {
     Py_DECREF(first_numerator_component);
     return NULL;
   }
-  numerator = PyNumber_Add(first_numerator_component, second_numerator_component);
+  numerator =
+      PyNumber_Add(first_numerator_component, second_numerator_component);
   Py_DECREF(second_numerator_component);
   Py_DECREF(first_numerator_component);
-  if (!numerator)
-    return NULL;
+  if (!numerator) return NULL;
   denominator = PyNumber_Multiply(self->denominator, other->denominator);
   if (!denominator) {
     Py_DECREF(numerator);
@@ -354,13 +357,13 @@ static FractionObject *FractionLong_add(FractionObject *self, PyObject *other) {
   FractionObject *result;
   PyObject *result_denominator, *result_numerator, *tmp;
   tmp = PyNumber_Multiply(other, self->denominator);
-  if (!tmp)
-    return NULL;
+  if (!tmp) return NULL;
   result_numerator = PyNumber_Add(self->numerator, tmp);
   Py_DECREF(tmp);
   Py_INCREF(self->denominator);
   result_denominator = self->denominator;
-  if (normalize_Fraction_components(&result_numerator, &result_denominator) < 0) {
+  if (normalize_Fraction_components(&result_numerator, &result_denominator) <
+      0) {
     Py_DECREF(result_denominator);
     Py_DECREF(result_numerator);
   }
@@ -384,11 +387,10 @@ static PyObject *Fraction_add(PyObject *self, PyObject *other) {
       return (PyObject *)FractionLong_add((FractionObject *)self, other);
     else if (PyFloat_Check(other))
       return (PyObject *)FractionFloat_add((FractionObject *)self, other);
-  } else if (PyLong_Check(self)) {
+  } else if (PyLong_Check(self))
     return (PyObject *)FractionLong_add((FractionObject *)other, self);
-  } else if (PyFloat_Check(self)) {
+  else if (PyFloat_Check(self))
     return (PyObject *)FractionFloat_add((FractionObject *)other, self);
-  }
   Py_RETURN_NOTIMPLEMENTED;
 }
 
@@ -511,11 +513,10 @@ static PyObject *Fraction_mul(PyObject *self, PyObject *other) {
       return (PyObject *)FractionLong_mul((FractionObject *)self, other);
     else if (PyFloat_Check(other))
       return (PyObject *)FractionFloat_mul((FractionObject *)self, other);
-  } else if (PyLong_Check(self)) {
+  } else if (PyLong_Check(self))
     return (PyObject *)FractionLong_mul((FractionObject *)other, self);
-  } else if (PyFloat_Check(self)) {
+  else if (PyFloat_Check(self))
     return (PyObject *)FractionFloat_mul((FractionObject *)other, self);
-  }
   Py_RETURN_NOTIMPLEMENTED;
 }
 
