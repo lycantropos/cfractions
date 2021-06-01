@@ -67,7 +67,7 @@ def test_properties(numerator: int, denominator: int) -> None:
     assert result.denominator > 0
 
 
-@given(strategies.numerators, strategies.zeros)
+@given(strategies.numerators, strategies.zero_integers)
 def test_zero_denominator(numerator: int, denominator: int) -> None:
     with pytest.raises(ZeroDivisionError):
         Fraction(numerator, denominator)
