@@ -293,6 +293,10 @@ static FractionObject *Fraction_abs(FractionObject *self) {
   return result;
 }
 
+static PyObject *Fraction_float(FractionObject *self) {
+  return PyNumber_TrueDivide(self->numerator, self->denominator);
+}
+
 static FractionObject *Fractions_mul(FractionObject *self,
                                      FractionObject *other) {
   FractionObject *result;
@@ -361,7 +365,7 @@ static FractionObject *Fractions_mul(FractionObject *self,
 
 static PyObject *FractionFloat_mul(FractionObject *self, PyObject *other) {
   PyObject *result, *tmp;
-  tmp = PyNumber_TrueDivide(self->numerator, self->denominator);
+  tmp = Fraction_float(self);
   if (!tmp) return NULL;
   result = PyNumber_Multiply(tmp, other);
   Py_DECREF(tmp);
@@ -479,6 +483,7 @@ static Py_hash_t Fraction_hash(FractionObject *self) {
 static PyNumberMethods Fraction_as_number = {
     .nb_absolute = (unaryfunc)Fraction_abs,
     .nb_bool = (inquiry)Fraction_bool,
+    .nb_float = (unaryfunc)Fraction_float,
     .nb_multiply = (binaryfunc)Fraction_mul,
     .nb_negative = (unaryfunc)Fraction_negative,
 };
