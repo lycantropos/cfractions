@@ -415,7 +415,7 @@ static int Fraction_bool(FractionObject *self) {
   return PyObject_IsTrue(self->numerator);
 }
 
-static PyObject *Fraction_ceil(FractionObject *self, PyObject *args) {
+static PyObject *Fraction_ceil_impl(FractionObject *self) {
   PyObject *result, *tmp;
   tmp = PyNumber_Negative(self->numerator);
   if (!tmp) return NULL;
@@ -428,8 +428,16 @@ static PyObject *Fraction_ceil(FractionObject *self, PyObject *args) {
   return result;
 }
 
-static PyObject *Fraction_floor(FractionObject *self, PyObject *args) {
+static PyObject *Fraction_ceil(FractionObject *self, PyObject *args) {
+  return Fraction_ceil_impl(self);
+}
+
+static PyObject *Fraction_floor_impl(FractionObject *self) {
   return PyNumber_FloorDivide(self->numerator, self->denominator);
+}
+
+static PyObject *Fraction_floor(FractionObject *self, PyObject *args) {
+  return Fraction_floor_impl(self);
 }
 
 static PyObject *Fractions_floor_divide(FractionObject *self,
@@ -641,6 +649,17 @@ static FractionObject *Fractions_multiply(FractionObject *self,
   result->numerator = result_numerator;
   result->denominator = result_denominator;
   return result;
+}
+
+static PyObject *Fraction_trunc(FractionObject *self, PyObject *args) {
+  PyObject *tmp = PyBool_FromLong(0);
+  if (PyObject_RichCompareBool(self->numerator, tmp, Py_LT)) {
+    Py_DECREF(tmp);
+    return Fraction_ceil_impl(self);
+  } else {
+    Py_DECREF(tmp);
+    return Fraction_floor_impl(self);
+  }
 }
 
 static PyObject *FractionFloat_multiply(FractionObject *self, PyObject *other) {
@@ -1196,6 +1215,7 @@ static PyMemberDef Fraction_members[] = {
 static PyMethodDef Fraction_methods[] = {
     {"__ceil__", (PyCFunction)Fraction_ceil, METH_NOARGS, NULL},
     {"__floor__", (PyCFunction)Fraction_floor, METH_NOARGS, NULL},
+    {"__trunc__", (PyCFunction)Fraction_trunc, METH_NOARGS, NULL},
     {NULL, NULL} /* sentinel */
 };
 
