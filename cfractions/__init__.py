@@ -94,6 +94,20 @@ except ImportError:
                     else result)
 
         @_overload
+        def __rtruediv__(self, other: _numbers.Rational) -> 'Fraction':
+            """Returns division of given rational number by the fraction."""
+
+        @_overload
+        def __rtruediv__(self, other: _Number) -> _Number:
+            """Returns division of given number by the fraction."""
+
+        def __rtruediv__(self, other):
+            result = super().__truediv__(other)
+            return (Fraction(result.numerator, result.denominator)
+                    if isinstance(result, _Fraction)
+                    else result)
+
+        @_overload
         def __sub__(self, other: _numbers.Rational) -> 'Fraction':
             """
             Returns difference of the fraction with given rational number.
@@ -105,6 +119,20 @@ except ImportError:
 
         def __sub__(self, other):
             result = super().__sub__(other)
+            return (Fraction(result.numerator, result.denominator)
+                    if isinstance(result, _Fraction)
+                    else result)
+
+        @_overload
+        def __truediv__(self, other: _numbers.Rational) -> 'Fraction':
+            """Returns division of the fraction by given rational number."""
+
+        @_overload
+        def __truediv__(self, other: _Number) -> _Number:
+            """Returns division of the fraction by given number."""
+
+        def __truediv__(self, other):
+            result = super().__truediv__(other)
             return (Fraction(result.numerator, result.denominator)
                     if isinstance(result, _Fraction)
                     else result)
