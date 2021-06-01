@@ -10,6 +10,13 @@ typedef struct {
   PyObject *denominator;
 } FractionObject;
 
+static int is_negative_Fraction(FractionObject *self) {
+  PyObject *tmp = PyLong_FromLong(0);
+  int result = PyObject_RichCompareBool(self->numerator, tmp, Py_LT);
+  Py_DECREF(tmp);
+  return result;
+}
+
 static void Fraction_dealloc(FractionObject *self) {
   Py_XDECREF(self->numerator);
   Py_XDECREF(self->denominator);
@@ -306,14 +313,12 @@ static FractionObject *Fraction_negative(FractionObject *self) {
 
 static FractionObject *Fraction_abs(FractionObject *self) {
   FractionObject *result;
-  PyObject *tmp = PyLong_FromLong(0);
-  if (PyObject_RichCompareBool(self->numerator, tmp, Py_LT))
+  if (is_negative_Fraction(self))
     result = Fraction_negative(self);
   else {
     Py_INCREF((PyObject *)self);
     result = self;
   }
-  Py_DECREF(tmp);
   return result;
 }
 
@@ -647,14 +652,7 @@ static FractionObject *Fractions_multiply(FractionObject *self,
 }
 
 static PyObject *Fraction_trunc(FractionObject *self, PyObject *args) {
-  PyObject *tmp = PyBool_FromLong(0);
-  if (PyObject_RichCompareBool(self->numerator, tmp, Py_LT)) {
-    Py_DECREF(tmp);
-    return Fraction_ceil_impl(self);
-  } else {
-    Py_DECREF(tmp);
-    return Fraction_floor_impl(self);
-  }
+  return is_negative_Fraction(self) ? Fraction_ceil_impl(self) : Fraction_floor_impl(self);
 }
 
 static PyObject *FractionFloat_multiply(FractionObject *self, PyObject *other) {
@@ -670,7 +668,6 @@ static FractionObject *FractionLong_multiply(FractionObject *self,
                                              PyObject *other) {
   FractionObject *result;
   PyObject *gcd, *other_normalized, *result_denominator, *result_numerator;
-
   gcd = _PyLong_GCD(other, self->denominator);
   if (!gcd) return NULL;
   other_normalized = PyNumber_FloorDivide(other, gcd);
@@ -690,7 +687,6 @@ static FractionObject *FractionLong_multiply(FractionObject *self,
     Py_DECREF(result_denominator);
     return NULL;
   }
-
   result = PyObject_New(FractionObject, (PyTypeObject *)&FractionType);
   if (!result) {
     Py_DECREF(result_numerator);
@@ -1179,15 +1175,12 @@ static Py_hash_t Fraction_hash(FractionObject *self) {
     Py_DECREF(hash_modulus);
     if (!hash_) return -1;
   }
-  tmp = PyLong_FromLong(0);
-  if (PyObject_RichCompareBool(self->numerator, tmp, Py_LT)) {
-    Py_DECREF(tmp);
+  if (is_negative_Fraction(self)) {
     tmp = hash_;
     hash_ = PyNumber_Negative(hash_);
     Py_DECREF(tmp);
     if (!hash_) return -1;
-  } else
-    Py_DECREF(tmp);
+  }
   result = PyLong_AsSsize_t(hash_);
   Py_DECREF(hash_);
   if (PyErr_Occurred()) return -1;
