@@ -1083,15 +1083,15 @@ static PyMethodDef Fraction_methods[] = {
 
 static PyNumberMethods Fraction_as_number = {
     .nb_absolute = (unaryfunc)Fraction_abs,
-    .nb_add = (binaryfunc)Fraction_add,
+    .nb_add = Fraction_add,
     .nb_bool = (inquiry)Fraction_bool,
     .nb_float = (unaryfunc)Fraction_float,
-    .nb_floor_divide = (binaryfunc)Fraction_floor_divide,
-    .nb_multiply = (binaryfunc)Fraction_multiply,
+    .nb_floor_divide = Fraction_floor_divide,
+    .nb_multiply = Fraction_multiply,
     .nb_negative = (unaryfunc)Fraction_negative,
     .nb_positive = (unaryfunc)Fraction_positive,
-    .nb_subtract = (binaryfunc)Fraction_subtract,
-    .nb_true_divide = (binaryfunc)Fraction_true_divide,
+    .nb_subtract = Fraction_subtract,
+    .nb_true_divide = Fraction_true_divide,
 };
 
 static PyTypeObject FractionType = {
