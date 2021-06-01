@@ -1,4 +1,5 @@
 import sys
+from numbers import Complex
 
 from hypothesis import given
 
@@ -50,6 +51,26 @@ def test_triangle_inequality(first: Fraction, second: Fraction) -> None:
     result = abs(first + second)
 
     assert result <= abs(first) + abs(second)
+
+
+@given(strategies.fractions, strategies.finite_numbers)
+def test_mul_operand(first: Fraction, second: Complex) -> None:
+    assert abs(first * second) == abs(first) * abs(second)
+
+
+@given(strategies.finite_non_fraction_numbers, strategies.fractions)
+def test_rmul_operand(first: Complex, second: Fraction) -> None:
+    assert abs(first * second) == abs(first) * abs(second)
+
+
+@given(strategies.fractions, strategies.finite_non_zero_numbers)
+def test_truediv_operand(first: Fraction, second: Complex) -> None:
+    assert abs(first / second) == abs(first) / abs(second)
+
+
+@given(strategies.finite_non_fraction_numbers, strategies.non_zero_fractions)
+def test_rtruediv_operand(first: Complex, second: Fraction) -> None:
+    assert abs(first / second) == abs(first) / abs(second)
 
 
 @skip_reference_counter_test
