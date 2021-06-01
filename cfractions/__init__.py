@@ -76,3 +76,35 @@ except ImportError:
             return (Fraction(result.numerator, result.denominator)
                     if isinstance(result, _Fraction)
                     else result)
+
+        @_overload
+        def __rsub__(self, other: _numbers.Rational) -> 'Fraction':
+            """
+            Returns difference of given rational number with the fraction.
+            """
+
+        @_overload
+        def __rsub__(self, other: _Number) -> _Number:
+            """Returns difference of given number with the fraction."""
+
+        def __rsub__(self, other):
+            result = super().__rsub__(other)
+            return (Fraction(result.numerator, result.denominator)
+                    if isinstance(result, _Fraction)
+                    else result)
+
+        @_overload
+        def __sub__(self, other: _numbers.Rational) -> 'Fraction':
+            """
+            Returns difference of the fraction with given rational number.
+            """
+
+        @_overload
+        def __sub__(self, other: _Number) -> _Number:
+            """Returns difference of the fraction with given number."""
+
+        def __sub__(self, other):
+            result = super().__sub__(other)
+            return (Fraction(result.numerator, result.denominator)
+                    if isinstance(result, _Fraction)
+                    else result)
