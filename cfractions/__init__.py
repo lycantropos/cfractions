@@ -16,7 +16,7 @@ except ImportError:
 
     class Fraction(_Fraction):
         def __abs__(self) -> 'Fraction':
-            result = super().__pos__()
+            result = super().__abs__()
             return Fraction(result.numerator, result.denominator)
 
         @_overload
