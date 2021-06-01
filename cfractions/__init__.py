@@ -34,6 +34,25 @@ except ImportError:
                     else result)
 
         @_overload
+        def __mod__(self, other: _numbers.Rational) -> 'Fraction':
+            """
+            Returns remainder of division of the fraction
+            by given rational number.
+            """
+
+        @_overload
+        def __mod__(self, other: _Number) -> _Number:
+            """
+            Returns remainder of division of the fraction by given number.
+            """
+
+        def __mod__(self, other):
+            result = super().__mod__(other)
+            return (Fraction(result.numerator, result.denominator)
+                    if isinstance(result, _Fraction)
+                    else result)
+
+        @_overload
         def __mul__(self, other: _numbers.Rational) -> 'Fraction':
             """Returns product of the fraction with given rational number."""
 
