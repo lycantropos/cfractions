@@ -11,4 +11,3 @@ def test_alternatives(first: Number, second: Fraction) -> None:
     result = first - second
 
     assert result == first + (-second)
-    assert result == -((-first) + second)

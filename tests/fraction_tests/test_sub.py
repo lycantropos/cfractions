@@ -58,7 +58,6 @@ def test_alternatives(first: Fraction, second: Fraction) -> None:
     result = first - second
 
     assert result == first + (-second)
-    assert result == -((-first) + second)
 
 
 @skip_reference_counter_test
