@@ -39,9 +39,9 @@ def test_involution(fraction: Fraction) -> None:
 @skip_reference_counter_test
 @given(strategies.fractions)
 def test_reference_counter(fraction: Fraction) -> None:
-    value_refcount_before = sys.getrefcount(fraction)
+    fraction_refcount_before = sys.getrefcount(fraction)
 
     result = -fraction
 
-    value_refcount_after = sys.getrefcount(fraction)
-    assert value_refcount_after == value_refcount_before
+    fraction_refcount_after = sys.getrefcount(fraction)
+    assert fraction_refcount_after == fraction_refcount_before
