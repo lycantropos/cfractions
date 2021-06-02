@@ -19,6 +19,12 @@ def test_basic(numerator: int, denominator: int) -> None:
             or not denominator % result.denominator)
 
 
+def test_no_argument() -> None:
+    result = Fraction()
+
+    assert result == Fraction(0, 1)
+
+
 @given(strategies.finite_floats)
 def test_finite_float_argument(value: float) -> None:
     result = Fraction(value)
