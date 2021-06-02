@@ -15,7 +15,9 @@ def implication(antecedent: bool, consequent: bool) -> bool:
 
 
 def is_fraction_valid(fraction: Fraction) -> bool:
-    return (fraction.denominator > 0
+    return (isinstance(fraction.numerator, int)
+            and isinstance(fraction.denominator, int)
+            and fraction.denominator > 0
             and math.gcd(fraction.numerator, fraction.denominator) == 1
             and (bool(fraction.numerator) or fraction.denominator == 1))
 
