@@ -1,7 +1,9 @@
 import math
 import sys
-from numbers import Rational
+from numbers import (Complex,
+                     Rational)
 
+import pytest
 from hypothesis import given
 
 from cfractions import Fraction
@@ -118,3 +120,9 @@ def test_reference_counter(first: Fraction, second: Fraction) -> None:
     second_refcount_after = sys.getrefcount(second)
     assert first_refcount_after == first_refcount_before
     assert second_refcount_after == second_refcount_before
+
+
+@given(strategies.zero_fractions, strategies.finite_negative_numbers)
+def test_zero_base(first: Fraction, second: Complex) -> None:
+    with pytest.raises(ZeroDivisionError):
+        first ** second

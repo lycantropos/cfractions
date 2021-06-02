@@ -22,6 +22,10 @@ non_interned_numerators = non_interned_denominators = (
 small_integers = strategies.integers(1, 5)
 floats = strategies.floats(allow_infinity=True,
                            allow_nan=True)
+finite_negative_floats = strategies.floats(max_value=0,
+                                           exclude_max=True,
+                                           allow_infinity=False,
+                                           allow_nan=False)
 non_zero_floats = floats.filter(bool)
 zero_floats = strategies.sampled_from([-0., 0.])
 small_non_negative_integral_floats = small_integers.map(float)
@@ -51,3 +55,5 @@ finite_numbers = rationals | finite_floats
 finite_non_zero_numbers = (non_zero_integers | finite_non_zero_floats
                            | non_zero_fractions)
 non_integer_numbers = floats | fractions
+finite_negative_numbers = (negative_integers | finite_negative_floats
+                           | negative_fractions)
