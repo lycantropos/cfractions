@@ -452,7 +452,8 @@ static PyObject *Fraction_ceil_impl(FractionObject *self) {
   return result;
 }
 
-static PyObject *Fraction_ceil(FractionObject *self, PyObject *args) {
+static PyObject *Fraction_ceil(FractionObject *self,
+                               PyObject *Py_UNUSED(args)) {
   return Fraction_ceil_impl(self);
 }
 
@@ -460,7 +461,8 @@ static PyObject *Fraction_floor_impl(FractionObject *self) {
   return PyNumber_FloorDivide(self->numerator, self->denominator);
 }
 
-static PyObject *Fraction_floor(FractionObject *self, PyObject *args) {
+static PyObject *Fraction_floor(FractionObject *self,
+                                PyObject *Py_UNUSED(args)) {
   return Fraction_floor_impl(self);
 }
 
