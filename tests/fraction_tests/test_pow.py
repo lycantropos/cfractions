@@ -37,11 +37,20 @@ def test_neutral_element(first: Fraction, second: Fraction) -> None:
 
 @given(strategies.fractions, strategies.small_non_negative_integral_fractions,
        strategies.small_non_negative_integral_fractions)
-def test_repeated(base: Fraction,
-                  first_exponent: Fraction,
-                  second_exponent: Fraction) -> None:
-    assert ((base ** first_exponent) ** second_exponent
-            == base ** (first_exponent * second_exponent))
+def test_exponents_add(base: Fraction,
+                       first_exponent: Fraction,
+                       second_exponent: Fraction) -> None:
+    assert (base ** (first_exponent + second_exponent)
+            == (base ** first_exponent) * (base ** second_exponent))
+
+
+@given(strategies.fractions, strategies.small_non_negative_integral_fractions,
+       strategies.small_non_negative_integral_fractions)
+def test_exponents_mul(base: Fraction,
+                       first_exponent: Fraction,
+                       second_exponent: Fraction) -> None:
+    assert (base ** (first_exponent * second_exponent)
+            == (base ** first_exponent) ** second_exponent)
 
 
 @given(strategies.fractions, strategies.small_integers)
