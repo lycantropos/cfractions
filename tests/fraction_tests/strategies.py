@@ -46,3 +46,4 @@ rationals = integers | fractions
 finite_numbers = rationals | finite_floats
 finite_non_zero_numbers = (non_zero_integers | finite_non_zero_floats
                            | non_zero_fractions)
+non_integer_numbers = floats | fractions

@@ -1,4 +1,5 @@
 import sys
+from numbers import Complex
 
 import pytest
 from hypothesis import given
@@ -83,3 +84,15 @@ def test_infinite_float_argument(value: float) -> None:
 def test_nan_float_argument(value: float) -> None:
     with pytest.raises(ValueError):
         Fraction(value)
+
+
+@given(strategies.numerators, strategies.non_integer_numbers)
+def test_invalid_denominators(numerator: int, denominator: Complex) -> None:
+    with pytest.raises(TypeError):
+        Fraction(numerator, denominator)
+
+
+@given(strategies.non_integer_numbers, strategies.denominators)
+def test_invalid_numerators(numerator: Complex, denominator: int) -> None:
+    with pytest.raises(TypeError):
+        Fraction(numerator, denominator)
