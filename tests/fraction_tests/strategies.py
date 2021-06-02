@@ -5,6 +5,8 @@ from hypothesis import strategies
 from cfractions import Fraction
 
 zero_integers = strategies.just(0)
+small_integers = strategies.integers(1, 5)
+precisions = strategies.none() | strategies.integers(-10, 10)
 integers = numerators = strategies.integers()
 integers_64 = strategies.integers(min_value=-2 ** 63, max_value=2 ** 63 - 1)
 negative_integers = strategies.integers(max_value=-1)
@@ -19,7 +21,6 @@ def is_not_interned(value: int) -> bool:
 non_interned_numerators = non_interned_denominators = (
     (strategies.integers(max_value=-256)
      | strategies.integers(min_value=257)).filter(is_not_interned))
-small_integers = strategies.integers(1, 5)
 floats = strategies.floats(allow_infinity=True,
                            allow_nan=True)
 finite_negative_floats = strategies.floats(max_value=0,
