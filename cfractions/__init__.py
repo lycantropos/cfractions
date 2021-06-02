@@ -188,6 +188,13 @@ except ImportError:
                     if isinstance(result, _Fraction)
                     else result)
 
+        def __round__(self, precision: _Optional[int] = None
+                      ) -> _Union[int, 'Fraction']:
+            result = super().__round__(precision)
+            return (Fraction(result.numerator, result.denominator)
+                    if isinstance(result, _Fraction)
+                    else result)
+
         @_overload
         def __rsub__(self, other: _numbers.Rational) -> 'Fraction':
             """
