@@ -1,6 +1,7 @@
 from numbers import (Complex,
                      Rational)
 
+import pytest
 from hypothesis import given
 
 from cfractions import Fraction
@@ -24,3 +25,9 @@ def test_alternatives(first: Fraction, second: Complex) -> None:
     result = divmod(first, second)
 
     assert result == (first // second, first % second)
+
+
+@given(strategies.fractions, strategies.zero_numbers)
+def test_zero_divisor(first: Fraction, second: Complex) -> None:
+    with pytest.raises(ZeroDivisionError):
+        divmod(first, second)
