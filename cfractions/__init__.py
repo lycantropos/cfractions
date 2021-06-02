@@ -9,6 +9,7 @@ except ImportError:
     from fractions import Fraction as _Fraction
     from typing import (Optional as _Optional,
                         TypeVar as _TypeVar,
+                        Union as _Union,
                         overload as _overload)
 
     _Number = _TypeVar('_Number',
@@ -16,6 +17,18 @@ except ImportError:
 
 
     class Fraction(_Fraction):
+        def __new__(cls,
+                    numerator: _Union[int, float] = 0,
+                    denominator: _Optional[int] = None,
+                    **kwargs) -> 'Fraction':
+            if denominator is not None:
+                if not isinstance(denominator, int):
+                    raise TypeError('Denominator should be an integer.')
+                if not isinstance(numerator, int):
+                    raise TypeError('Numerator should be an integer '
+                                    'when denominator is specified.')
+            return super().__new__(cls, numerator, denominator, **kwargs)
+
         def __abs__(self) -> 'Fraction':
             result = super().__abs__()
             return Fraction(result.numerator, result.denominator)
