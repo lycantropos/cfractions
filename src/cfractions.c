@@ -293,7 +293,7 @@ static int Fraction_init(FractionObject *self, PyObject *args) {
       self->denominator = denominator;
       Py_XDECREF(tmp);
     } else if (PyObject_TypeCheck(numerator, &FractionType)) {
-      FractionObject* fraction_numerator = (FractionObject *)numerator;
+      FractionObject *fraction_numerator = (FractionObject *)numerator;
       tmp = self->denominator;
       Py_INCREF(fraction_numerator->denominator);
       self->denominator = fraction_numerator->denominator;
@@ -838,11 +838,11 @@ static PyObject *FractionObject_remainder(FractionObject *self,
 }
 
 static PyObject *Fraction_remainder(PyObject *self, PyObject *other) {
-  if (PyObject_TypeCheck(self, &FractionType)) {
+  if (PyObject_TypeCheck(self, &FractionType))
     return FractionObject_remainder((FractionObject *)self, other);
-  } else if (PyLong_Check(self)) {
+  else if (PyLong_Check(self))
     return (PyObject *)LongFraction_remainder(self, (FractionObject *)other);
-  } else if (PyFloat_Check(self)) {
+  else if (PyFloat_Check(self)) {
     PyObject *result, *tmp;
     tmp = Fraction_float((FractionObject *)other);
     result = PyNumber_Remainder(self, tmp);
