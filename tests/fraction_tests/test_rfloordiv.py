@@ -14,7 +14,7 @@ def test_connection_with_truediv(first: int, second: Fraction) -> None:
     assert result == Fraction(first) // second
 
 
-@given(strategies.non_fraction_numbers, strategies.zero_fractions)
+@given(strategies.non_fractions, strategies.zero_fractions)
 def test_zero_divisor(first: Complex, second: Fraction) -> None:
     with pytest.raises(ZeroDivisionError):
         first // second

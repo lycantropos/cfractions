@@ -44,7 +44,7 @@ def test_add_operand(first: Fraction, second: Complex) -> None:
     assert -(first + second) == (-first) + (-second)
 
 
-@given(strategies.finite_non_fraction_numbers, strategies.fractions)
+@given(strategies.finite_non_fractions, strategies.fractions)
 def test_radd_operand(first: Complex, second: Fraction) -> None:
     assert -(first + second) == (-first) + (-second)
 
@@ -54,7 +54,7 @@ def test_sub_operand(first: Fraction, second: Complex) -> None:
     assert -(first - second) == (-first) - (-second)
 
 
-@given(strategies.finite_non_fraction_numbers, strategies.fractions)
+@given(strategies.finite_non_fractions, strategies.fractions)
 def test_rsub_operand(first: Complex, second: Fraction) -> None:
     assert -(first - second) == (-first) - (-second)
 
@@ -64,7 +64,7 @@ def test_mul_operand(first: Fraction, second: Complex) -> None:
     assert -(first * second) == (-first) * second == first * (-second)
 
 
-@given(strategies.finite_non_fraction_numbers, strategies.fractions)
+@given(strategies.finite_non_fractions, strategies.fractions)
 def test_rmul_operand(first: Complex, second: Fraction) -> None:
     assert -(first * second) == (-first) * second == first * (-second)
 
@@ -74,7 +74,7 @@ def test_truediv_operand(first: Fraction, second: Complex) -> None:
     assert -(first / second) == (-first) / second == first / (-second)
 
 
-@given(strategies.finite_non_fraction_numbers, strategies.non_zero_fractions)
+@given(strategies.finite_non_fractions, strategies.non_zero_fractions)
 def test_rtruediv_operand(first: Complex, second: Fraction) -> None:
     assert -(first / second) == (-first) / second == first / (-second)
 
