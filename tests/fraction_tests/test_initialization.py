@@ -28,6 +28,13 @@ def test_finite_float_argument(value: float) -> None:
     assert result.denominator == denominator
 
 
+@given(strategies.fractions)
+def test_fraction_argument(fraction: Fraction) -> None:
+    result = Fraction(fraction)
+
+    assert result == fraction
+
+
 @skip_reference_counter_test
 @given(strategies.non_interned_numerators,
        strategies.non_interned_denominators)
