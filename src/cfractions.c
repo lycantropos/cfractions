@@ -292,6 +292,14 @@ static int Fraction_init(FractionObject *self, PyObject *args) {
       tmp = self->denominator;
       self->denominator = denominator;
       Py_XDECREF(tmp);
+    } else if (PyObject_TypeCheck(numerator, &FractionType)) {
+      FractionObject* fraction_numerator = (FractionObject *)numerator;
+      tmp = self->denominator;
+      Py_INCREF(fraction_numerator->denominator);
+      self->denominator = fraction_numerator->denominator;
+      Py_XDECREF(tmp);
+      Py_INCREF(fraction_numerator->numerator);
+      numerator = fraction_numerator->numerator;
     } else {
       PyErr_SetString(PyExc_TypeError,
                       "Numerator should be either an integer "
