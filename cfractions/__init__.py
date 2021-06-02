@@ -7,7 +7,8 @@ try:
 except ImportError:
     import numbers as _numbers
     from fractions import Fraction as _Fraction
-    from typing import (TypeVar as _TypeVar,
+    from typing import (Optional as _Optional,
+                        TypeVar as _TypeVar,
                         overload as _overload)
 
     _Number = _TypeVar('_Number',
@@ -94,6 +95,17 @@ except ImportError:
         def __pos__(self) -> 'Fraction':
             result = super().__pos__()
             return Fraction(result.numerator, result.denominator)
+
+        def __pow__(self,
+                    exponent: _numbers.Complex,
+                    modulo: _Optional[_numbers.Complex] = None
+                    ) -> _numbers.Complex:
+            result = super().__pow__(exponent)
+            if isinstance(result, _numbers.Complex) and modulo is not None:
+                result %= modulo
+            return (Fraction(result.numerator, result.denominator)
+                    if isinstance(result, _Fraction)
+                    else result)
 
         @_overload
         def __radd__(self, other: _numbers.Rational) -> 'Fraction':
