@@ -10,6 +10,7 @@ except ImportError:
     from typing import (Any as _Any,
                         Dict as _Dict,
                         Optional as _Optional,
+                        Tuple as _Tuple,
                         TypeVar as _TypeVar,
                         Union as _Union,
                         overload as _overload)
@@ -19,6 +20,9 @@ except ImportError:
 
 
     class Fraction(_Fraction):
+        def as_integer_ratio(self) -> _Tuple[int, int]:
+            return self.numerator, self.denominator
+
         def __new__(cls,
                     numerator: _Union[int, float] = 0,
                     denominator: _Optional[int] = None,
