@@ -46,8 +46,8 @@ static void Fraction_dealloc(FractionObject *self) {
   Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
-static PyObject *Fraction_new(PyTypeObject *cls, PyObject *args,
-                              PyObject *kwargs) {
+static PyObject *Fraction_new(PyTypeObject *cls, PyObject *Py_UNUSED(args),
+                              PyObject *Py_UNUSED(kwargs)) {
   FractionObject *self;
   self = (FractionObject *)(cls->tp_alloc(cls, 0));
   if (self) {
@@ -485,9 +485,10 @@ static PyObject *Fraction_copy(FractionObject *self,
         (PyObject *)Py_TYPE(self), self->numerator, self->denominator, NULL);
 }
 
-static PyObject* Fraction_reduce(FractionObject *self,
+static PyObject *Fraction_reduce(FractionObject *self,
                                  PyObject *Py_UNUSED(args)) {
-  return Py_BuildValue("O(OO)", Py_TYPE(self), self->numerator, self->denominator);
+  return Py_BuildValue("O(OO)", Py_TYPE(self), self->numerator,
+                       self->denominator);
 }
 
 static PyObject *Fraction_floor_impl(FractionObject *self) {
