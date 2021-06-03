@@ -37,6 +37,33 @@ Install
 python setup.py install
 ```
 
+Usage
+-----
+```python
+>>> from cfractions import Fraction
+>>> Fraction()
+Fraction(0, 1)
+>>> Fraction(1, 2)
+Fraction(1, 2)
+>>> Fraction(50, 100)
+Fraction(1, 2)
+>>> Fraction(0.5)
+Fraction(1, 2)
+>>> Fraction(1, 3) + Fraction(1, 6)
+Fraction(1, 2)
+>>> Fraction(3, 2) - 1
+Fraction(1, 2)
+>>> 1 - Fraction(1, 2)
+Fraction(1, 2)
+>>> Fraction(1, 3) * Fraction(3, 2)
+Fraction(1, 2)
+>>> Fraction(1, 6) * 3
+Fraction(1, 2)
+>>> str(Fraction(1, 2))
+'1/2'
+
+```
+
 Development
 -----------
 
