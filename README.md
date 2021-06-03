@@ -6,6 +6,20 @@ cfractions
 [![](https://img.shields.io/github/license/lycantropos/cfractions.svg)](https://github.com/lycantropos/cfractions/blob/master/LICENSE "License")
 [![](https://badge.fury.io/py/cfractions.svg)](https://badge.fury.io/py/cfractions "PyPI")
 
+Summary
+-------
+
+`cfractions` is a drop-in replacement for [`fractions` module](https://docs.python.org/library/fractions.html)
+written using [`Python C API`](https://docs.python.org/c-api/index.html).
+
+Main features are:
+- speed & memory efficiency compared to pure-`Python` counterpart,
+- full spectre of arithmetic & comparison operations,
+- `Python3.5+` support,
+- `PyPy` support (by falling back to `fractions.Fraction` proxy).
+
+---
+
 In what follows `python` is an alias for `python3.5` or `pypy3.5`
 or any later version (`python3.6`, `pypy3.6` and so on).
 
