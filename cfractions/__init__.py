@@ -1,6 +1,6 @@
 """Python C API alternative to `fractions` module."""
 
-__version__ = '1.0.0-alpha'
+__version__ = '1.0.0'
 
 try:
     from _cfractions import Fraction
