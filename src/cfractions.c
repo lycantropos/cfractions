@@ -451,6 +451,11 @@ static PyObject *Fraction_add(PyObject *self, PyObject *other) {
   Py_RETURN_NOTIMPLEMENTED;
 }
 
+static PyObject *Fraction_as_integer_ratio(FractionObject *self,
+                                           PyObject *Py_UNUSED(args)) {
+  return PyTuple_Pack(2, self->numerator, self->denominator);
+}
+
 static int Fraction_bool(FractionObject *self) {
   return PyObject_IsTrue(self->numerator);
 }
@@ -1733,6 +1738,8 @@ static PyMemberDef Fraction_members[] = {
 };
 
 static PyMethodDef Fraction_methods[] = {
+    {"as_integer_ratio", (PyCFunction)Fraction_as_integer_ratio, METH_NOARGS,
+     NULL},
     {"__ceil__", (PyCFunction)Fraction_ceil, METH_NOARGS, NULL},
     {"__copy__", (PyCFunction)Fraction_copy, METH_NOARGS, NULL},
     {"__deepcopy__", (PyCFunction)Fraction_copy, METH_VARARGS, NULL},
