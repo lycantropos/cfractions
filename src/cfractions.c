@@ -349,14 +349,12 @@ static FractionObject *Fraction_negative(FractionObject *self) {
 }
 
 static FractionObject *Fraction_abs(FractionObject *self) {
-  FractionObject *result;
   if (is_negative_Fraction(self))
-    result = Fraction_negative(self);
+    return Fraction_negative(self);
   else {
     Py_INCREF((PyObject *)self);
-    result = self;
+    return self;
   }
-  return result;
 }
 
 static PyObject *Fraction_float(FractionObject *self) {
