@@ -11,8 +11,9 @@ from . import strategies
 def test_basic(fraction: Fraction) -> None:
     result = str(fraction)
 
-    assert str(fraction.numerator) in result
-    assert str(fraction.denominator) in result
+    assert (not fraction and result == str(fraction.numerator)
+            or (str(fraction.numerator) in result
+                and str(fraction.denominator) in result))
 
 
 @given(strategies.fractions)
