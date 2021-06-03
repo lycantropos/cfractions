@@ -1345,6 +1345,189 @@ static PyObject *Fraction_subtract(PyObject *self, PyObject *other) {
   Py_RETURN_NOTIMPLEMENTED;
 }
 
+static FractionObject *Fraction_limit_denominator_impl(
+    FractionObject *self, PyObject *max_denominator) {
+  PyObject *tmp;
+  tmp = PyLong_FromLong(1);
+  int comparison_signal = PyObject_RichCompareBool(max_denominator, tmp, Py_LT);
+  Py_DECREF(tmp);
+  if (comparison_signal < 0)
+    return NULL;
+  else if (comparison_signal) {
+    PyErr_SetString(PyExc_ValueError,
+                    "`max_denominator` should not be less than 1.");
+    return NULL;
+  }
+  comparison_signal =
+      PyObject_RichCompareBool(self->denominator, max_denominator, Py_LE);
+  if (comparison_signal < 0)
+    return NULL;
+  else if (comparison_signal) {
+    Py_INCREF(self);
+    return self;
+  }
+  PyObject *denominator = self->denominator, *numerator = self->numerator;
+  Py_INCREF(denominator);
+  Py_INCREF(numerator);
+  PyObject *first_bound_numerator = PyLong_FromLong(0),
+           *first_bound_denominator = PyLong_FromLong(1),
+           *second_bound_numerator = PyLong_FromLong(1),
+           *second_bound_denominator = PyLong_FromLong(0);
+  while (1) {
+    PyObject *a, *candidate_denominator, *tmp, *other_tmp;
+    a = PyNumber_FloorDivide(numerator, denominator);
+    if (!a) goto error;
+    tmp = PyNumber_Multiply(a, second_bound_denominator);
+    if (!tmp) {
+      Py_DECREF(a);
+      goto error;
+    }
+    candidate_denominator = PyNumber_Add(first_bound_denominator, tmp);
+    Py_DECREF(tmp);
+    if (!candidate_denominator) {
+      Py_DECREF(a);
+      goto error;
+    }
+    comparison_signal =
+        PyObject_RichCompareBool(candidate_denominator, max_denominator, Py_GT);
+    if (comparison_signal < 0) {
+      Py_DECREF(candidate_denominator);
+      Py_DECREF(a);
+      goto error;
+    } else if (comparison_signal) {
+      Py_DECREF(candidate_denominator);
+      Py_DECREF(a);
+      break;
+    }
+    tmp = PyNumber_Multiply(a, denominator);
+    if (!tmp) {
+      Py_DECREF(candidate_denominator);
+      Py_DECREF(a);
+      goto error;
+    }
+    other_tmp = PyNumber_Subtract(numerator, tmp);
+    Py_DECREF(tmp);
+    if (!other_tmp) {
+      Py_DECREF(candidate_denominator);
+      Py_DECREF(a);
+      goto error;
+    }
+    numerator = denominator;
+    denominator = other_tmp;
+    Py_DECREF(first_bound_denominator);
+    first_bound_denominator = second_bound_denominator;
+    second_bound_denominator = candidate_denominator;
+    tmp = PyNumber_Multiply(a, second_bound_numerator);
+    Py_DECREF(a);
+    if (!tmp) goto error;
+    other_tmp = PyNumber_Add(first_bound_numerator, tmp);
+    Py_DECREF(tmp);
+    if (!other_tmp) goto error;
+    first_bound_numerator = second_bound_numerator;
+    second_bound_numerator = other_tmp;
+  }
+  PyObject *other_tmp, *scale;
+  tmp = PyNumber_Subtract(max_denominator, first_bound_denominator);
+  scale = PyNumber_FloorDivide(tmp, second_bound_denominator);
+  Py_DECREF(tmp);
+  tmp = PyNumber_Multiply(scale, second_bound_numerator);
+  other_tmp = PyNumber_Add(first_bound_numerator, tmp);
+  Py_DECREF(tmp);
+  if (!other_tmp) {
+    Py_DECREF(scale);
+    goto error;
+  }
+  Py_DECREF(first_bound_numerator);
+  first_bound_numerator = other_tmp;
+  tmp = PyNumber_Multiply(scale, second_bound_denominator);
+  other_tmp = PyNumber_Add(first_bound_denominator, tmp);
+  Py_DECREF(tmp);
+  if (!other_tmp) {
+    Py_DECREF(scale);
+    goto error;
+  }
+  Py_DECREF(first_bound_denominator);
+  first_bound_denominator = other_tmp;
+  Py_DECREF(numerator);
+  Py_DECREF(denominator);
+  FractionObject *first_bound = PyObject_New(FractionObject, &FractionType);
+  if (!first_bound) goto error;
+  first_bound->numerator = first_bound_numerator;
+  first_bound->denominator = first_bound_denominator;
+  FractionObject *second_bound = PyObject_New(FractionObject, &FractionType);
+  if (!second_bound) {
+    Py_DECREF(first_bound);
+    return NULL;
+  }
+  second_bound->numerator = second_bound_numerator;
+  second_bound->denominator = second_bound_denominator;
+  FractionObject *difference = Fractions_subtract(first_bound, self);
+  if (!difference) {
+    Py_DECREF(first_bound);
+    Py_DECREF(second_bound);
+    return NULL;
+  }
+  FractionObject *first_bound_distance_to_self = Fraction_abs(difference);
+  Py_DECREF(difference);
+  if (!first_bound_distance_to_self) {
+    Py_DECREF(first_bound);
+    Py_DECREF(second_bound);
+    return NULL;
+  }
+  difference = Fractions_subtract(second_bound, self);
+  if (!difference) {
+    Py_DECREF(first_bound_distance_to_self);
+    Py_DECREF(first_bound);
+    Py_DECREF(second_bound);
+    return NULL;
+  }
+  FractionObject *second_bound_distance_to_self = Fraction_abs(difference);
+  Py_DECREF(difference);
+  if (!second_bound_distance_to_self) {
+    Py_DECREF(first_bound_distance_to_self);
+    Py_DECREF(first_bound);
+    Py_DECREF(second_bound);
+    return NULL;
+  }
+  PyObject *comparison_result = Fractions_richcompare(
+      second_bound_distance_to_self, first_bound_distance_to_self, Py_LE);
+  Py_DECREF(first_bound_distance_to_self);
+  Py_DECREF(second_bound_distance_to_self);
+  if (!comparison_result) {
+    Py_DECREF(first_bound);
+    Py_DECREF(second_bound);
+    return NULL;
+  } else if (comparison_result == Py_True) {
+    Py_DECREF(first_bound);
+    return second_bound;
+  } else {
+    Py_DECREF(second_bound);
+    return first_bound;
+  }
+error:
+  Py_DECREF(first_bound_numerator);
+  Py_DECREF(second_bound_numerator);
+  Py_DECREF(first_bound_denominator);
+  Py_DECREF(second_bound_denominator);
+  Py_DECREF(numerator);
+  Py_DECREF(denominator);
+  return NULL;
+}
+
+static PyObject *Fraction_limit_denominator(FractionObject *self,
+                                            PyObject *args) {
+  PyObject *max_denominator = NULL;
+  if (!PyArg_ParseTuple(args, "|O", &max_denominator)) return NULL;
+  if (!max_denominator) {
+    max_denominator = PyLong_FromLong(1000000);
+    PyObject *result =
+        (PyObject *)Fraction_limit_denominator_impl(self, max_denominator);
+    Py_DECREF(max_denominator);
+    return result;
+  } else
+    return (PyObject *)Fraction_limit_denominator_impl(self, max_denominator);
+}
+
 static FractionObject *Fractions_true_divide(FractionObject *self,
                                              FractionObject *other) {
   if (!Fraction_bool(other)) {
@@ -1741,6 +1924,8 @@ static PyMemberDef Fraction_members[] = {
 
 static PyMethodDef Fraction_methods[] = {
     {"as_integer_ratio", (PyCFunction)Fraction_as_integer_ratio, METH_NOARGS,
+     NULL},
+    {"limit_denominator", (PyCFunction)Fraction_limit_denominator, METH_VARARGS,
      NULL},
     {"__ceil__", (PyCFunction)Fraction_ceil, METH_NOARGS, NULL},
     {"__copy__", (PyCFunction)Fraction_copy, METH_NOARGS, NULL},

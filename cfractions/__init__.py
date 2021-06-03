@@ -20,6 +20,13 @@ except ImportError:
 
 
     class Fraction(_Fraction):
+        def limit_denominator(self, max_denominator: int = 10 ** 6
+                              ) -> 'Fraction':
+            result = super().limit_denominator(max_denominator)
+            return (Fraction(result.numerator, result.denominator)
+                    if isinstance(result, _Fraction)
+                    else result)
+
         def as_integer_ratio(self) -> _Tuple[int, int]:
             return self.numerator, self.denominator
 
