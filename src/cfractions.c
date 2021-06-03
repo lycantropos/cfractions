@@ -1914,6 +1914,11 @@ static PyObject *Fraction_repr(FractionObject *self) {
                               self->denominator);
 }
 
+static PyObject *Fraction_str(FractionObject *self) {
+  return PyUnicode_FromFormat("%S/%S", self->numerator,
+                              self->denominator);
+}
+
 static PyMemberDef Fraction_members[] = {
     {"numerator", T_OBJECT_EX, offsetof(FractionObject, numerator), READONLY,
      "Numerator of the fraction."},
@@ -1968,6 +1973,7 @@ static PyTypeObject FractionType = {
     .tp_richcompare = (richcmpfunc)Fraction_richcompare,
     .tp_as_number = &Fraction_as_number,
     .tp_repr = (reprfunc)Fraction_repr,
+    .tp_str = (reprfunc)Fraction_str,
 };
 
 static PyModuleDef _cfractions_module = {
