@@ -50,17 +50,14 @@ except ImportError:
                     else result)
 
         def __copy__(self) -> 'Fraction':
-            result = super().__copy__()
-            return (Fraction(result.numerator, result.denominator)
-                    if isinstance(result, _Fraction)
-                    else result)
+            cls = type(self)
+            return (self
+                    if cls is Fraction
+                    else cls(self._numerator, self._denominator))
 
         def __deepcopy__(self, memo: _Optional[_Dict[int, _Any]] = None
                          ) -> 'Fraction':
-            result = super().__deepcopy__(memo)
-            return (Fraction(result.numerator, result.denominator)
-                    if isinstance(result, _Fraction)
-                    else result)
+            return self.__copy__()
 
         @_overload
         def __floordiv__(self, other: _numbers.Rational) -> 'Fraction':
