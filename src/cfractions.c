@@ -24,6 +24,8 @@ static PyObject *round_Object(PyObject *self) {
   return result;
 }
 
+static PyObject *Rational = NULL;
+
 typedef struct {
   PyObject_HEAD PyObject *numerator;
   PyObject *denominator;
@@ -124,6 +126,22 @@ static int normalize_Fraction_components_signs(PyObject **result_numerator,
   return 0;
 }
 
+static int parse_Fraction_components_from_rational(
+    PyObject *rational, PyObject **result_numerator,
+    PyObject **result_denominator) {
+  PyObject *numerator, *denominator;
+  numerator = PyObject_GetAttrString(rational, "numerator");
+  if (!numerator) return -1;
+  denominator = PyObject_GetAttrString(rational, "denominator");
+  if (!denominator) {
+    Py_DECREF(numerator);
+    return -1;
+  }
+  *result_numerator = numerator;
+  *result_denominator = denominator;
+  return 0;
+}
+
 static int parse_Fraction_components_from_double(
     double value, PyObject **result_numerator, PyObject **result_denominator) {
   int exponent;
@@ -186,16 +204,14 @@ static int Fraction_init(FractionObject *self, PyObject *args) {
   if (!PyArg_ParseTuple(args, "|OO", &numerator, &denominator)) return -1;
   if (denominator) {
     if (!PyLong_Check(numerator)) {
-      PyErr_SetString(PyExc_TypeError,
-                      "Numerator should be an integer "
-                      "when denominator is specified.");
+      PyErr_SetString(PyExc_TypeError, "Numerator should be an integer.");
       return -1;
     }
     if (!PyLong_Check(denominator)) {
       PyErr_SetString(PyExc_TypeError, "Denominator should be an integer.");
       return -1;
     }
-    if (!PyObject_IsTrue(denominator)) {
+    if (PyObject_Not(denominator)) {
       PyErr_SetString(PyExc_ZeroDivisionError,
                       "Denominator should be non-zero.");
       return -1;
@@ -246,11 +262,17 @@ static int Fraction_init(FractionObject *self, PyObject *args) {
       Py_DECREF(tmp);
       Py_INCREF(fraction_numerator->numerator);
       numerator = fraction_numerator->numerator;
+    } else if (PyObject_IsInstance(numerator, Rational)) {
+      if (parse_Fraction_components_from_rational(numerator, &numerator,
+                                                  &denominator) < 0)
+        return -1;
+      tmp = self->denominator;
+      self->denominator = denominator;
+      Py_DECREF(tmp);
     } else {
       PyErr_SetString(PyExc_TypeError,
-                      "Numerator should be either an integer "
-                      "or a floating point number "
-                      "when denominator is not specified.");
+                      "Single argument should be either an integer, "
+                      "a floating point or a rational number.");
       return -1;
     }
     tmp = self->numerator;
@@ -2002,33 +2024,26 @@ static PyModuleDef _cfractions_module = {
     .m_size = -1,
 };
 
-static int mark_as_rational(PyObject *python_type) {
-  PyObject *numbers_module, *rational_interface, *tmp;
-  numbers_module = PyImport_ImportModule("numbers");
+static int load_rational() {
+  PyObject *numbers_module = PyImport_ImportModule("numbers");
   if (!numbers_module) return -1;
-  rational_interface = PyObject_GetAttrString(numbers_module, "Rational");
-  if (!rational_interface) {
-    Py_DECREF(numbers_module);
-    return -1;
-  }
+  Rational = PyObject_GetAttrString(numbers_module, "Rational");
+  Py_DECREF(numbers_module);
+  return !Rational ? -1 : 0;
+}
+
+static int mark_as_rational(PyObject *python_type) {
+  PyObject *tmp;
   PyObject *register_method_name = PyUnicode_FromString("register");
 #if PY39_OR_MORE
-  tmp = PyObject_CallMethodOneArg(rational_interface, register_method_name,
-                                  python_type);
+  tmp = PyObject_CallMethodOneArg(Rational, register_method_name, python_type);
 #else
-  tmp = PyObject_CallMethodObjArgs(rational_interface, register_method_name,
-                                   python_type, NULL);
+  tmp = PyObject_CallMethodObjArgs(Rational, register_method_name, python_type,
+                                   NULL);
 #endif
-  if (!tmp) {
-    Py_DECREF(register_method_name);
-    Py_DECREF(rational_interface);
-    Py_DECREF(numbers_module);
-    return -1;
-  }
-  Py_DECREF(tmp);
   Py_DECREF(register_method_name);
-  Py_DECREF(rational_interface);
-  Py_DECREF(numbers_module);
+  if (!tmp) return -1;
+  Py_DECREF(tmp);
   return 0;
 }
 
@@ -2043,7 +2058,7 @@ PyMODINIT_FUNC PyInit__cfractions(void) {
     Py_DECREF(result);
     return NULL;
   }
-  if (mark_as_rational((PyObject *)&FractionType) < 0) {
+  if (load_rational() < 0 || mark_as_rational((PyObject *)&FractionType) < 0) {
     Py_DECREF(result);
     return NULL;
   }
