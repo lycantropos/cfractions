@@ -222,8 +222,8 @@ static int Fraction_init(FractionObject *self, PyObject *args) {
     }
 
     if (normalize_Fraction_components_moduli(&numerator, &denominator) < 0) {
-      Py_INCREF(numerator);
-      Py_INCREF(denominator);
+      Py_DECREF(numerator);
+      Py_DECREF(denominator);
       return -1;
     }
     tmp = self->numerator;
