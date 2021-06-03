@@ -41,8 +41,8 @@ static int is_integral_Fraction(FractionObject *self) {
 }
 
 static void Fraction_dealloc(FractionObject *self) {
-  Py_XDECREF(self->numerator);
-  Py_XDECREF(self->denominator);
+  Py_DECREF(self->numerator);
+  Py_DECREF(self->denominator);
   Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
