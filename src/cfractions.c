@@ -485,6 +485,11 @@ static PyObject *Fraction_copy(FractionObject *self,
         (PyObject *)Py_TYPE(self), self->numerator, self->denominator, NULL);
 }
 
+static PyObject* Fraction_reduce(FractionObject *self,
+                                 PyObject *Py_UNUSED(args)) {
+  return Py_BuildValue("O(OO)", Py_TYPE(self), self->numerator, self->denominator);
+}
+
 static PyObject *Fraction_floor_impl(FractionObject *self) {
   return PyNumber_FloorDivide(self->numerator, self->denominator);
 }
@@ -1733,6 +1738,7 @@ static PyMethodDef Fraction_methods[] = {
     {"__copy__", (PyCFunction)Fraction_copy, METH_NOARGS, NULL},
     {"__deepcopy__", (PyCFunction)Fraction_copy, METH_VARARGS, NULL},
     {"__floor__", (PyCFunction)Fraction_floor, METH_NOARGS, NULL},
+    {"__reduce__", (PyCFunction)Fraction_reduce, METH_NOARGS, NULL},
     {"__round__", (PyCFunction)Fraction_round, METH_VARARGS, NULL},
     {"__trunc__", (PyCFunction)Fraction_trunc, METH_NOARGS, NULL},
     {NULL, NULL} /* sentinel */
