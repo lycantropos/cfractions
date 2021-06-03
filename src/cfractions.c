@@ -1047,7 +1047,10 @@ static PyObject *Fraction_remainder(PyObject *self, PyObject *other) {
 
 static PyObject *LongFraction_power(PyObject *self, FractionObject *exponent,
                                     PyObject *modulo) {
-  if (is_integral_Fraction(exponent)) {
+  int comparison_signal = is_integral_Fraction(exponent);
+  if (comparison_signal < 0)
+    return NULL;
+  else if (comparison_signal) {
     FractionObject *result;
     PyObject *result_numerator, *result_denominator;
     if (is_negative_Fraction(exponent)) {
@@ -1111,7 +1114,10 @@ static PyObject *LongFraction_power(PyObject *self, FractionObject *exponent,
 
 static PyObject *FractionLong_power(FractionObject *self, PyObject *exponent,
                                     PyObject *modulo) {
-  if (is_negative_Object(exponent)) {
+  int comparison_signal = is_negative_Object(exponent);
+  if (comparison_signal < 0)
+    return NULL;
+  else if (comparison_signal) {
     if (!Fraction_bool(self)) {
       PyErr_SetString(PyExc_ZeroDivisionError,
                       "Either exponent should be non-negative "
@@ -1144,8 +1150,10 @@ static PyObject *FractionLong_power(FractionObject *self, PyObject *exponent,
     Py_DECREF(positive_exponent);
     return result;
   }
-  if (is_integral_Fraction(self) &&
-      (modulo == Py_None || PyLong_Check(modulo))) {
+  comparison_signal = is_integral_Fraction(self);
+  if (comparison_signal < 0)
+    return NULL;
+  else if (comparison_signal && (modulo == Py_None || PyLong_Check(modulo))) {
     PyObject *result_numerator, *result_denominator;
     FractionObject *result;
     result_numerator = PyNumber_Power(self->numerator, exponent, modulo);
@@ -1200,7 +1208,10 @@ static PyObject *FloatFraction_power(PyObject *self, FractionObject *exponent,
 
 static PyObject *Fractions_power(FractionObject *self, FractionObject *exponent,
                                  PyObject *modulo) {
-  if (is_integral_Fraction(exponent))
+  int comparison_signal = is_integral_Fraction(exponent);
+  if (comparison_signal < 0)
+    return NULL;
+  else if (comparison_signal)
     return FractionLong_power(self, exponent->numerator, modulo);
   else {
     PyObject *float_self, *result;
