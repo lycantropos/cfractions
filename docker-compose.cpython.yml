@@ -13,7 +13,6 @@ services:
       - ./pytest.ini:/opt/cfractions/pytest.ini
       - ./README.md:/opt/cfractions/README.md
       - ./requirements-tests.txt:/opt/cfractions/requirements-tests.txt
-      - ./requirements.txt:/opt/cfractions/requirements.txt
       - ./setup.py:/opt/cfractions/setup.py
       - ./src:/opt/cfractions/src
       - ./tests:/opt/cfractions/tests
