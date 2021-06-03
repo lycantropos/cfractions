@@ -16,13 +16,6 @@ def test_basic(fraction: Fraction) -> None:
                 and str(fraction.denominator) in result))
 
 
-@given(strategies.fractions)
-def test_evaluation(fraction: Fraction) -> None:
-    result = str(fraction)
-
-    assert eval(result) == float(fraction)
-
-
 @skip_reference_counter_test
 @given(strategies.fractions)
 def test_reference_counter(fraction: Fraction) -> None:
