@@ -124,10 +124,10 @@ static int normalize_Fraction_components_signs(PyObject **result_numerator,
   return 0;
 }
 
-static int Fraction_init_from_Float(FractionObject *self, PyObject *numerator) {
-  double value = PyFloat_AS_DOUBLE(numerator);
+static int parse_Fraction_components_from_double(
+    double value, PyObject **result_numerator, PyObject **result_denominator) {
   int exponent;
-  PyObject *exponent_object, *tmp, *denominator;
+  PyObject *exponent_object, *tmp, *numerator, *denominator;
   size_t index;
   if (isinf(value)) {
     PyErr_SetString(PyExc_OverflowError,
@@ -176,12 +176,8 @@ static int Fraction_init_from_Float(FractionObject *self, PyObject *numerator) {
     }
   }
   Py_DECREF(exponent_object);
-  tmp = self->denominator;
-  self->denominator = denominator;
-  Py_XDECREF(tmp);
-  tmp = self->numerator;
-  self->numerator = numerator;
-  Py_XDECREF(tmp);
+  *result_denominator = denominator;
+  *result_numerator = numerator;
   return 0;
 }
 
@@ -235,9 +231,14 @@ static int Fraction_init(FractionObject *self, PyObject *args) {
   } else if (numerator) {
     if (PyLong_Check(numerator))
       Py_INCREF(numerator);
-    else if (PyFloat_Check(numerator))
-      return Fraction_init_from_Float(self, numerator);
-    else if (PyObject_TypeCheck(numerator, &FractionType)) {
+    else if (PyFloat_Check(numerator)) {
+      if (parse_Fraction_components_from_double(PyFloat_AS_DOUBLE(numerator),
+                                                &numerator, &denominator) < 0)
+        return -1;
+      tmp = self->denominator;
+      self->denominator = denominator;
+      Py_DECREF(tmp);
+    } else if (PyObject_TypeCheck(numerator, &FractionType)) {
       FractionObject *fraction_numerator = (FractionObject *)numerator;
       tmp = self->denominator;
       Py_INCREF(fraction_numerator->denominator);
@@ -314,17 +315,18 @@ static PyObject *Fraction_richcompare(FractionObject *self, PyObject *other,
       return result;
     }
   } else if (PyFloat_Check(other)) {
-    PyObject *result;
+    PyObject *other_fraction_denominator, *other_fraction_numerator, *result;
     FractionObject *other_fraction;
-    if (!isfinite(PyFloat_AS_DOUBLE(other))) Py_RETURN_FALSE;
+    double other_value = PyFloat_AS_DOUBLE(other);
+    if (!isfinite(other_value)) Py_RETURN_FALSE;
+    if (parse_Fraction_components_from_double(other_value,
+                                              &other_fraction_numerator,
+                                              &other_fraction_denominator) < 0)
+      return NULL;
     other_fraction = PyObject_New(FractionObject, &FractionType);
     if (!other_fraction) return NULL;
-    other_fraction->numerator = NULL;
-    other_fraction->denominator = NULL;
-    if (Fraction_init_from_Float(other_fraction, other) < 0) {
-      Py_DECREF(other_fraction);
-      return NULL;
-    }
+    other_fraction->numerator = other_fraction_numerator;
+    other_fraction->denominator = other_fraction_denominator;
     result = Fractions_richcompare(self, other_fraction, op);
     Py_DECREF(other_fraction);
     return result;
