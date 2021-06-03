@@ -65,32 +65,6 @@ static PyObject *Fraction_new(PyTypeObject *cls, PyObject *Py_UNUSED(args),
   return (PyObject *)self;
 }
 
-static PyObject *Fractions_richcompare(FractionObject *self,
-                                       FractionObject *other, int op) {
-  if (op == Py_EQ) {
-    return PyBool_FromLong(
-        PyObject_RichCompareBool(self->numerator, other->numerator, op) &&
-        PyObject_RichCompareBool(self->denominator, other->denominator, op));
-  } else if (op == Py_NE) {
-    return PyBool_FromLong(
-        PyObject_RichCompareBool(self->numerator, other->numerator, op) ||
-        PyObject_RichCompareBool(self->denominator, other->denominator, op));
-  } else {
-    PyObject *result, *left, *right;
-    left = PyNumber_Multiply(self->numerator, other->denominator);
-    if (!left) return NULL;
-    right = PyNumber_Multiply(other->numerator, self->denominator);
-    if (!right) {
-      Py_DECREF(left);
-      return NULL;
-    }
-    result = PyObject_RichCompare(left, right, op);
-    Py_DECREF(left);
-    Py_DECREF(right);
-    return result;
-  }
-}
-
 static PyTypeObject FractionType;
 
 static int normalize_Fraction_components_moduli(PyObject **result_numerator,
@@ -283,6 +257,32 @@ static int Fraction_init(FractionObject *self, PyObject *args) {
     Py_XDECREF(tmp);
   }
   return 0;
+}
+
+static PyObject *Fractions_richcompare(FractionObject *self,
+                                       FractionObject *other, int op) {
+  if (op == Py_EQ) {
+    return PyBool_FromLong(
+        PyObject_RichCompareBool(self->numerator, other->numerator, op) &&
+        PyObject_RichCompareBool(self->denominator, other->denominator, op));
+  } else if (op == Py_NE) {
+    return PyBool_FromLong(
+        PyObject_RichCompareBool(self->numerator, other->numerator, op) ||
+        PyObject_RichCompareBool(self->denominator, other->denominator, op));
+  } else {
+    PyObject *result, *left, *right;
+    left = PyNumber_Multiply(self->numerator, other->denominator);
+    if (!left) return NULL;
+    right = PyNumber_Multiply(other->numerator, self->denominator);
+    if (!right) {
+      Py_DECREF(left);
+      return NULL;
+    }
+    result = PyObject_RichCompare(left, right, op);
+    Py_DECREF(left);
+    Py_DECREF(right);
+    return result;
+  }
 }
 
 static PyObject *Fraction_richcompare(FractionObject *self, PyObject *other,
