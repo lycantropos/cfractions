@@ -1915,8 +1915,16 @@ static PyObject *Fraction_repr(FractionObject *self) {
 }
 
 static PyObject *Fraction_str(FractionObject *self) {
-  return PyUnicode_FromFormat("%S/%S", self->numerator,
-                              self->denominator);
+  PyObject *tmp = PyLong_FromLong(1);
+  int comparison_signal =
+      PyObject_RichCompareBool(self->denominator, tmp, Py_EQ);
+  Py_DECREF(tmp);
+  if (comparison_signal < 0)
+    return NULL;
+  else
+    return comparison_signal ? PyUnicode_FromFormat("%S", self->numerator)
+                             : PyUnicode_FromFormat("%S/%S", self->numerator,
+                                                    self->denominator);
 }
 
 static PyMemberDef Fraction_members[] = {
