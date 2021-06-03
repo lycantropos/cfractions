@@ -7,7 +7,9 @@ try:
 except ImportError:
     import numbers as _numbers
     from fractions import Fraction as _Fraction
-    from typing import (Optional as _Optional,
+    from typing import (Any as _Any,
+                        Dict as _Dict,
+                        Optional as _Optional,
                         TypeVar as _TypeVar,
                         Union as _Union,
                         overload as _overload)
@@ -43,6 +45,19 @@ except ImportError:
 
         def __add__(self, other):
             result = super().__add__(other)
+            return (Fraction(result.numerator, result.denominator)
+                    if isinstance(result, _Fraction)
+                    else result)
+
+        def __copy__(self) -> 'Fraction':
+            result = super().__copy__()
+            return (Fraction(result.numerator, result.denominator)
+                    if isinstance(result, _Fraction)
+                    else result)
+
+        def __deepcopy__(self, memo: _Optional[_Dict[int, _Any]] = None
+                         ) -> 'Fraction':
+            result = super().__deepcopy__(memo)
             return (Fraction(result.numerator, result.denominator)
                     if isinstance(result, _Fraction)
                     else result)
