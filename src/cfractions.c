@@ -475,6 +475,16 @@ static PyObject *Fraction_ceil(FractionObject *self,
   return Fraction_ceil_impl(self);
 }
 
+static PyObject *Fraction_copy(FractionObject *self,
+                               PyObject *Py_UNUSED(args)) {
+  if (Py_TYPE(self) == &FractionType) {
+    Py_INCREF(self);
+    return (PyObject *)self;
+  } else
+    return PyObject_CallFunctionObjArgs(
+        (PyObject *)Py_TYPE(self), self->numerator, self->denominator, NULL);
+}
+
 static PyObject *Fraction_floor_impl(FractionObject *self) {
   return PyNumber_FloorDivide(self->numerator, self->denominator);
 }
@@ -1720,6 +1730,8 @@ static PyMemberDef Fraction_members[] = {
 
 static PyMethodDef Fraction_methods[] = {
     {"__ceil__", (PyCFunction)Fraction_ceil, METH_NOARGS, NULL},
+    {"__copy__", (PyCFunction)Fraction_copy, METH_NOARGS, NULL},
+    {"__deepcopy__", (PyCFunction)Fraction_copy, METH_VARARGS, NULL},
     {"__floor__", (PyCFunction)Fraction_floor, METH_NOARGS, NULL},
     {"__round__", (PyCFunction)Fraction_round, METH_VARARGS, NULL},
     {"__trunc__", (PyCFunction)Fraction_trunc, METH_NOARGS, NULL},
