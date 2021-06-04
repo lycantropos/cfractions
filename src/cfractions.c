@@ -1799,25 +1799,25 @@ static FractionObject *Fraction_positive(FractionObject *self) {
 }
 
 static PyObject *Fraction_round_plain(FractionObject *self) {
-  PyObject *quotient, *remainder, *tmp, *scalar;
-  int comparison_signal,
-      divmod_signal = Longs_divmod(self->numerator, self->denominator,
-                                   &quotient, &remainder);
+  PyObject *quotient, *remainder;
+  int divmod_signal =
+      Longs_divmod(self->numerator, self->denominator, &quotient, &remainder);
   if (divmod_signal < 0) return NULL;
-  scalar = PyLong_FromLong(2);
+  PyObject *scalar = PyLong_FromLong(2);
   if (!scalar) {
     Py_DECREF(remainder);
     Py_DECREF(quotient);
     return NULL;
   }
-  tmp = PyNumber_Multiply(remainder, scalar);
+  PyObject *tmp = PyNumber_Multiply(remainder, scalar);
   Py_DECREF(remainder);
   if (!tmp) {
     Py_DECREF(scalar);
     Py_DECREF(quotient);
     return NULL;
   }
-  comparison_signal = PyObject_RichCompareBool(tmp, self->denominator, Py_LT);
+  int comparison_signal =
+      PyObject_RichCompareBool(tmp, self->denominator, Py_LT);
   if (comparison_signal < 0) {
     Py_DECREF(tmp);
     Py_DECREF(scalar);
@@ -1858,83 +1858,76 @@ static PyObject *Fraction_round_plain(FractionObject *self) {
 
 static PyObject *Fraction_round(FractionObject *self, PyObject *args) {
   PyObject *precision = NULL;
-  int comparison_signal;
   if (!PyArg_ParseTuple(args, "|O", &precision)) return NULL;
   if (!precision) return Fraction_round_plain(self);
-  comparison_signal = is_negative_Object(precision);
-  if (comparison_signal < 0)
-    return NULL;
-  else {
-    PyObject *result_numerator, *result_denominator;
-    FractionObject *result;
-    if (comparison_signal) {
-      PyObject *positive_precision, *shift, *tmp;
-      tmp = PyLong_FromLong(10);
-      if (!tmp) return NULL;
-      positive_precision = PyNumber_Negative(precision);
-      if (!positive_precision) {
-        Py_DECREF(tmp);
-        return NULL;
-      }
-      shift = PyNumber_Power(tmp, positive_precision, Py_None);
+  int comparison_signal = is_negative_Object(precision);
+  if (comparison_signal < 0) return NULL;
+  PyObject *result_denominator, *result_numerator;
+  if (comparison_signal) {
+    PyObject *tmp = PyLong_FromLong(10);
+    if (!tmp) return NULL;
+    PyObject *positive_precision = PyNumber_Negative(precision);
+    if (!positive_precision) {
       Py_DECREF(tmp);
-      if (!shift) return NULL;
-      tmp = PyNumber_TrueDivide((PyObject *)self, shift);
-      if (!tmp) {
-        Py_DECREF(shift);
-        return NULL;
-      }
-      result_numerator = round_Object(tmp);
-      Py_DECREF(tmp);
-      if (!result_numerator) {
-        Py_DECREF(shift);
-        return NULL;
-      }
-      tmp = result_numerator;
-      result_numerator = PyNumber_Multiply(result_numerator, shift);
-      Py_DECREF(tmp);
-      Py_DECREF(shift);
-      if (!result_numerator) return NULL;
-      result_denominator = PyLong_FromLong(1);
-      if (!result_denominator) {
-        Py_DECREF(result_numerator);
-        return NULL;
-      }
-    } else {
-      PyObject *tmp;
-      tmp = PyLong_FromLong(10);
-      if (!tmp) return NULL;
-      result_denominator = PyNumber_Power(tmp, precision, Py_None);
-      Py_DECREF(tmp);
-      if (!result_denominator) return NULL;
-      tmp = PyNumber_Multiply((PyObject *)self, result_denominator);
-      if (!tmp) {
-        Py_DECREF(result_denominator);
-        return NULL;
-      }
-      result_numerator = round_Object(tmp);
-      Py_DECREF(tmp);
-      if (!result_numerator) {
-        Py_DECREF(result_denominator);
-        return NULL;
-      }
-      if (normalize_Fraction_components_moduli(&result_numerator,
-                                               &result_denominator) < 0) {
-        Py_DECREF(result_numerator);
-        Py_DECREF(result_denominator);
-        return NULL;
-      }
+      return NULL;
     }
-    result = PyObject_New(FractionObject, &FractionType);
-    if (!result) {
+    PyObject *shift = PyNumber_Power(tmp, positive_precision, Py_None);
+    Py_DECREF(tmp);
+    if (!shift) return NULL;
+    tmp = PyNumber_TrueDivide((PyObject *)self, shift);
+    if (!tmp) {
+      Py_DECREF(shift);
+      return NULL;
+    }
+    result_numerator = round_Object(tmp);
+    Py_DECREF(tmp);
+    if (!result_numerator) {
+      Py_DECREF(shift);
+      return NULL;
+    }
+    tmp = result_numerator;
+    result_numerator = PyNumber_Multiply(result_numerator, shift);
+    Py_DECREF(tmp);
+    Py_DECREF(shift);
+    if (!result_numerator) return NULL;
+    result_denominator = PyLong_FromLong(1);
+    if (!result_denominator) {
+      Py_DECREF(result_numerator);
+      return NULL;
+    }
+  } else {
+    PyObject *tmp = PyLong_FromLong(10);
+    if (!tmp) return NULL;
+    result_denominator = PyNumber_Power(tmp, precision, Py_None);
+    Py_DECREF(tmp);
+    if (!result_denominator) return NULL;
+    tmp = PyNumber_Multiply((PyObject *)self, result_denominator);
+    if (!tmp) {
+      Py_DECREF(result_denominator);
+      return NULL;
+    }
+    result_numerator = round_Object(tmp);
+    Py_DECREF(tmp);
+    if (!result_numerator) {
+      Py_DECREF(result_denominator);
+      return NULL;
+    }
+    if (normalize_Fraction_components_moduli(&result_numerator,
+                                             &result_denominator) < 0) {
       Py_DECREF(result_numerator);
       Py_DECREF(result_denominator);
       return NULL;
     }
-    result->numerator = result_numerator;
-    result->denominator = result_denominator;
-    return (PyObject *)result;
   }
+  FractionObject *result = PyObject_New(FractionObject, &FractionType);
+  if (!result) {
+    Py_DECREF(result_numerator);
+    Py_DECREF(result_denominator);
+    return NULL;
+  }
+  result->numerator = result_numerator;
+  result->denominator = result_denominator;
+  return (PyObject *)result;
 }
 
 static Py_hash_t Fraction_hash(FractionObject *self) {
