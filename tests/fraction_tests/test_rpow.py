@@ -7,7 +7,8 @@ from cfractions import Fraction
 from . import strategies
 
 
-@given(strategies.integers, strategies.small_non_negative_integral_fractions)
+@given(strategies.non_fractions_rationals,
+       strategies.small_non_negative_integral_rationals)
 def test_connection_with_truediv(first: int, second: Fraction) -> None:
     result = first ** second
 

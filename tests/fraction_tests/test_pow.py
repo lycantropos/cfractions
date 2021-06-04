@@ -12,9 +12,10 @@ from tests.utils import (equivalence,
                          is_fraction_valid,
                          skip_reference_counter_test)
 from . import strategies
+from .strategies import CustomRational
 
 
-@given(strategies.fractions, strategies.small_non_negative_integral_fractions)
+@given(strategies.fractions, strategies.small_non_negative_integral_rationals)
 def test_basic(base: Fraction, exponent: int) -> None:
     result = base ** exponent
 
@@ -22,9 +23,10 @@ def test_basic(base: Fraction, exponent: int) -> None:
     assert is_fraction_valid(result)
 
 
-@given(strategies.fractions, strategies.small_non_negative_integral_fractions,
+@given(strategies.fractions, strategies.small_non_negative_integral_rationals,
        strategies.non_zero_rationals)
-def test_ternary_form(base: Fraction, exponent: int, modulo: Rational) -> None:
+def test_ternary_form(base: Fraction, exponent: Rational, modulo: Rational
+                      ) -> None:
     result = pow(base, exponent, modulo)
 
     assert isinstance(result, Fraction)
