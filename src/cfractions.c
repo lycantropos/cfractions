@@ -395,7 +395,10 @@ static FractionObject *Fraction_negative(FractionObject *self) {
 }
 
 static FractionObject *Fraction_abs(FractionObject *self) {
-  if (is_negative_Fraction(self))
+  int is_negative = is_negative_Fraction(self);
+  if (is_negative < 0)
+    return NULL;
+  else if (is_negative)
     return Fraction_negative(self);
   else {
     Py_INCREF(self);
