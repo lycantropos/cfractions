@@ -533,10 +533,9 @@ static int Fraction_bool(FractionObject *self) {
 }
 
 static PyObject *Fraction_ceil_impl(FractionObject *self) {
-  PyObject *result, *tmp;
-  tmp = PyNumber_Negative(self->numerator);
+  PyObject *tmp = PyNumber_Negative(self->numerator);
   if (!tmp) return NULL;
-  result = PyNumber_FloorDivide(tmp, self->denominator);
+  PyObject *result = PyNumber_FloorDivide(tmp, self->denominator);
   Py_DECREF(tmp);
   if (!result) return NULL;
   tmp = result;
