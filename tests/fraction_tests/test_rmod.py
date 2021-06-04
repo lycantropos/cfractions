@@ -7,7 +7,7 @@ from cfractions import Fraction
 from . import strategies
 
 
-@given(strategies.integers, strategies.non_zero_fractions)
+@given(strategies.non_fractions_rationals, strategies.non_zero_fractions)
 def test_connection_with_truediv(first: int, second: Fraction) -> None:
     result = first % second
 
