@@ -1,5 +1,6 @@
 import sys
-from numbers import Complex
+from numbers import (Complex,
+                     Rational)
 
 import pytest
 from hypothesis import given
@@ -39,6 +40,13 @@ def test_fraction_argument(fraction: Fraction) -> None:
     result = Fraction(fraction)
 
     assert result == fraction
+
+
+@given(strategies.custom_rationals)
+def test_custom_rational_argument(custom_rational: Rational) -> None:
+    result = Fraction(custom_rational)
+
+    assert result == custom_rational
 
 
 @skip_reference_counter_test
