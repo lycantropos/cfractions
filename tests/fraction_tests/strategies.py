@@ -36,8 +36,6 @@ finite_floats = strategies.floats(allow_infinity=False,
 finite_non_zero_floats = finite_floats.filter(bool)
 infinite_floats = strategies.sampled_from([math.inf, -math.inf])
 nans = strategies.just(math.nan)
-non_fractions = integers | floats
-finite_non_fractions = integers | finite_floats
 zero_fractions = strategies.builds(Fraction)
 fractions = (strategies.builds(Fraction, numerators, denominators)
              | strategies.builds(Fraction, finite_floats))
@@ -52,8 +50,6 @@ small_non_negative_integral_fractions = (zero_fractions
 non_zero_rationals = non_zero_integers | non_zero_fractions
 zero_non_fractions = zero_integers | zero_floats
 zero_numbers = zero_non_fractions | zero_fractions
-rationals = integers | fractions
-finite_numbers = rationals | finite_floats
 finite_non_zero_numbers = (non_zero_integers | finite_non_zero_floats
                            | non_zero_fractions)
 non_integer_numbers = floats | fractions
@@ -72,3 +68,8 @@ class CustomRational:
 
 
 custom_rationals = strategies.builds(CustomRational, numerators, denominators)
+rationals = integers | fractions | custom_rationals
+finite_numbers = rationals | finite_floats
+non_fractions_rationals = integers | custom_rationals
+non_fractions = integers | floats | custom_rationals
+finite_non_fractions = integers | finite_floats | custom_rationals

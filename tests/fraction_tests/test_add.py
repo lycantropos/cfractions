@@ -1,5 +1,6 @@
 import math
 import sys
+from numbers import Rational
 
 from hypothesis import given
 
@@ -11,12 +12,19 @@ from tests.utils import (equivalence,
 from . import strategies
 
 
-@given(strategies.fractions, strategies.fractions)
-def test_basic(first: Fraction, second: Fraction) -> None:
+@given(strategies.fractions, strategies.rationals)
+def test_basic(first: Fraction, second: Rational) -> None:
     result = first + second
 
     assert isinstance(result, Fraction)
     assert is_fraction_valid(result)
+
+
+@given(strategies.fractions, strategies.integers)
+def test_integer_argument(first: Fraction, second: int) -> None:
+    result = first + second
+
+    assert result == first + Fraction(second)
 
 
 @given(strategies.fractions, strategies.fractions)
@@ -34,13 +42,6 @@ def test_associativity(first: Fraction,
                        second: Fraction,
                        third: Fraction) -> None:
     assert (first + second) + third == first + (second + third)
-
-
-@given(strategies.fractions, strategies.integers)
-def test_integer_argument(first: Fraction, second: int) -> None:
-    result = first + second
-
-    assert result == first + Fraction(second)
 
 
 @given(strategies.fractions, strategies.floats)
