@@ -576,16 +576,14 @@ static PyObject *Fraction_floor(FractionObject *self,
 
 static PyObject *Fractions_floor_divide(FractionObject *self,
                                         FractionObject *other) {
-  PyObject *denominator, *divisor, *dividend, *gcd, *numerator,
-      *other_denominator, *other_numerator, *result;
-  gcd = _PyLong_GCD(self->numerator, other->numerator);
+  PyObject *gcd = _PyLong_GCD(self->numerator, other->numerator);
   if (!gcd) return NULL;
-  numerator = PyNumber_FloorDivide(self->numerator, gcd);
+  PyObject *numerator = PyNumber_FloorDivide(self->numerator, gcd);
   if (!numerator) {
     Py_DECREF(gcd);
     return NULL;
   }
-  other_numerator = PyNumber_FloorDivide(other->numerator, gcd);
+  PyObject *other_numerator = PyNumber_FloorDivide(other->numerator, gcd);
   Py_DECREF(gcd);
   if (!other_numerator) {
     Py_DECREF(numerator);
@@ -593,14 +591,14 @@ static PyObject *Fractions_floor_divide(FractionObject *self,
   }
   gcd = _PyLong_GCD(other->denominator, self->denominator);
   if (!gcd) return NULL;
-  denominator = PyNumber_FloorDivide(self->denominator, gcd);
+  PyObject *denominator = PyNumber_FloorDivide(self->denominator, gcd);
   if (!denominator) {
     Py_DECREF(gcd);
     Py_DECREF(other_numerator);
     Py_DECREF(numerator);
     return NULL;
   }
-  other_denominator = PyNumber_FloorDivide(other->denominator, gcd);
+  PyObject *other_denominator = PyNumber_FloorDivide(other->denominator, gcd);
   Py_DECREF(gcd);
   if (!other_denominator) {
     Py_DECREF(denominator);
@@ -608,7 +606,7 @@ static PyObject *Fractions_floor_divide(FractionObject *self,
     Py_DECREF(numerator);
     return NULL;
   }
-  dividend = PyNumber_Multiply(numerator, other_denominator);
+  PyObject *dividend = PyNumber_Multiply(numerator, other_denominator);
   Py_DECREF(other_denominator);
   Py_DECREF(numerator);
   if (!dividend) {
@@ -616,14 +614,14 @@ static PyObject *Fractions_floor_divide(FractionObject *self,
     Py_DECREF(denominator);
     return NULL;
   }
-  divisor = PyNumber_Multiply(denominator, other_numerator);
+  PyObject *divisor = PyNumber_Multiply(denominator, other_numerator);
   Py_DECREF(other_numerator);
   Py_DECREF(denominator);
   if (!divisor) {
     Py_DECREF(dividend);
     return NULL;
   }
-  result = PyNumber_FloorDivide(dividend, divisor);
+  PyObject *result = PyNumber_FloorDivide(dividend, divisor);
   Py_DECREF(dividend);
   Py_DECREF(divisor);
   return result;
@@ -631,27 +629,26 @@ static PyObject *Fractions_floor_divide(FractionObject *self,
 
 static PyObject *FractionLong_floor_divide(FractionObject *self,
                                            PyObject *other) {
-  PyObject *divisor, *dividend, *gcd, *other_normalized, *result;
-  gcd = _PyLong_GCD(self->numerator, other);
+  PyObject *gcd = _PyLong_GCD(self->numerator, other);
   if (!gcd) return NULL;
-  dividend = PyNumber_FloorDivide(self->numerator, gcd);
+  PyObject *dividend = PyNumber_FloorDivide(self->numerator, gcd);
   if (!dividend) {
     Py_DECREF(gcd);
     return NULL;
   }
-  other_normalized = PyNumber_FloorDivide(other, gcd);
+  PyObject *other_normalized = PyNumber_FloorDivide(other, gcd);
   Py_DECREF(gcd);
   if (!other_normalized) {
     Py_DECREF(dividend);
     return NULL;
   }
-  divisor = PyNumber_Multiply(self->denominator, other_normalized);
+  PyObject *divisor = PyNumber_Multiply(self->denominator, other_normalized);
   Py_DECREF(other_normalized);
   if (!divisor) {
     Py_DECREF(dividend);
     return NULL;
   }
-  result = PyNumber_FloorDivide(dividend, divisor);
+  PyObject *result = PyNumber_FloorDivide(dividend, divisor);
   Py_DECREF(dividend);
   Py_DECREF(divisor);
   return result;
@@ -659,27 +656,26 @@ static PyObject *FractionLong_floor_divide(FractionObject *self,
 
 static PyObject *LongFraction_floor_divide(PyObject *self,
                                            FractionObject *other) {
-  PyObject *divisor, *dividend, *gcd, *self_normalized, *result;
-  gcd = _PyLong_GCD(self, other->numerator);
+  PyObject *gcd = _PyLong_GCD(self, other->numerator);
   if (!gcd) return NULL;
-  divisor = PyNumber_FloorDivide(other->numerator, gcd);
+  PyObject *divisor = PyNumber_FloorDivide(other->numerator, gcd);
   if (!divisor) {
     Py_DECREF(gcd);
     return NULL;
   }
-  self_normalized = PyNumber_FloorDivide(self, gcd);
+  PyObject *self_normalized = PyNumber_FloorDivide(self, gcd);
   Py_DECREF(gcd);
   if (!self_normalized) {
     Py_DECREF(divisor);
     return NULL;
   }
-  dividend = PyNumber_Multiply(self_normalized, other->denominator);
+  PyObject *dividend = PyNumber_Multiply(self_normalized, other->denominator);
   Py_DECREF(self_normalized);
   if (!dividend) {
     Py_DECREF(divisor);
     return NULL;
   }
-  result = PyNumber_FloorDivide(dividend, divisor);
+  PyObject *result = PyNumber_FloorDivide(dividend, divisor);
   Py_DECREF(dividend);
   Py_DECREF(divisor);
   return result;
