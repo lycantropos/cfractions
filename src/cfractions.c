@@ -914,11 +914,6 @@ static FractionObject *Fractions_multiply(FractionObject *self,
   return result;
 }
 
-static PyObject *Fraction_trunc(FractionObject *self, PyObject *args) {
-  return is_negative_Fraction(self) ? Fraction_ceil_impl(self)
-                                    : Fraction_floor_impl(self);
-}
-
 static PyObject *FractionFloat_multiply(FractionObject *self, PyObject *other) {
   PyObject *result, *tmp;
   tmp = Fraction_float(self);
@@ -1664,6 +1659,128 @@ static FractionObject *Fractions_true_divide(FractionObject *self,
   return result;
 }
 
+static FractionObject *FractionLong_true_divide(FractionObject *self,
+                                                PyObject *other) {
+  if (PyObject_Not(other)) {
+    PyErr_Format(PyExc_ZeroDivisionError, "Fraction(%S, 0)", self->numerator);
+    return NULL;
+  }
+  PyObject *gcd, *result_denominator, *result_numerator, *other_normalized;
+  FractionObject *result;
+  gcd = _PyLong_GCD(self->numerator, other);
+  if (!gcd) return NULL;
+  result_numerator = PyNumber_FloorDivide(self->numerator, gcd);
+  if (!result_numerator) {
+    Py_DECREF(gcd);
+    return NULL;
+  }
+  other_normalized = PyNumber_FloorDivide(other, gcd);
+  Py_DECREF(gcd);
+  if (!other_normalized) {
+    Py_DECREF(result_numerator);
+    return NULL;
+  }
+  result_denominator = PyNumber_Multiply(self->denominator, other_normalized);
+  Py_DECREF(other_normalized);
+  if (!result_denominator) {
+    Py_DECREF(result_numerator);
+    return NULL;
+  }
+  if (normalize_Fraction_components_signs(&result_numerator,
+                                          &result_denominator) < 0) {
+    Py_INCREF(result_denominator);
+    Py_INCREF(result_numerator);
+    return NULL;
+  }
+  result = PyObject_New(FractionObject, (PyTypeObject *)&FractionType);
+  if (!result) {
+    Py_DECREF(result_denominator);
+    Py_DECREF(result_numerator);
+    return NULL;
+  }
+  result->numerator = result_numerator;
+  result->denominator = result_denominator;
+  return result;
+}
+
+static FractionObject *LongFraction_true_divide(PyObject *self,
+                                                FractionObject *other) {
+  if (!Fraction_bool(other)) {
+    PyErr_Format(PyExc_ZeroDivisionError, "Fraction(%S, 0)", self);
+    return NULL;
+  }
+  PyObject *gcd, *result_denominator, *result_numerator, *self_normalized;
+  FractionObject *result;
+  gcd = _PyLong_GCD(self, other->numerator);
+  if (!gcd) return NULL;
+  result_denominator = PyNumber_FloorDivide(other->numerator, gcd);
+  if (!result_denominator) {
+    Py_DECREF(gcd);
+    return NULL;
+  }
+  self_normalized = PyNumber_FloorDivide(self, gcd);
+  Py_DECREF(gcd);
+  if (!self_normalized) {
+    Py_DECREF(result_denominator);
+    return NULL;
+  }
+  result_numerator = PyNumber_Multiply(self_normalized, other->denominator);
+  Py_DECREF(self_normalized);
+  if (!result_numerator) {
+    Py_DECREF(result_denominator);
+    return NULL;
+  }
+  if (normalize_Fraction_components_signs(&result_numerator,
+                                          &result_denominator) < 0) {
+    Py_INCREF(result_denominator);
+    Py_INCREF(result_numerator);
+    return NULL;
+  }
+  result = PyObject_New(FractionObject, (PyTypeObject *)&FractionType);
+  if (!result) {
+    Py_DECREF(result_denominator);
+    Py_DECREF(result_numerator);
+    return NULL;
+  }
+  result->numerator = result_numerator;
+  result->denominator = result_denominator;
+  return result;
+}
+
+static PyObject *Fraction_true_divide(PyObject *self, PyObject *other) {
+  if (PyObject_TypeCheck(self, &FractionType)) {
+    if (PyObject_TypeCheck(other, &FractionType))
+      return (PyObject *)Fractions_true_divide((FractionObject *)self,
+                                               (FractionObject *)other);
+    else if (PyLong_Check(other))
+      return (PyObject *)FractionLong_true_divide((FractionObject *)self,
+                                                  other);
+    else if (PyFloat_Check(other)) {
+      PyObject *result, *tmp;
+      tmp = Fraction_float((FractionObject *)self);
+      if (!tmp) return NULL;
+      result = PyNumber_TrueDivide(tmp, other);
+      Py_DECREF(tmp);
+      return result;
+    }
+  } else if (PyLong_Check(self))
+    return (PyObject *)LongFraction_true_divide(self, (FractionObject *)other);
+  else if (PyFloat_Check(self)) {
+    PyObject *result, *tmp;
+    tmp = Fraction_float((FractionObject *)other);
+    if (!tmp) return NULL;
+    result = PyNumber_TrueDivide(self, tmp);
+    Py_DECREF(tmp);
+    return result;
+  }
+  Py_RETURN_NOTIMPLEMENTED;
+}
+
+static PyObject *Fraction_trunc(FractionObject *self, PyObject *args) {
+  return is_negative_Fraction(self) ? Fraction_ceil_impl(self)
+                                    : Fraction_floor_impl(self);
+}
+
 static FractionObject *Fraction_positive(FractionObject *self) {
   Py_INCREF(self);
   return self;
@@ -1806,123 +1923,6 @@ static PyObject *Fraction_round(FractionObject *self, PyObject *args) {
     result->denominator = result_denominator;
     return (PyObject *)result;
   }
-}
-
-static FractionObject *FractionLong_true_divide(FractionObject *self,
-                                                PyObject *other) {
-  if (PyObject_Not(other)) {
-    PyErr_Format(PyExc_ZeroDivisionError, "Fraction(%S, 0)", self->numerator);
-    return NULL;
-  }
-  PyObject *gcd, *result_denominator, *result_numerator, *other_normalized;
-  FractionObject *result;
-  gcd = _PyLong_GCD(self->numerator, other);
-  if (!gcd) return NULL;
-  result_numerator = PyNumber_FloorDivide(self->numerator, gcd);
-  if (!result_numerator) {
-    Py_DECREF(gcd);
-    return NULL;
-  }
-  other_normalized = PyNumber_FloorDivide(other, gcd);
-  Py_DECREF(gcd);
-  if (!other_normalized) {
-    Py_DECREF(result_numerator);
-    return NULL;
-  }
-  result_denominator = PyNumber_Multiply(self->denominator, other_normalized);
-  Py_DECREF(other_normalized);
-  if (!result_denominator) {
-    Py_DECREF(result_numerator);
-    return NULL;
-  }
-  if (normalize_Fraction_components_signs(&result_numerator,
-                                          &result_denominator) < 0) {
-    Py_INCREF(result_denominator);
-    Py_INCREF(result_numerator);
-    return NULL;
-  }
-  result = PyObject_New(FractionObject, (PyTypeObject *)&FractionType);
-  if (!result) {
-    Py_DECREF(result_denominator);
-    Py_DECREF(result_numerator);
-    return NULL;
-  }
-  result->numerator = result_numerator;
-  result->denominator = result_denominator;
-  return result;
-}
-
-static FractionObject *LongFraction_true_divide(PyObject *self,
-                                                FractionObject *other) {
-  if (!Fraction_bool(other)) {
-    PyErr_Format(PyExc_ZeroDivisionError, "Fraction(%S, 0)", self);
-    return NULL;
-  }
-  PyObject *gcd, *result_denominator, *result_numerator, *self_normalized;
-  FractionObject *result;
-  gcd = _PyLong_GCD(self, other->numerator);
-  if (!gcd) return NULL;
-  result_denominator = PyNumber_FloorDivide(other->numerator, gcd);
-  if (!result_denominator) {
-    Py_DECREF(gcd);
-    return NULL;
-  }
-  self_normalized = PyNumber_FloorDivide(self, gcd);
-  Py_DECREF(gcd);
-  if (!self_normalized) {
-    Py_DECREF(result_denominator);
-    return NULL;
-  }
-  result_numerator = PyNumber_Multiply(self_normalized, other->denominator);
-  Py_DECREF(self_normalized);
-  if (!result_numerator) {
-    Py_DECREF(result_denominator);
-    return NULL;
-  }
-  if (normalize_Fraction_components_signs(&result_numerator,
-                                          &result_denominator) < 0) {
-    Py_INCREF(result_denominator);
-    Py_INCREF(result_numerator);
-    return NULL;
-  }
-  result = PyObject_New(FractionObject, (PyTypeObject *)&FractionType);
-  if (!result) {
-    Py_DECREF(result_denominator);
-    Py_DECREF(result_numerator);
-    return NULL;
-  }
-  result->numerator = result_numerator;
-  result->denominator = result_denominator;
-  return result;
-}
-
-static PyObject *Fraction_true_divide(PyObject *self, PyObject *other) {
-  if (PyObject_TypeCheck(self, &FractionType)) {
-    if (PyObject_TypeCheck(other, &FractionType))
-      return (PyObject *)Fractions_true_divide((FractionObject *)self,
-                                               (FractionObject *)other);
-    else if (PyLong_Check(other))
-      return (PyObject *)FractionLong_true_divide((FractionObject *)self,
-                                                  other);
-    else if (PyFloat_Check(other)) {
-      PyObject *result, *tmp;
-      tmp = Fraction_float((FractionObject *)self);
-      if (!tmp) return NULL;
-      result = PyNumber_TrueDivide(tmp, other);
-      Py_DECREF(tmp);
-      return result;
-    }
-  } else if (PyLong_Check(self))
-    return (PyObject *)LongFraction_true_divide(self, (FractionObject *)other);
-  else if (PyFloat_Check(self)) {
-    PyObject *result, *tmp;
-    tmp = Fraction_float((FractionObject *)other);
-    if (!tmp) return NULL;
-    result = PyNumber_TrueDivide(self, tmp);
-    Py_DECREF(tmp);
-    return result;
-  }
-  Py_RETURN_NOTIMPLEMENTED;
 }
 
 static Py_hash_t Fraction_hash(FractionObject *self) {
