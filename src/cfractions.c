@@ -1410,24 +1410,24 @@ static PyObject *Fraction_power(PyObject *self, PyObject *exponent,
   Py_RETURN_NOTIMPLEMENTED;
 }
 
-static FractionObject *Fractions_subtract(FractionObject *self,
-                                          FractionObject *other) {
-  PyObject *first_numerator_component =
-      PyNumber_Multiply(self->numerator, other->denominator);
-  if (!first_numerator_component) return NULL;
-  PyObject *second_numerator_component =
-      PyNumber_Multiply(other->numerator, self->denominator);
-  if (!second_numerator_component) {
-    Py_DECREF(first_numerator_component);
+static FractionObject *Fractions_components_subtract(
+    PyObject *numerator, PyObject *denominator, PyObject *other_numerator,
+    PyObject *other_denominator) {
+  PyObject *numerator_minuend = PyNumber_Multiply(numerator, other_denominator);
+  if (!numerator_minuend) return NULL;
+  PyObject *numerator_subtrahend =
+      PyNumber_Multiply(other_numerator, denominator);
+  if (!numerator_subtrahend) {
+    Py_DECREF(numerator_minuend);
     return NULL;
   }
   PyObject *result_numerator =
-      PyNumber_Subtract(first_numerator_component, second_numerator_component);
-  Py_DECREF(second_numerator_component);
-  Py_DECREF(first_numerator_component);
+      PyNumber_Subtract(numerator_minuend, numerator_subtrahend);
+  Py_DECREF(numerator_subtrahend);
+  Py_DECREF(numerator_minuend);
   if (!result_numerator) return NULL;
   PyObject *result_denominator =
-      PyNumber_Multiply(self->denominator, other->denominator);
+      PyNumber_Multiply(denominator, other_denominator);
   if (!result_denominator) {
     Py_DECREF(result_numerator);
     return NULL;
@@ -1448,6 +1448,12 @@ static FractionObject *Fractions_subtract(FractionObject *self,
   result->numerator = result_numerator;
   result->denominator = result_denominator;
   return result;
+}
+
+static FractionObject *Fractions_subtract(FractionObject *self,
+                                          FractionObject *other) {
+  return Fractions_components_subtract(self->numerator, self->denominator,
+                                       other->numerator, other->denominator);
 }
 
 static PyObject *FractionFloat_subtract(FractionObject *self, PyObject *other) {
@@ -1483,6 +1489,19 @@ static FractionObject *FractionLong_subtract(FractionObject *self,
   return result;
 }
 
+static FractionObject *FractionRational_subtract(FractionObject *self,
+                                                 PyObject *other) {
+  PyObject *other_denominator, *other_numerator;
+  if (parse_Fraction_components_from_rational(other, &other_numerator,
+                                              &other_denominator) < 0)
+    return NULL;
+  FractionObject *result = Fractions_components_subtract(
+      self->numerator, self->denominator, other_numerator, other_denominator);
+  Py_DECREF(other_denominator);
+  Py_DECREF(other_numerator);
+  return result;
+}
+
 static PyObject *Fraction_subtract(PyObject *self, PyObject *other) {
   if (PyObject_TypeCheck(self, &FractionType)) {
     if (PyObject_TypeCheck(other, &FractionType))
@@ -1492,6 +1511,9 @@ static PyObject *Fraction_subtract(PyObject *self, PyObject *other) {
       return (PyObject *)FractionLong_subtract((FractionObject *)self, other);
     else if (PyFloat_Check(other))
       return (PyObject *)FractionFloat_subtract((FractionObject *)self, other);
+    else if (PyObject_IsInstance(other, Rational))
+      return (PyObject *)FractionRational_subtract((FractionObject *)self,
+                                                   other);
   } else if (PyLong_Check(self)) {
     FractionObject *result =
         FractionLong_subtract((FractionObject *)other, self);
@@ -1507,6 +1529,14 @@ static PyObject *Fraction_subtract(PyObject *self, PyObject *other) {
     PyObject *result = PyNumber_Negative(tmp);
     Py_DECREF(tmp);
     return result;
+  } else if (PyObject_IsInstance(self, Rational)) {
+    FractionObject *result =
+        FractionRational_subtract((FractionObject *)other, self);
+    if (!result) return NULL;
+    PyObject *tmp = result->numerator;
+    result->numerator = PyNumber_Negative(result->numerator);
+    Py_DECREF(tmp);
+    return (PyObject *)result;
   }
   Py_RETURN_NOTIMPLEMENTED;
 }
