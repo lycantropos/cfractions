@@ -222,10 +222,10 @@ static int Fraction_init(FractionObject *self, PyObject *args) {
                       "Denominator should be non-zero.");
       return -1;
     }
-
-    tmp = PyLong_FromLong(0);
-    if (PyObject_RichCompareBool(denominator, tmp, Py_LT)) {
-      Py_DECREF(tmp);
+    int is_denominator_negative = is_negative_Object(denominator);
+    if (is_denominator_negative < 0)
+      return -1;
+    else if (is_denominator_negative) {
       numerator = PyNumber_Negative(numerator);
       if (!numerator) return -1;
       denominator = PyNumber_Negative(denominator);
@@ -234,11 +234,9 @@ static int Fraction_init(FractionObject *self, PyObject *args) {
         return -1;
       }
     } else {
-      Py_DECREF(tmp);
       Py_INCREF(numerator);
       Py_INCREF(denominator);
     }
-
     if (normalize_Fraction_components_moduli(&numerator, &denominator) < 0) {
       Py_DECREF(numerator);
       Py_DECREF(denominator);
@@ -294,14 +292,16 @@ static PyObject *Fractions_components_richcompare(PyObject *numerator,
                                                   PyObject *other_denominator,
                                                   int op) {
   if (op == Py_EQ) {
-    int comparison_signal = PyObject_RichCompareBool(numerator, other_numerator, op);
+    int comparison_signal =
+        PyObject_RichCompareBool(numerator, other_numerator, op);
     if (comparison_signal < 0)
       return NULL;
     else if (!comparison_signal)
       Py_RETURN_FALSE;
     return PyObject_RichCompare(denominator, other_denominator, op);
   } else if (op == Py_NE) {
-    int comparison_signal = PyObject_RichCompareBool(numerator, other_numerator, op);
+    int comparison_signal =
+        PyObject_RichCompareBool(numerator, other_numerator, op);
     if (comparison_signal < 0)
       return NULL;
     else if (comparison_signal)
