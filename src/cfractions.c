@@ -856,17 +856,14 @@ static PyObject *Fraction_divmod(PyObject *self, PyObject *other) {
 
 static FractionObject *Fractions_multiply(FractionObject *self,
                                           FractionObject *other) {
-  FractionObject *result;
-  PyObject *denominator, *gcd, *numerator, *other_denominator, *other_numerator,
-      *result_denominator, *result_numerator;
-  gcd = _PyLong_GCD(self->numerator, other->denominator);
+  PyObject *gcd = _PyLong_GCD(self->numerator, other->denominator);
   if (!gcd) return NULL;
-  numerator = PyNumber_FloorDivide(self->numerator, gcd);
+  PyObject *numerator = PyNumber_FloorDivide(self->numerator, gcd);
   if (!numerator) {
     Py_DECREF(gcd);
     return NULL;
   }
-  other_denominator = PyNumber_FloorDivide(other->denominator, gcd);
+  PyObject *other_denominator = PyNumber_FloorDivide(other->denominator, gcd);
   Py_DECREF(gcd);
   if (!other_denominator) {
     Py_DECREF(numerator);
@@ -874,14 +871,14 @@ static FractionObject *Fractions_multiply(FractionObject *self,
   }
   gcd = _PyLong_GCD(other->numerator, self->denominator);
   if (!gcd) return NULL;
-  other_numerator = PyNumber_FloorDivide(other->numerator, gcd);
+  PyObject *other_numerator = PyNumber_FloorDivide(other->numerator, gcd);
   if (!other_numerator) {
     Py_DECREF(gcd);
     Py_DECREF(other_denominator);
     Py_DECREF(numerator);
     return NULL;
   }
-  denominator = PyNumber_FloorDivide(self->denominator, gcd);
+  PyObject *denominator = PyNumber_FloorDivide(self->denominator, gcd);
   Py_DECREF(gcd);
   if (!denominator) {
     Py_DECREF(other_numerator);
@@ -889,7 +886,7 @@ static FractionObject *Fractions_multiply(FractionObject *self,
     Py_DECREF(numerator);
     return NULL;
   }
-  result_numerator = PyNumber_Multiply(numerator, other_numerator);
+  PyObject *result_numerator = PyNumber_Multiply(numerator, other_numerator);
   Py_DECREF(other_numerator);
   Py_DECREF(numerator);
   if (!result_numerator) {
@@ -897,14 +894,16 @@ static FractionObject *Fractions_multiply(FractionObject *self,
     Py_DECREF(denominator);
     return NULL;
   }
-  result_denominator = PyNumber_Multiply(denominator, other_denominator);
+  PyObject *result_denominator =
+      PyNumber_Multiply(denominator, other_denominator);
   Py_DECREF(other_denominator);
   Py_DECREF(denominator);
   if (!result_denominator) {
     Py_DECREF(result_numerator);
     return NULL;
   }
-  result = PyObject_New(FractionObject, (PyTypeObject *)&FractionType);
+  FractionObject *result =
+      PyObject_New(FractionObject, (PyTypeObject *)&FractionType);
   if (!result) {
     Py_DECREF(result_numerator);
     Py_DECREF(result_denominator);
@@ -931,28 +930,26 @@ static PyObject *FractionFloat_multiply(FractionObject *self, PyObject *other) {
 
 static FractionObject *FractionLong_multiply(FractionObject *self,
                                              PyObject *other) {
-  FractionObject *result;
-  PyObject *gcd, *other_normalized, *result_denominator, *result_numerator;
-  gcd = _PyLong_GCD(other, self->denominator);
+  PyObject *gcd = _PyLong_GCD(other, self->denominator);
   if (!gcd) return NULL;
-  other_normalized = PyNumber_FloorDivide(other, gcd);
+  PyObject *other_normalized = PyNumber_FloorDivide(other, gcd);
   if (!other_normalized) {
     Py_DECREF(gcd);
     return NULL;
   }
-  result_denominator = PyNumber_FloorDivide(self->denominator, gcd);
+  PyObject *result_denominator = PyNumber_FloorDivide(self->denominator, gcd);
   Py_DECREF(gcd);
   if (!result_denominator) {
     Py_DECREF(other_normalized);
     return NULL;
   }
-  result_numerator = PyNumber_Multiply(self->numerator, other_normalized);
+  PyObject *result_numerator = PyNumber_Multiply(self->numerator, other_normalized);
   Py_DECREF(other_normalized);
   if (!result_numerator) {
     Py_DECREF(result_denominator);
     return NULL;
   }
-  result = PyObject_New(FractionObject, (PyTypeObject *)&FractionType);
+  FractionObject *result = PyObject_New(FractionObject, (PyTypeObject *)&FractionType);
   if (!result) {
     Py_DECREF(result_numerator);
     Py_DECREF(result_denominator);
