@@ -1406,8 +1406,8 @@ static PyObject *Fraction_subtract(PyObject *self, PyObject *other) {
 
 static FractionObject *Fraction_limit_denominator_impl(
     FractionObject *self, PyObject *max_denominator) {
-  PyObject *tmp;
-  tmp = PyLong_FromLong(1);
+  PyObject *tmp = PyLong_FromLong(1);
+  if (!tmp) return NULL;
   int comparison_signal = PyObject_RichCompareBool(max_denominator, tmp, Py_LT);
   Py_DECREF(tmp);
   if (comparison_signal < 0)
@@ -1433,42 +1433,42 @@ static FractionObject *Fraction_limit_denominator_impl(
            *second_bound_numerator = PyLong_FromLong(1),
            *second_bound_denominator = PyLong_FromLong(0);
   while (1) {
-    PyObject *a, *candidate_denominator, *tmp, *other_tmp;
-    a = PyNumber_FloorDivide(numerator, denominator);
-    if (!a) goto error;
-    tmp = PyNumber_Multiply(a, second_bound_denominator);
+    PyObject *quotient = PyNumber_FloorDivide(numerator, denominator);
+    if (!quotient) goto error;
+    PyObject *tmp = PyNumber_Multiply(quotient, second_bound_denominator);
     if (!tmp) {
-      Py_DECREF(a);
+      Py_DECREF(quotient);
       goto error;
     }
-    candidate_denominator = PyNumber_Add(first_bound_denominator, tmp);
+    PyObject *candidate_denominator =
+        PyNumber_Add(first_bound_denominator, tmp);
     Py_DECREF(tmp);
     if (!candidate_denominator) {
-      Py_DECREF(a);
+      Py_DECREF(quotient);
       goto error;
     }
     comparison_signal =
         PyObject_RichCompareBool(candidate_denominator, max_denominator, Py_GT);
     if (comparison_signal < 0) {
       Py_DECREF(candidate_denominator);
-      Py_DECREF(a);
+      Py_DECREF(quotient);
       goto error;
     } else if (comparison_signal) {
       Py_DECREF(candidate_denominator);
-      Py_DECREF(a);
+      Py_DECREF(quotient);
       break;
     }
-    tmp = PyNumber_Multiply(a, denominator);
+    tmp = PyNumber_Multiply(quotient, denominator);
     if (!tmp) {
       Py_DECREF(candidate_denominator);
-      Py_DECREF(a);
+      Py_DECREF(quotient);
       goto error;
     }
-    other_tmp = PyNumber_Subtract(numerator, tmp);
+    PyObject *other_tmp = PyNumber_Subtract(numerator, tmp);
     Py_DECREF(tmp);
     if (!other_tmp) {
       Py_DECREF(candidate_denominator);
-      Py_DECREF(a);
+      Py_DECREF(quotient);
       goto error;
     }
     numerator = denominator;
@@ -1476,8 +1476,8 @@ static FractionObject *Fraction_limit_denominator_impl(
     Py_DECREF(first_bound_denominator);
     first_bound_denominator = second_bound_denominator;
     second_bound_denominator = candidate_denominator;
-    tmp = PyNumber_Multiply(a, second_bound_numerator);
-    Py_DECREF(a);
+    tmp = PyNumber_Multiply(quotient, second_bound_numerator);
+    Py_DECREF(quotient);
     if (!tmp) goto error;
     other_tmp = PyNumber_Add(first_bound_numerator, tmp);
     Py_DECREF(tmp);
@@ -1485,12 +1485,17 @@ static FractionObject *Fraction_limit_denominator_impl(
     first_bound_numerator = second_bound_numerator;
     second_bound_numerator = other_tmp;
   }
-  PyObject *other_tmp, *scale;
   tmp = PyNumber_Subtract(max_denominator, first_bound_denominator);
-  scale = PyNumber_FloorDivide(tmp, second_bound_denominator);
+  if (!tmp) goto error;
+  PyObject *scale = PyNumber_FloorDivide(tmp, second_bound_denominator);
   Py_DECREF(tmp);
+  if (!scale) goto error;
   tmp = PyNumber_Multiply(scale, second_bound_numerator);
-  other_tmp = PyNumber_Add(first_bound_numerator, tmp);
+  if (!tmp) {
+    Py_DECREF(scale);
+    goto error;
+  }
+  PyObject *other_tmp = PyNumber_Add(first_bound_numerator, tmp);
   Py_DECREF(tmp);
   if (!other_tmp) {
     Py_DECREF(scale);
@@ -1499,6 +1504,10 @@ static FractionObject *Fraction_limit_denominator_impl(
   Py_DECREF(first_bound_numerator);
   first_bound_numerator = other_tmp;
   tmp = PyNumber_Multiply(scale, second_bound_denominator);
+  if (!tmp) {
+    Py_DECREF(scale);
+    goto error;
+  }
   other_tmp = PyNumber_Add(first_bound_denominator, tmp);
   Py_DECREF(tmp);
   if (!other_tmp) {
@@ -1507,15 +1516,17 @@ static FractionObject *Fraction_limit_denominator_impl(
   }
   Py_DECREF(first_bound_denominator);
   first_bound_denominator = other_tmp;
-  Py_DECREF(numerator);
-  Py_DECREF(denominator);
   FractionObject *first_bound = PyObject_New(FractionObject, &FractionType);
   if (!first_bound) goto error;
+  Py_DECREF(numerator);
+  Py_DECREF(denominator);
   first_bound->numerator = first_bound_numerator;
   first_bound->denominator = first_bound_denominator;
   FractionObject *second_bound = PyObject_New(FractionObject, &FractionType);
   if (!second_bound) {
     Py_DECREF(first_bound);
+    Py_DECREF(second_bound_numerator);
+    Py_DECREF(second_bound_denominator);
     return NULL;
   }
   second_bound->numerator = second_bound_numerator;
@@ -1557,9 +1568,11 @@ static FractionObject *Fraction_limit_denominator_impl(
     Py_DECREF(second_bound);
     return NULL;
   } else if (comparison_result == Py_True) {
+    Py_DECREF(comparison_result);
     Py_DECREF(first_bound);
     return second_bound;
   } else {
+    Py_DECREF(comparison_result);
     Py_DECREF(second_bound);
     return first_bound;
   }
