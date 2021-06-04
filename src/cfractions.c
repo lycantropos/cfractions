@@ -1786,8 +1786,11 @@ static PyObject *Fraction_true_divide(PyObject *self, PyObject *other) {
 }
 
 static PyObject *Fraction_trunc(FractionObject *self, PyObject *args) {
-  return is_negative_Fraction(self) ? Fraction_ceil_impl(self)
-                                    : Fraction_floor_impl(self);
+  int is_negative = is_negative_Fraction(self);
+  if (is_negative < 0)
+    return NULL;
+  else
+    return is_negative ? Fraction_ceil_impl(self) : Fraction_floor_impl(self);
 }
 
 static FractionObject *Fraction_positive(FractionObject *self) {
