@@ -1305,69 +1305,67 @@ static PyObject *Fraction_power(PyObject *self, PyObject *exponent,
 
 static FractionObject *Fractions_subtract(FractionObject *self,
                                           FractionObject *other) {
-  FractionObject *result;
-  PyObject *denominator, *numerator, *first_numerator_component,
-      *second_numerator_component;
-  first_numerator_component =
+  PyObject *first_numerator_component =
       PyNumber_Multiply(self->numerator, other->denominator);
   if (!first_numerator_component) return NULL;
-  second_numerator_component =
+  PyObject *second_numerator_component =
       PyNumber_Multiply(other->numerator, self->denominator);
   if (!second_numerator_component) {
     Py_DECREF(first_numerator_component);
     return NULL;
   }
-  numerator =
+  PyObject *result_numerator =
       PyNumber_Subtract(first_numerator_component, second_numerator_component);
   Py_DECREF(second_numerator_component);
   Py_DECREF(first_numerator_component);
-  if (!numerator) return NULL;
-  denominator = PyNumber_Multiply(self->denominator, other->denominator);
-  if (!denominator) {
-    Py_DECREF(numerator);
+  if (!result_numerator) return NULL;
+  PyObject *result_denominator =
+      PyNumber_Multiply(self->denominator, other->denominator);
+  if (!result_denominator) {
+    Py_DECREF(result_numerator);
     return NULL;
   }
-  if (normalize_Fraction_components_moduli(&numerator, &denominator)) {
-    Py_DECREF(denominator);
-    Py_DECREF(numerator);
+  if (normalize_Fraction_components_moduli(&result_numerator,
+                                           &result_denominator)) {
+    Py_DECREF(result_denominator);
+    Py_DECREF(result_numerator);
     return NULL;
   }
-  result = PyObject_New(FractionObject, (PyTypeObject *)&FractionType);
+  FractionObject *result =
+      PyObject_New(FractionObject, (PyTypeObject *)&FractionType);
   if (!result) {
-    Py_DECREF(denominator);
-    Py_DECREF(numerator);
+    Py_DECREF(result_denominator);
+    Py_DECREF(result_numerator);
     return NULL;
   }
-  result->numerator = numerator;
-  result->denominator = denominator;
+  result->numerator = result_numerator;
+  result->denominator = result_denominator;
   return result;
 }
 
 static PyObject *FractionFloat_subtract(FractionObject *self, PyObject *other) {
-  PyObject *result, *tmp;
-  tmp = Fraction_float(self);
+  PyObject *tmp = Fraction_float(self);
   if (!tmp) return NULL;
-  result = PyNumber_Subtract(tmp, other);
+  PyObject *result = PyNumber_Subtract(tmp, other);
   Py_DECREF(tmp);
   return result;
 }
 
 static FractionObject *FractionLong_subtract(FractionObject *self,
                                              PyObject *other) {
-  FractionObject *result;
-  PyObject *result_denominator, *result_numerator, *tmp;
-  tmp = PyNumber_Multiply(other, self->denominator);
+  PyObject *tmp = PyNumber_Multiply(other, self->denominator);
   if (!tmp) return NULL;
-  result_numerator = PyNumber_Subtract(self->numerator, tmp);
+  PyObject *result_numerator = PyNumber_Subtract(self->numerator, tmp);
   Py_DECREF(tmp);
   Py_INCREF(self->denominator);
-  result_denominator = self->denominator;
+  PyObject *result_denominator = self->denominator;
   if (normalize_Fraction_components_moduli(&result_numerator,
                                            &result_denominator) < 0) {
     Py_DECREF(result_denominator);
     Py_DECREF(result_numerator);
   }
-  result = PyObject_New(FractionObject, (PyTypeObject *)&FractionType);
+  FractionObject *result =
+      PyObject_New(FractionObject, (PyTypeObject *)&FractionType);
   if (!result) {
     Py_DECREF(result_numerator);
     Py_DECREF(result_denominator);
@@ -1390,15 +1388,16 @@ static PyObject *Fraction_subtract(PyObject *self, PyObject *other) {
   } else if (PyLong_Check(self)) {
     FractionObject *result =
         FractionLong_subtract((FractionObject *)other, self);
-    PyObject *tmp;
-    tmp = result->numerator;
+    if (!result) return NULL;
+    PyObject *tmp = result->numerator;
     result->numerator = PyNumber_Negative(result->numerator);
     Py_DECREF(tmp);
     return (PyObject *)result;
   } else if (PyFloat_Check(self)) {
-    PyObject *result, *tmp;
-    tmp = (PyObject *)FractionFloat_subtract((FractionObject *)other, self);
-    result = PyNumber_Negative(tmp);
+    PyObject *tmp =
+        (PyObject *)FractionFloat_subtract((FractionObject *)other, self);
+    if (!tmp) return NULL;
+    PyObject *result = PyNumber_Negative(tmp);
     Py_DECREF(tmp);
     return result;
   }
