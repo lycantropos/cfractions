@@ -414,24 +414,22 @@ static FractionObject *Fractions_components_add(PyObject *numerator,
                                                 PyObject *denominator,
                                                 PyObject *other_numerator,
                                                 PyObject *other_denominator) {
-  FractionObject *result;
-  PyObject *result_denominator, *result_numerator,
-      *first_result_numerator_component, *second_result_numerator_component;
-  first_result_numerator_component =
+  PyObject *first_result_numerator_component =
       PyNumber_Multiply(numerator, other_denominator);
   if (!first_result_numerator_component) return NULL;
-  second_result_numerator_component =
+  PyObject *second_result_numerator_component =
       PyNumber_Multiply(other_numerator, denominator);
   if (!second_result_numerator_component) {
     Py_DECREF(first_result_numerator_component);
     return NULL;
   }
-  result_numerator = PyNumber_Add(first_result_numerator_component,
-                                  second_result_numerator_component);
+  PyObject *result_numerator = PyNumber_Add(first_result_numerator_component,
+                                            second_result_numerator_component);
   Py_DECREF(second_result_numerator_component);
   Py_DECREF(first_result_numerator_component);
   if (!result_numerator) return NULL;
-  result_denominator = PyNumber_Multiply(denominator, other_denominator);
+  PyObject *result_denominator =
+      PyNumber_Multiply(denominator, other_denominator);
   if (!result_denominator) {
     Py_DECREF(result_numerator);
     return NULL;
@@ -442,7 +440,8 @@ static FractionObject *Fractions_components_add(PyObject *numerator,
     Py_DECREF(result_numerator);
     return NULL;
   }
-  result = PyObject_New(FractionObject, (PyTypeObject *)&FractionType);
+  FractionObject *result =
+      PyObject_New(FractionObject, (PyTypeObject *)&FractionType);
   if (!result) {
     Py_DECREF(result_denominator);
     Py_DECREF(result_numerator);
@@ -460,29 +459,27 @@ static FractionObject *Fractions_add(FractionObject *self,
 }
 
 static PyObject *FractionFloat_add(FractionObject *self, PyObject *other) {
-  PyObject *result, *tmp;
-  tmp = Fraction_float(self);
+  PyObject *tmp = Fraction_float(self);
   if (!tmp) return NULL;
-  result = PyNumber_Add(tmp, other);
+  PyObject *result = PyNumber_Add(tmp, other);
   Py_DECREF(tmp);
   return result;
 }
 
 static FractionObject *FractionLong_add(FractionObject *self, PyObject *other) {
-  FractionObject *result;
-  PyObject *result_denominator, *result_numerator, *tmp;
-  tmp = PyNumber_Multiply(other, self->denominator);
+  PyObject *tmp = PyNumber_Multiply(other, self->denominator);
   if (!tmp) return NULL;
-  result_numerator = PyNumber_Add(self->numerator, tmp);
+  PyObject *result_numerator = PyNumber_Add(self->numerator, tmp);
   Py_DECREF(tmp);
   Py_INCREF(self->denominator);
-  result_denominator = self->denominator;
+  PyObject *result_denominator = self->denominator;
   if (normalize_Fraction_components_moduli(&result_numerator,
                                            &result_denominator) < 0) {
     Py_DECREF(result_denominator);
     Py_DECREF(result_numerator);
   }
-  result = PyObject_New(FractionObject, (PyTypeObject *)&FractionType);
+  FractionObject *result =
+      PyObject_New(FractionObject, (PyTypeObject *)&FractionType);
   if (!result) {
     Py_DECREF(result_numerator);
     Py_DECREF(result_denominator);
