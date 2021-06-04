@@ -1989,6 +1989,12 @@ static FractionObject *FractionRational_true_divide(FractionObject *self,
   if (parse_Fraction_components_from_rational(other, &other_numerator,
                                               &other_denominator) < 0)
     return NULL;
+  if (normalize_Fraction_components_moduli(&other_numerator,
+                                           &other_denominator) < 0) {
+    Py_DECREF(other_denominator);
+    Py_DECREF(other_numerator);
+    return NULL;
+  }
   FractionObject *result = Fractions_components_true_divide(
       self->numerator, self->denominator, other_numerator, other_denominator);
   Py_DECREF(other_denominator);
@@ -2002,6 +2008,11 @@ static FractionObject *RationalFraction_true_divide(PyObject *self,
   if (parse_Fraction_components_from_rational(self, &numerator, &denominator) <
       0)
     return NULL;
+  if (normalize_Fraction_components_moduli(&numerator, &denominator) < 0) {
+    Py_DECREF(denominator);
+    Py_DECREF(numerator);
+    return NULL;
+  }
   FractionObject *result = Fractions_components_true_divide(
       numerator, denominator, other->numerator, other->denominator);
   Py_DECREF(denominator);
