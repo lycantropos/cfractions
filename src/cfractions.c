@@ -854,6 +854,52 @@ static PyObject *Fraction_divmod(PyObject *self, PyObject *other) {
   Py_RETURN_NOTIMPLEMENTED;
 }
 
+static Py_hash_t Fraction_hash(FractionObject *self) {
+  PyObject *hash_modulus = PyLong_FromSize_t(_PyHASH_MODULUS);
+  if (!hash_modulus) return -1;
+  PyObject *tmp = PyLong_FromSize_t(_PyHASH_MODULUS - 2);
+  if (!tmp) {
+    Py_DECREF(hash_modulus);
+    return -1;
+  }
+  PyObject *inverted_denominator_hash =
+      PyNumber_Power(self->denominator, tmp, hash_modulus);
+  Py_DECREF(tmp);
+  if (!inverted_denominator_hash) {
+    Py_DECREF(hash_modulus);
+    return -1;
+  }
+  PyObject *hash_;
+  if (PyObject_Not(inverted_denominator_hash)) {
+    Py_DECREF(inverted_denominator_hash);
+    Py_DECREF(hash_modulus);
+    return _PyHASH_INF;
+  } else {
+    PyObject *numerator_modulus = PyNumber_Absolute(self->numerator);
+    if (!numerator_modulus) {
+      Py_DECREF(inverted_denominator_hash);
+      Py_DECREF(hash_modulus);
+      return -1;
+    }
+    tmp = PyNumber_Multiply(numerator_modulus, inverted_denominator_hash);
+    hash_ = PyNumber_Remainder(tmp, hash_modulus);
+    Py_DECREF(tmp);
+    Py_DECREF(numerator_modulus);
+    Py_DECREF(inverted_denominator_hash);
+    Py_DECREF(hash_modulus);
+    if (!hash_) return -1;
+  }
+  if (is_negative_Fraction(self)) {
+    tmp = hash_;
+    hash_ = PyNumber_Negative(hash_);
+    Py_DECREF(tmp);
+  }
+  Py_hash_t result = PyLong_AsSsize_t(hash_);
+  Py_DECREF(hash_);
+  if (PyErr_Occurred()) return -1;
+  return result == -1 ? -2 : result;
+}
+
 static FractionObject *Fractions_components_multiply(
     PyObject *numerator, PyObject *denominator, PyObject *other_numerator,
     PyObject *other_denominator) {
@@ -1883,14 +1929,6 @@ static PyObject *Fraction_true_divide(PyObject *self, PyObject *other) {
   Py_RETURN_NOTIMPLEMENTED;
 }
 
-static PyObject *Fraction_trunc(FractionObject *self, PyObject *args) {
-  int is_negative = is_negative_Fraction(self);
-  if (is_negative < 0)
-    return NULL;
-  else
-    return is_negative ? Fraction_ceil_impl(self) : Fraction_floor_impl(self);
-}
-
 static FractionObject *Fraction_positive(FractionObject *self) {
   Py_INCREF(self);
   return self;
@@ -2028,52 +2066,6 @@ static PyObject *Fraction_round(FractionObject *self, PyObject *args) {
   return (PyObject *)result;
 }
 
-static Py_hash_t Fraction_hash(FractionObject *self) {
-  PyObject *hash_modulus = PyLong_FromSize_t(_PyHASH_MODULUS);
-  if (!hash_modulus) return -1;
-  PyObject *tmp = PyLong_FromSize_t(_PyHASH_MODULUS - 2);
-  if (!tmp) {
-    Py_DECREF(hash_modulus);
-    return -1;
-  }
-  PyObject *inverted_denominator_hash =
-      PyNumber_Power(self->denominator, tmp, hash_modulus);
-  Py_DECREF(tmp);
-  if (!inverted_denominator_hash) {
-    Py_DECREF(hash_modulus);
-    return -1;
-  }
-  PyObject *hash_;
-  if (PyObject_Not(inverted_denominator_hash)) {
-    Py_DECREF(inverted_denominator_hash);
-    Py_DECREF(hash_modulus);
-    return _PyHASH_INF;
-  } else {
-    PyObject *numerator_modulus = PyNumber_Absolute(self->numerator);
-    if (!numerator_modulus) {
-      Py_DECREF(inverted_denominator_hash);
-      Py_DECREF(hash_modulus);
-      return -1;
-    }
-    tmp = PyNumber_Multiply(numerator_modulus, inverted_denominator_hash);
-    hash_ = PyNumber_Remainder(tmp, hash_modulus);
-    Py_DECREF(tmp);
-    Py_DECREF(numerator_modulus);
-    Py_DECREF(inverted_denominator_hash);
-    Py_DECREF(hash_modulus);
-    if (!hash_) return -1;
-  }
-  if (is_negative_Fraction(self)) {
-    tmp = hash_;
-    hash_ = PyNumber_Negative(hash_);
-    Py_DECREF(tmp);
-  }
-  Py_hash_t result = PyLong_AsSsize_t(hash_);
-  Py_DECREF(hash_);
-  if (PyErr_Occurred()) return -1;
-  return result == -1 ? -2 : result;
-}
-
 static PyObject *Fraction_repr(FractionObject *self) {
   return PyUnicode_FromFormat("Fraction(%R, %R)", self->numerator,
                               self->denominator);
@@ -2090,6 +2082,14 @@ static PyObject *Fraction_str(FractionObject *self) {
     return comparison_signal ? PyUnicode_FromFormat("%S", self->numerator)
                              : PyUnicode_FromFormat("%S/%S", self->numerator,
                                                     self->denominator);
+}
+
+static PyObject *Fraction_trunc(FractionObject *self, PyObject *args) {
+  int is_negative = is_negative_Fraction(self);
+  if (is_negative < 0)
+    return NULL;
+  else
+    return is_negative ? Fraction_ceil_impl(self) : Fraction_floor_impl(self);
 }
 
 static PyMemberDef Fraction_members[] = {
