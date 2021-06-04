@@ -1,4 +1,5 @@
-from numbers import Complex
+from numbers import (Complex,
+                     Rational)
 
 import pytest
 from hypothesis import given
@@ -7,8 +8,8 @@ from cfractions import Fraction
 from . import strategies
 
 
-@given(strategies.integers, strategies.non_zero_fractions)
-def test_connection_with_truediv(first: int, second: Fraction) -> None:
+@given(strategies.non_fractions_rationals, strategies.non_zero_fractions)
+def test_connection_with_truediv(first: Rational, second: Fraction) -> None:
     result = first / second
 
     assert result == Fraction(first) / second
