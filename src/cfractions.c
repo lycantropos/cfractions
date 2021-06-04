@@ -1931,29 +1931,27 @@ static PyObject *Fraction_round(FractionObject *self, PyObject *args) {
 }
 
 static Py_hash_t Fraction_hash(FractionObject *self) {
-  PyObject *hash_modulus, *hash_, *inverted_denominator_hash, *tmp;
-  Py_hash_t result;
-  hash_modulus = PyLong_FromSize_t(_PyHASH_MODULUS);
+  PyObject *hash_modulus = PyLong_FromSize_t(_PyHASH_MODULUS);
   if (!hash_modulus) return -1;
-  tmp = PyLong_FromSize_t(_PyHASH_MODULUS - 2);
+  PyObject *tmp = PyLong_FromSize_t(_PyHASH_MODULUS - 2);
   if (!tmp) {
     Py_DECREF(hash_modulus);
     return -1;
   }
-  inverted_denominator_hash =
+  PyObject *inverted_denominator_hash =
       PyNumber_Power(self->denominator, tmp, hash_modulus);
   Py_DECREF(tmp);
   if (!inverted_denominator_hash) {
     Py_DECREF(hash_modulus);
     return -1;
   }
+  PyObject *hash_;
   if (PyObject_Not(inverted_denominator_hash)) {
     Py_DECREF(inverted_denominator_hash);
     Py_DECREF(hash_modulus);
     return _PyHASH_INF;
   } else {
-    PyObject *numerator_modulus;
-    numerator_modulus = PyNumber_Absolute(self->numerator);
+    PyObject *numerator_modulus = PyNumber_Absolute(self->numerator);
     if (!numerator_modulus) {
       Py_DECREF(inverted_denominator_hash);
       Py_DECREF(hash_modulus);
@@ -1971,9 +1969,8 @@ static Py_hash_t Fraction_hash(FractionObject *self) {
     tmp = hash_;
     hash_ = PyNumber_Negative(hash_);
     Py_DECREF(tmp);
-    if (!hash_) return -1;
   }
-  result = PyLong_AsSsize_t(hash_);
+  Py_hash_t result = PyLong_AsSsize_t(hash_);
   Py_DECREF(hash_);
   if (PyErr_Occurred()) return -1;
   return result == -1 ? -2 : result;
