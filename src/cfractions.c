@@ -2067,14 +2067,16 @@ static int load_rational() {
 }
 
 static int mark_as_rational(PyObject *python_type) {
-  PyObject *tmp;
   PyObject *register_method_name = PyUnicode_FromString("register");
+  if (!register_method_name) return -1;
+  PyObject *tmp =
 #if PY39_OR_MORE
-  tmp = PyObject_CallMethodOneArg(Rational, register_method_name, python_type);
+      PyObject_CallMethodOneArg(Rational, register_method_name, python_type);
 #else
-  tmp = PyObject_CallMethodObjArgs(Rational, register_method_name, python_type,
-                                   NULL);
+      PyObject_CallMethodObjArgs(Rational, register_method_name, python_type,
+                                 NULL)
 #endif
+  ;
   Py_DECREF(register_method_name);
   if (!tmp) return -1;
   Py_DECREF(tmp);
@@ -2092,7 +2094,12 @@ PyMODINIT_FUNC PyInit__cfractions(void) {
     Py_DECREF(result);
     return NULL;
   }
-  if (load_rational() < 0 || mark_as_rational((PyObject *)&FractionType) < 0) {
+  if (load_rational() < 0) {
+    Py_DECREF(result);
+    return NULL;
+  }
+  if (mark_as_rational((PyObject *)&FractionType) < 0) {
+    Py_DECREF(Rational);
     Py_DECREF(result);
     return NULL;
   }
