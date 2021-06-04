@@ -294,13 +294,19 @@ static PyObject *Fractions_components_richcompare(PyObject *numerator,
                                                   PyObject *other_denominator,
                                                   int op) {
   if (op == Py_EQ) {
-    return PyBool_FromLong(
-        PyObject_RichCompareBool(numerator, other_numerator, op) &&
-        PyObject_RichCompareBool(denominator, other_denominator, op));
+    int comparison_signal = PyObject_RichCompareBool(numerator, other_numerator, op);
+    if (comparison_signal < 0)
+      return NULL;
+    else if (!comparison_signal)
+      Py_RETURN_FALSE;
+    return PyObject_RichCompare(denominator, other_denominator, op);
   } else if (op == Py_NE) {
-    return PyBool_FromLong(
-        PyObject_RichCompareBool(numerator, other_numerator, op) ||
-        PyObject_RichCompareBool(denominator, other_denominator, op));
+    int comparison_signal = PyObject_RichCompareBool(numerator, other_numerator, op);
+    if (comparison_signal < 0)
+      return NULL;
+    else if (comparison_signal)
+      Py_RETURN_TRUE;
+    return PyObject_RichCompare(denominator, other_denominator, op);
   } else {
     PyObject *result, *left, *right;
     left = PyNumber_Multiply(numerator, other_denominator);
