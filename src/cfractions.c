@@ -37,6 +37,7 @@ static int is_negative_Fraction(FractionObject *self) {
 
 static int is_integral_Fraction(FractionObject *self) {
   PyObject *tmp = PyLong_FromLong(1);
+  if (!tmp) return -1;
   int result = PyObject_RichCompareBool(self->denominator, tmp, Py_EQ);
   Py_DECREF(tmp);
   return result;
@@ -282,21 +283,24 @@ static int Fraction_init(FractionObject *self, PyObject *args) {
   return 0;
 }
 
-static PyObject *Fractions_richcompare(FractionObject *self,
-                                       FractionObject *other, int op) {
+static PyObject *Fractions_components_richcompare(PyObject *numerator,
+                                                  PyObject *denominator,
+                                                  PyObject *other_numerator,
+                                                  PyObject *other_denominator,
+                                                  int op) {
   if (op == Py_EQ) {
     return PyBool_FromLong(
-        PyObject_RichCompareBool(self->numerator, other->numerator, op) &&
-        PyObject_RichCompareBool(self->denominator, other->denominator, op));
+        PyObject_RichCompareBool(numerator, other_numerator, op) &&
+        PyObject_RichCompareBool(denominator, other_denominator, op));
   } else if (op == Py_NE) {
     return PyBool_FromLong(
-        PyObject_RichCompareBool(self->numerator, other->numerator, op) ||
-        PyObject_RichCompareBool(self->denominator, other->denominator, op));
+        PyObject_RichCompareBool(numerator, other_numerator, op) ||
+        PyObject_RichCompareBool(denominator, other_denominator, op));
   } else {
     PyObject *result, *left, *right;
-    left = PyNumber_Multiply(self->numerator, other->denominator);
+    left = PyNumber_Multiply(numerator, other_denominator);
     if (!left) return NULL;
-    right = PyNumber_Multiply(other->numerator, self->denominator);
+    right = PyNumber_Multiply(other_numerator, denominator);
     if (!right) {
       Py_DECREF(left);
       return NULL;
@@ -308,50 +312,58 @@ static PyObject *Fractions_richcompare(FractionObject *self,
   }
 }
 
+static PyObject *Fractions_richcompare(FractionObject *self,
+                                       FractionObject *other, int op) {
+  return Fractions_components_richcompare(self->numerator, self->denominator,
+                                          other->numerator, other->denominator,
+                                          op);
+}
+
 static PyObject *Fraction_richcompare(FractionObject *self, PyObject *other,
                                       int op) {
-  if (PyObject_TypeCheck(other, &FractionType)) {
+  if (PyObject_TypeCheck(other, &FractionType))
     return Fractions_richcompare(self, (FractionObject *)other, op);
-  } else if (PyLong_Check(other)) {
-    PyObject *result, *tmp;
+  else if (PyLong_Check(other)) {
     if (op == Py_EQ) {
-      tmp = PyLong_FromLong(1);
-      if (!tmp) return NULL;
-      result = PyBool_FromLong(
-          PyObject_RichCompareBool(self->denominator, tmp, op) &&
-          PyObject_RichCompareBool(self->numerator, other, op));
-      Py_DECREF(tmp);
-      return result;
+      int signal = is_integral_Fraction(self);
+      if (signal < 0)
+        return NULL;
+      else if (!signal)
+        Py_RETURN_FALSE;
+      return PyObject_RichCompare(self->numerator, other, op);
     } else if (op == Py_NE) {
-      tmp = PyLong_FromLong(1);
-      if (!tmp) return NULL;
-      result = PyBool_FromLong(
-          PyObject_RichCompareBool(self->denominator, tmp, op) ||
-          PyObject_RichCompareBool(self->numerator, other, op));
-      Py_DECREF(tmp);
-      return result;
+      int signal = is_integral_Fraction(self);
+      if (signal < 0)
+        return NULL;
+      else if (!signal)
+        Py_RETURN_TRUE;
+      return PyObject_RichCompare(self->numerator, other, op);
     } else {
+      PyObject *result, *tmp;
       tmp = PyNumber_Multiply(other, self->denominator);
+      if (!tmp) return NULL;
       result = PyObject_RichCompare(self->numerator, tmp, op);
       Py_DECREF(tmp);
       return result;
     }
   } else if (PyFloat_Check(other)) {
-    PyObject *other_fraction_denominator, *other_fraction_numerator, *result;
-    FractionObject *other_fraction;
     double other_value = PyFloat_AS_DOUBLE(other);
     if (!isfinite(other_value)) Py_RETURN_FALSE;
-    if (parse_Fraction_components_from_double(other_value,
-                                              &other_fraction_numerator,
-                                              &other_fraction_denominator) < 0)
+    PyObject *other_denominator, *other_numerator;
+    if (parse_Fraction_components_from_double(other_value, &other_numerator,
+                                              &other_denominator) < 0)
       return NULL;
-    other_fraction = PyObject_New(FractionObject, &FractionType);
-    if (!other_fraction) return NULL;
-    other_fraction->numerator = other_fraction_numerator;
-    other_fraction->denominator = other_fraction_denominator;
-    result = Fractions_richcompare(self, other_fraction, op);
-    Py_DECREF(other_fraction);
-    return result;
+    return Fractions_components_richcompare(self->numerator, self->denominator,
+                                            other_numerator, other_denominator,
+                                            op);
+  } else if (PyObject_IsInstance(other, Rational)) {
+    PyObject *other_denominator, *other_numerator;
+    if (parse_Fraction_components_from_rational(other, &other_numerator,
+                                                &other_denominator) < 0)
+      return NULL;
+    return Fractions_components_richcompare(self->numerator, self->denominator,
+                                            other_numerator, other_denominator,
+                                            op);
   }
   Py_RETURN_NOTIMPLEMENTED;
 }
