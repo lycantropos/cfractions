@@ -136,7 +136,7 @@ except ImportError:
                     exponent: _numbers.Complex,
                     modulo: _Optional[_numbers.Complex] = None
                     ) -> _numbers.Complex:
-            result = super().__pow__(exponent)
+            result = super().__pow__(_Fraction(exponent))
             if isinstance(result, _numbers.Complex) and modulo is not None:
                 result %= modulo
             return (Fraction(result.numerator, result.denominator)
@@ -214,6 +214,19 @@ except ImportError:
         def __round__(self, precision: _Optional[int] = None
                       ) -> _Union[int, 'Fraction']:
             result = super().__round__(precision)
+            return (Fraction(result.numerator, result.denominator)
+                    if isinstance(result, _Fraction)
+                    else result)
+
+        def __rpow__(self,
+                     base: _numbers.Complex,
+                     modulo: _Optional[_numbers.Complex] = None
+                     ) -> _numbers.Complex:
+            result = super().__rpow__(_Fraction(base)
+                                      if isinstance(base, _numbers.Rational)
+                                      else base)
+            if isinstance(result, _numbers.Complex) and modulo is not None:
+                result %= modulo
             return (Fraction(result.numerator, result.denominator)
                     if isinstance(result, _Fraction)
                     else result)
