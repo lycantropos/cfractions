@@ -55,7 +55,9 @@ except ImportError:
             """Returns sum of the fraction with given number."""
 
         def __add__(self, other):
-            result = super().__add__(other)
+            result = super().__add__(_Fraction(other)
+                                     if isinstance(other, _numbers.Rational)
+                                     else other)
             return (Fraction(result.numerator, result.denominator)
                     if isinstance(result, _Fraction)
                     else result)
@@ -152,7 +154,9 @@ except ImportError:
             """Returns sum of given number with the fraction."""
 
         def __radd__(self, other):
-            result = super().__radd__(other)
+            result = super().__radd__(_Fraction(other)
+                                      if isinstance(other, _numbers.Rational)
+                                      else other)
             return (Fraction(result.numerator, result.denominator)
                     if isinstance(result, _Fraction)
                     else result)
