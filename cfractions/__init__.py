@@ -226,9 +226,9 @@ except ImportError:
                      base: _numbers.Complex,
                      modulo: _Optional[_numbers.Complex] = None
                      ) -> _numbers.Complex:
-            result = super().__rpow__(_Fraction(base)
-                                      if isinstance(base, _numbers.Rational)
-                                      else base)
+            result = (_Fraction(base).__pow__(self)
+                      if isinstance(base, _numbers.Rational)
+                      else super().__rpow__(base))
             if isinstance(result, _numbers.Complex) and modulo is not None:
                 result %= modulo
             return (Fraction(result.numerator, result.denominator)
