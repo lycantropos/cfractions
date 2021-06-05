@@ -734,10 +734,13 @@ static int Longs_divmod(PyObject *dividend, PyObject *divisor,
   return 0;
 }
 
-static PyObject *Fractions_divmod(FractionObject *self, FractionObject *other) {
-  PyObject *dividend = PyNumber_Multiply(self->numerator, other->denominator);
+static PyObject *Fractions_components_divmod(PyObject *numerator,
+                                             PyObject *denominator,
+                                             PyObject *other_numerator,
+                                             PyObject *other_denominator) {
+  PyObject *dividend = PyNumber_Multiply(numerator, other_denominator);
   if (!dividend) return NULL;
-  PyObject *divisor = PyNumber_Multiply(other->numerator, self->denominator);
+  PyObject *divisor = PyNumber_Multiply(other_numerator, denominator);
   if (!divisor) {
     Py_DECREF(dividend);
     return NULL;
@@ -749,7 +752,7 @@ static PyObject *Fractions_divmod(FractionObject *self, FractionObject *other) {
   Py_DECREF(dividend);
   if (divmod_signal < 0) return NULL;
   PyObject *remainder_denominator =
-      PyNumber_Multiply(self->denominator, other->denominator);
+      PyNumber_Multiply(denominator, other_denominator);
   if (!remainder_denominator) {
     Py_DECREF(remainder_numerator);
     Py_DECREF(quotient);
@@ -772,6 +775,11 @@ static PyObject *Fractions_divmod(FractionObject *self, FractionObject *other) {
   remainder->numerator = remainder_numerator;
   remainder->denominator = remainder_denominator;
   return PyTuple_Pack(2, quotient, remainder);
+}
+
+static PyObject *Fractions_divmod(FractionObject *self, FractionObject *other) {
+  return Fractions_components_divmod(self->numerator, self->denominator,
+                                     other->numerator, other->denominator);
 }
 
 static PyObject *Fraction_Long_divmod(FractionObject *self, PyObject *other) {
@@ -830,6 +838,32 @@ static PyObject *Long_Fraction_divmod(PyObject *self, FractionObject *other) {
   return PyTuple_Pack(2, quotient, remainder);
 }
 
+static PyObject *Fraction_Rational_divmod(FractionObject *self,
+                                          PyObject *other) {
+  PyObject *other_denominator, *other_numerator;
+  if (parse_Fraction_components_from_rational(other, &other_numerator,
+                                              &other_denominator) < 0)
+    return NULL;
+  PyObject *result = Fractions_components_divmod(
+      self->numerator, self->denominator, other_numerator, other_denominator);
+  Py_DECREF(other_denominator);
+  Py_DECREF(other_numerator);
+  return result;
+}
+
+static PyObject *Rational_Fraction_divmod(PyObject *self,
+                                          FractionObject *other) {
+  PyObject *denominator, *numerator;
+  if (parse_Fraction_components_from_rational(self, &numerator, &denominator) <
+      0)
+    return NULL;
+  PyObject *result = Fractions_components_divmod(
+      numerator, denominator, other->numerator, other->denominator);
+  Py_DECREF(denominator);
+  Py_DECREF(numerator);
+  return result;
+}
+
 static PyObject *Fraction_divmod(PyObject *self, PyObject *other) {
   if (PyObject_TypeCheck(self, &FractionType)) {
     if (PyObject_TypeCheck(other, &FractionType))
@@ -843,7 +877,8 @@ static PyObject *Fraction_divmod(PyObject *self, PyObject *other) {
       result = PyNumber_Divmod(float_self, other);
       Py_DECREF(float_self);
       return result;
-    }
+    } else if (PyObject_IsInstance(other, Rational))
+      return Fraction_Rational_divmod((FractionObject *)self, other);
   } else if (PyLong_Check(self))
     return Long_Fraction_divmod(self, (FractionObject *)other);
   else if (PyFloat_Check(self)) {
@@ -853,7 +888,8 @@ static PyObject *Fraction_divmod(PyObject *self, PyObject *other) {
     result = PyNumber_Divmod(self, float_other);
     Py_DECREF(float_other);
     return result;
-  }
+  } else if (PyObject_IsInstance(self, Rational))
+    return Rational_Fraction_divmod(self, (FractionObject *)other);
   Py_RETURN_NOTIMPLEMENTED;
 }
 
