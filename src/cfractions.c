@@ -141,7 +141,8 @@ static int parse_Fraction_components_from_rational(
     Py_DECREF(numerator);
     return -1;
   }
-  if (normalize_Fraction_components_signs(&numerator, &denominator) < 0) {
+  if (normalize_Fraction_components_signs(&numerator, &denominator) < 0 ||
+      normalize_Fraction_components_moduli(&numerator, &denominator) < 0) {
     Py_DECREF(denominator);
     Py_DECREF(numerator);
     return -1;
@@ -474,12 +475,15 @@ static FractionObject *FractionLong_add(FractionObject *self, PyObject *other) {
   if (!tmp) return NULL;
   PyObject *result_numerator = PyNumber_Add(self->numerator, tmp);
   Py_DECREF(tmp);
+  if (!result_numerator)
+    return NULL;
   Py_INCREF(self->denominator);
   PyObject *result_denominator = self->denominator;
   if (normalize_Fraction_components_moduli(&result_numerator,
                                            &result_denominator) < 0) {
     Py_DECREF(result_denominator);
     Py_DECREF(result_numerator);
+    return NULL;
   }
   FractionObject *result =
       PyObject_New(FractionObject, (PyTypeObject *)&FractionType);
@@ -1015,12 +1019,6 @@ static FractionObject *FractionRational_multiply(FractionObject *self,
   if (parse_Fraction_components_from_rational(other, &other_numerator,
                                               &other_denominator) < 0)
     return NULL;
-  if (normalize_Fraction_components_moduli(&other_numerator,
-                                           &other_denominator) < 0) {
-    Py_DECREF(other_denominator);
-    Py_DECREF(other_numerator);
-    return NULL;
-  }
   FractionObject *result = Fractions_components_multiply(
       self->numerator, self->denominator, other_numerator, other_denominator);
   Py_DECREF(other_denominator);
@@ -1424,12 +1422,6 @@ static PyObject *Fraction_Rational_power(FractionObject *self,
   if (parse_Fraction_components_from_rational(exponent, &exponent_numerator,
                                               &exponent_denominator) < 0)
     return NULL;
-  if (normalize_Fraction_components_moduli(&exponent_numerator,
-                                           &exponent_denominator) < 0) {
-    Py_DECREF(exponent_denominator);
-    Py_DECREF(exponent_numerator);
-    return NULL;
-  }
   PyObject *result = Fractions_components_power(
       self->numerator, self->denominator, exponent_numerator,
       exponent_denominator, modulo);
@@ -1445,11 +1437,6 @@ static PyObject *Rational_Fraction_power(PyObject *self,
   if (parse_Fraction_components_from_rational(self, &numerator, &denominator) <
       0)
     return NULL;
-  if (normalize_Fraction_components_moduli(&numerator, &denominator) < 0) {
-    Py_DECREF(denominator);
-    Py_DECREF(numerator);
-    return NULL;
-  }
   PyObject *result =
       Fractions_components_power(numerator, denominator, exponent->numerator,
                                  exponent->denominator, modulo);
@@ -1989,12 +1976,6 @@ static FractionObject *FractionRational_true_divide(FractionObject *self,
   if (parse_Fraction_components_from_rational(other, &other_numerator,
                                               &other_denominator) < 0)
     return NULL;
-  if (normalize_Fraction_components_moduli(&other_numerator,
-                                           &other_denominator) < 0) {
-    Py_DECREF(other_denominator);
-    Py_DECREF(other_numerator);
-    return NULL;
-  }
   FractionObject *result = Fractions_components_true_divide(
       self->numerator, self->denominator, other_numerator, other_denominator);
   Py_DECREF(other_denominator);
@@ -2008,11 +1989,6 @@ static FractionObject *RationalFraction_true_divide(PyObject *self,
   if (parse_Fraction_components_from_rational(self, &numerator, &denominator) <
       0)
     return NULL;
-  if (normalize_Fraction_components_moduli(&numerator, &denominator) < 0) {
-    Py_DECREF(denominator);
-    Py_DECREF(numerator);
-    return NULL;
-  }
   FractionObject *result = Fractions_components_true_divide(
       numerator, denominator, other->numerator, other->denominator);
   Py_DECREF(denominator);
