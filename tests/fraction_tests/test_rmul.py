@@ -6,7 +6,7 @@ from cfractions import Fraction
 from . import strategies
 
 
-@given(strategies.finite_non_fractions, strategies.fractions)
+@given(strategies.finite_builtin_non_fractions, strategies.fractions)
 def test_connection_with_mul(first: Complex, second: Fraction) -> None:
     result = first * second
 

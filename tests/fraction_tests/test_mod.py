@@ -70,7 +70,7 @@ def test_reference_counter(first: Fraction, second: Fraction) -> None:
     assert second_refcount_after == second_refcount_before
 
 
-@given(strategies.fractions, strategies.zero_numbers)
+@given(strategies.fractions, strategies.zero_builtin_numbers)
 def test_zero_divisor(first: Fraction, second: Complex) -> None:
     with pytest.raises(ZeroDivisionError):
         first % second

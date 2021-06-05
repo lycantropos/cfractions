@@ -39,36 +39,37 @@ def test_evenness(fraction: Fraction) -> None:
     assert result == abs(-fraction)
 
 
-@given(strategies.fractions, strategies.fractions)
+@given(strategies.fractions, strategies.finite_builtin_numbers)
 def test_multiplicativity(first: Fraction, second: Fraction) -> None:
     result = abs(first * second)
 
     assert result == abs(first) * abs(second)
 
 
-@given(strategies.fractions, strategies.fractions)
+@given(strategies.fractions, strategies.finite_builtin_numbers)
 def test_triangle_inequality(first: Fraction, second: Fraction) -> None:
     result = abs(first + second)
 
     assert result <= abs(first) + abs(second)
 
 
-@given(strategies.fractions, strategies.finite_numbers)
+@given(strategies.fractions, strategies.finite_builtin_numbers)
 def test_mul_operand(first: Fraction, second: Complex) -> None:
     assert abs(first * second) == abs(first) * abs(second)
 
 
-@given(strategies.finite_non_fractions, strategies.fractions)
+@given(strategies.fractions, strategies.finite_builtin_numbers)
 def test_rmul_operand(first: Complex, second: Fraction) -> None:
     assert abs(first * second) == abs(first) * abs(second)
 
 
-@given(strategies.fractions, strategies.finite_non_zero_numbers)
+@given(strategies.fractions, strategies.finite_non_zero_builtin_numbers)
 def test_truediv_operand(first: Fraction, second: Complex) -> None:
     assert abs(first / second) == abs(first) / abs(second)
 
 
-@given(strategies.finite_non_fractions, strategies.non_zero_fractions)
+@given(strategies.finite_builtin_non_fractions,
+       strategies.finite_non_zero_builtin_numbers)
 def test_rtruediv_operand(first: Complex, second: Fraction) -> None:
     assert abs(first / second) == abs(first) / abs(second)
 
