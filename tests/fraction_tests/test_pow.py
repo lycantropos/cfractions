@@ -12,7 +12,6 @@ from tests.utils import (equivalence,
                          is_fraction_valid,
                          skip_reference_counter_test)
 from . import strategies
-from .strategies import CustomRational
 
 
 @given(strategies.fractions, strategies.small_non_negative_integral_rationals)
