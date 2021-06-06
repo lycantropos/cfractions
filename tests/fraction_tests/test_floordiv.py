@@ -33,7 +33,7 @@ def test_division_by_one(first: Fraction) -> None:
     assert result == math.floor(first)
 
 
-@given(strategies.fractions, strategies.non_zero_rationals)
+@given(strategies.fractions, strategies.non_zero_fractions)
 def test_connection_with_mod(first: Fraction, second: Fraction) -> None:
     result = first // second
 
