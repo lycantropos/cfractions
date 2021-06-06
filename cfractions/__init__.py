@@ -96,13 +96,10 @@ except ImportError:
             """Returns quotient of division of the fraction by given number."""
 
         def __floordiv__(self, other):
-            result = (float(self) % other
-                      if isinstance(other, float)
-                      else
-                      super().__floordiv__(_Fraction(other)
-                                           if isinstance(other,
-                                                         _numbers.Rational)
-                                           else other))
+            result = super().__floordiv__(_Fraction(other)
+                                          if isinstance(other,
+                                                        _numbers.Rational)
+                                          else other)
             return (Fraction(result.numerator, result.denominator)
                     if isinstance(result, _Fraction)
                     else result)
@@ -121,9 +118,9 @@ except ImportError:
             """
 
         def __mod__(self, other):
-            result = (float(self) % other
-                      if isinstance(other, float)
-                      else super().__mod__(other))
+            result = super().__mod__(_Fraction(other)
+                                     if isinstance(other, _numbers.Rational)
+                                     else other)
             return (Fraction(result.numerator, result.denominator)
                     if isinstance(result, _Fraction)
                     else result)
@@ -161,7 +158,9 @@ except ImportError:
                                      if isinstance(exponent, _numbers.Rational)
                                      else exponent)
             if isinstance(result, _numbers.Complex) and modulo is not None:
-                result %= modulo
+                result %= (_Fraction(modulo)
+                           if isinstance(modulo, _numbers.Rational)
+                           else modulo)
             return (Fraction(result.numerator, result.denominator)
                     if isinstance(result, _Fraction)
                     else result)
