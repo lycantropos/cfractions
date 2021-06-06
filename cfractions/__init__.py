@@ -86,7 +86,11 @@ except ImportError:
         def __floordiv__(self, other):
             result = (float(self) % other
                       if isinstance(other, float)
-                      else super().__floordiv__(other))
+                      else
+                      super().__floordiv__(_Fraction(other)
+                                           if isinstance(other,
+                                                         _numbers.Rational)
+                                           else other))
             return (Fraction(result.numerator, result.denominator)
                     if isinstance(result, _Fraction)
                     else result)
