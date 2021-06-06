@@ -11,14 +11,14 @@ from tests.utils import (equivalence,
 from . import strategies
 
 
-@given(strategies.fractions, strategies.non_zero_fractions)
+@given(strategies.fractions, strategies.non_zero_rationals)
 def test_basic(first: Fraction, second: Fraction) -> None:
     result = first // second
 
     assert isinstance(result, int)
 
 
-@given(strategies.fractions, strategies.non_zero_fractions)
+@given(strategies.fractions, strategies.non_zero_rationals)
 def test_value(first: Fraction, second: Fraction) -> None:
     result = first // second
 
@@ -33,7 +33,7 @@ def test_division_by_one(first: Fraction) -> None:
     assert result == math.floor(first)
 
 
-@given(strategies.fractions, strategies.non_zero_fractions)
+@given(strategies.fractions, strategies.non_zero_rationals)
 def test_connection_with_mod(first: Fraction, second: Fraction) -> None:
     result = first // second
 
@@ -69,7 +69,7 @@ def test_reference_counter(first: Fraction, second: Fraction) -> None:
     assert second_refcount_after == second_refcount_before
 
 
-@given(strategies.fractions, strategies.zero_builtin_numbers)
+@given(strategies.fractions, strategies.zero_numbers)
 def test_zero_divisor(first: Fraction, second: Complex) -> None:
     with pytest.raises(ZeroDivisionError):
         first // second

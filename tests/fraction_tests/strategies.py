@@ -72,6 +72,8 @@ non_fractions = integers | floats | custom_rationals
 finite_builtin_non_fractions = integers | finite_floats
 non_zero_custom_rationals = strategies.builds(CustomRational,
                                               non_zero_integers, denominators)
+finite_non_zero_numbers = (finite_non_zero_builtin_numbers
+                           | non_zero_custom_rationals)
 non_zero_rationals = (non_zero_integers | non_zero_fractions
                       | non_zero_custom_rationals)
 zero_custom_rationals = strategies.builds(CustomRational, zero_integers,
@@ -84,6 +86,8 @@ small_non_negative_integral_rationals = (
         | strategies.builds(CustomRational, small_integers,
                             strategies.just(1)))
 zero_builtin_rationals = zero_integers | zero_fractions
-zero_builtin_numbers = zero_builtin_rationals | zero_floats
+zero_builtin_non_fractions = zero_builtin_rationals | zero_floats
 zero_rationals = zero_builtin_rationals | zero_custom_rationals
-zero_non_fractions = zero_builtin_numbers | zero_custom_rationals
+zero_non_fractions = zero_builtin_non_fractions | zero_custom_rationals
+zero_numbers = (zero_builtin_non_fractions | zero_fractions
+                | zero_custom_rationals)
