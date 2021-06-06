@@ -72,6 +72,18 @@ except ImportError:
                          ) -> 'Fraction':
             return self.__copy__()
 
+        def __divmod__(self, other: _Number
+                       ) -> _Tuple[_Number, _Union['Fraction', _Number]]:
+            result = super().__divmod__(_Fraction(other)
+                                        if isinstance(other, _numbers.Rational)
+                                        else other)
+            return ((result[0],
+                     Fraction(result[1].numerator, result[1].denominator)
+                     if isinstance(result[1], _numbers.Rational)
+                     else result[1])
+                    if isinstance(result, tuple)
+                    else result)
+
         @_overload
         def __floordiv__(self, other: _numbers.Rational) -> 'Fraction':
             """
@@ -168,6 +180,19 @@ except ImportError:
                                       else other)
             return (Fraction(result.numerator, result.denominator)
                     if isinstance(result, _Fraction)
+                    else result)
+
+        def __rdivmod__(self, other: _Number
+                        ) -> _Tuple[_Number, _Union['Fraction', _Number]]:
+            result = super().__rdivmod__(_Fraction(other)
+                                         if isinstance(other,
+                                                       _numbers.Rational)
+                                         else other)
+            return ((result[0],
+                     Fraction(result[1].numerator, result[1].denominator)
+                     if isinstance(result[1], _numbers.Rational)
+                     else result[1])
+                    if isinstance(result, tuple)
                     else result)
 
         @_overload
