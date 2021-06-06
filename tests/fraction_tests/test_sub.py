@@ -1,5 +1,6 @@
 import math
 import sys
+from numbers import Rational
 
 from hypothesis import given
 
@@ -11,8 +12,8 @@ from tests.utils import (equivalence,
 from . import strategies
 
 
-@given(strategies.fractions, strategies.fractions)
-def test_basic(first: Fraction, second: Fraction) -> None:
+@given(strategies.fractions, strategies.rationals)
+def test_basic(first: Fraction, second: Rational) -> None:
     result = first - second
 
     assert isinstance(result, Fraction)
@@ -29,7 +30,7 @@ def test_commutative_case(first: Fraction, second: Fraction) -> None:
     assert equivalence(first - second == second - first, first == second)
 
 
-@given(strategies.fractions, strategies.zero_fractions)
+@given(strategies.fractions, strategies.zero_rationals)
 def test_right_neutral_element(first: Fraction, second: Fraction) -> None:
     assert first - second == first
 

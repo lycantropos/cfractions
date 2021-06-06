@@ -83,6 +83,7 @@ small_non_negative_integral_rationals = (
         | small_non_negative_integral_fractions | zero_custom_rationals
         | strategies.builds(CustomRational, small_integers,
                             strategies.just(1)))
-zero_builtin_fractions = zero_integers | zero_fractions
-zero_builtin_numbers = zero_builtin_fractions | zero_floats
+zero_builtin_rationals = zero_integers | zero_fractions
+zero_builtin_numbers = zero_builtin_rationals | zero_floats
+zero_rationals = zero_builtin_rationals | zero_custom_rationals
 zero_non_fractions = zero_builtin_numbers | zero_custom_rationals
