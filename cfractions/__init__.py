@@ -309,7 +309,9 @@ except ImportError:
             """Returns difference of the fraction with given number."""
 
         def __sub__(self, other):
-            result = super().__sub__(other)
+            result = super().__sub__(_Fraction(other)
+                                     if isinstance(other, _numbers.Rational)
+                                     else other)
             return (Fraction(result.numerator, result.denominator)
                     if isinstance(result, _Fraction)
                     else result)
