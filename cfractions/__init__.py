@@ -74,9 +74,12 @@ except ImportError:
 
         def __divmod__(self, other: _Number
                        ) -> _Tuple[_Number, _Union['Fraction', _Number]]:
-            result = super().__divmod__(_Fraction(other)
-                                        if isinstance(other, _numbers.Rational)
-                                        else other)
+            result = (divmod(float(self), other)
+                      if isinstance(other, float)
+                      else super().__divmod__(_Fraction(other)
+                                              if isinstance(other,
+                                                            _numbers.Rational)
+                                              else other))
             return ((result[0],
                      Fraction(result[1].numerator, result[1].denominator)
                      if isinstance(result[1], _numbers.Rational)
@@ -96,10 +99,13 @@ except ImportError:
             """Returns quotient of division of the fraction by given number."""
 
         def __floordiv__(self, other):
-            result = super().__floordiv__(_Fraction(other)
-                                          if isinstance(other,
-                                                        _numbers.Rational)
-                                          else other)
+            result = (float(self) // other
+                      if isinstance(other, float)
+                      else
+                      super().__floordiv__(_Fraction(other)
+                                           if isinstance(other,
+                                                         _numbers.Rational)
+                                           else other))
             return (Fraction(result.numerator, result.denominator)
                     if isinstance(result, _Fraction)
                     else result)
@@ -118,9 +124,12 @@ except ImportError:
             """
 
         def __mod__(self, other):
-            result = super().__mod__(_Fraction(other)
-                                     if isinstance(other, _numbers.Rational)
-                                     else other)
+            result = (float(self) % other
+                      if isinstance(other, float)
+                      else
+                      super().__mod__(_Fraction(other)
+                                      if isinstance(other, _numbers.Rational)
+                                      else other))
             return (Fraction(result.numerator, result.denominator)
                     if isinstance(result, _Fraction)
                     else result)
