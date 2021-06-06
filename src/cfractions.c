@@ -398,16 +398,21 @@ static FractionObject *Fraction_negative(FractionObject *self) {
   return result;
 }
 
-static FractionObject *Fraction_abs(FractionObject *self) {
-  int is_negative = is_negative_Fraction(self);
-  if (is_negative < 0)
+static FractionObject *Fraction_absolute(FractionObject *self) {
+  PyObject* result_numerator = PyNumber_Absolute(self->numerator);
+  if (!result_numerator)
     return NULL;
-  else if (is_negative)
-    return Fraction_negative(self);
-  else {
-    Py_INCREF(self);
-    return self;
+  Py_INCREF(self->denominator);
+  PyObject* result_denominator = self->denominator;
+  FractionObject* result = PyObject_New(FractionObject, &FractionType);
+  if (!result) {
+    Py_DECREF(result_denominator);
+    Py_DECREF(result_numerator);
+    return NULL;
   }
+  result->numerator = result_numerator;
+  result->denominator = result_denominator;
+  return result;
 }
 
 static PyObject *Fraction_float(FractionObject *self) {
@@ -1781,7 +1786,7 @@ static FractionObject *Fraction_limit_denominator_impl(
     Py_DECREF(second_bound);
     return NULL;
   }
-  FractionObject *first_bound_distance_to_self = Fraction_abs(difference);
+  FractionObject *first_bound_distance_to_self = Fraction_absolute(difference);
   Py_DECREF(difference);
   if (!first_bound_distance_to_self) {
     Py_DECREF(first_bound);
@@ -1795,7 +1800,7 @@ static FractionObject *Fraction_limit_denominator_impl(
     Py_DECREF(second_bound);
     return NULL;
   }
-  FractionObject *second_bound_distance_to_self = Fraction_abs(difference);
+  FractionObject *second_bound_distance_to_self = Fraction_absolute(difference);
   Py_DECREF(difference);
   if (!second_bound_distance_to_self) {
     Py_DECREF(first_bound_distance_to_self);
@@ -2253,7 +2258,7 @@ static PyMethodDef Fraction_methods[] = {
 };
 
 static PyNumberMethods Fraction_as_number = {
-    .nb_absolute = (unaryfunc)Fraction_abs,
+    .nb_absolute = (unaryfunc)Fraction_absolute,
     .nb_add = Fraction_add,
     .nb_bool = (inquiry)Fraction_bool,
     .nb_divmod = Fraction_divmod,
