@@ -20,7 +20,7 @@ def is_not_interned(value: int) -> bool:
 
 
 non_interned_numerators = non_interned_denominators = (
-    (strategies.integers(max_value=-256)
+    (strategies.integers(max_value=-6)
      | strategies.integers(min_value=257)).filter(is_not_interned))
 floats = strategies.floats(allow_infinity=True,
                            allow_nan=True)
