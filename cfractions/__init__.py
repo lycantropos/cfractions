@@ -219,10 +219,11 @@ except ImportError:
         def __rfloordiv__(self, other):
             result = (other // float(self)
                       if isinstance(other, float)
-                      else super().__rfloordiv__(Fraction(other)
-                                                 if isinstance(other,
-                                                               _numbers.Rational)
-                                                 else other))
+                      else
+                      super().__rfloordiv__(Fraction(other)
+                                            if isinstance(other,
+                                                          _numbers.Rational)
+                                            else other))
             return (Fraction(result.numerator, result.denominator)
                     if isinstance(result, _Fraction)
                     else result)
