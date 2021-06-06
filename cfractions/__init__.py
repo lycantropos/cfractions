@@ -192,10 +192,12 @@ except ImportError:
 
         def __rdivmod__(self, other: _Number
                         ) -> _Tuple[_Number, _Union['Fraction', _Number]]:
-            result = super().__rdivmod__(_Fraction(other)
-                                         if isinstance(other,
-                                                       _numbers.Rational)
-                                         else other)
+            result = (divmod(float(self), other)
+                      if isinstance(other, float)
+                      else super().__rdivmod__(_Fraction(other)
+                                               if isinstance(other,
+                                                             _numbers.Rational)
+                                               else other))
             return ((result[0],
                      Fraction(result[1].numerator, result[1].denominator)
                      if isinstance(result[1], _numbers.Rational)
