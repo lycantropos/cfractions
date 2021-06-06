@@ -295,7 +295,10 @@ except ImportError:
             """Returns division of the fraction by given number."""
 
         def __truediv__(self, other):
-            result = super().__truediv__(other)
+            result = super().__truediv__(_Fraction(other)
+                                         if isinstance(other,
+                                                       _numbers.Rational)
+                                         else other)
             return (Fraction(result.numerator, result.denominator)
                     if isinstance(result, _Fraction)
                     else result)
