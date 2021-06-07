@@ -35,6 +35,11 @@ def test_equivalents(first: Fraction, second: Fraction) -> None:
     assert equivalence(result, second > first or first == second)
 
 
+@given(strategies.fractions, strategies.floats)
+def test_float_operand(first: Fraction, second: float) -> None:
+    assert equivalence(first <= second, float(first) <= second)
+
+
 @skip_reference_counter_test
 @given(strategies.fractions, strategies.fractions)
 def test_reference_counter(first: Fraction, second: Fraction) -> None:
