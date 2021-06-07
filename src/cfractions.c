@@ -75,32 +75,30 @@ static PyTypeObject FractionType;
 
 static int normalize_Fraction_components_moduli(PyObject **result_numerator,
                                                 PyObject **result_denominator) {
-  PyObject *denominator = *result_denominator, *gcd,
-           *numerator = *result_numerator, *tmp;
-  gcd = _PyLong_GCD(numerator, denominator);
+  PyObject *gcd = _PyLong_GCD(*result_numerator, *result_denominator);
   if (!gcd) return -1;
-  tmp = PyLong_FromLong(1);
-  if (PyObject_RichCompareBool(gcd, tmp, Py_NE)) {
-    Py_DECREF(tmp);
-    numerator = PyNumber_FloorDivide(numerator, gcd);
+  int comparison_signal = is_unit_Object(gcd);
+  if (comparison_signal < 0)
+    return -1;
+  else if (!comparison_signal) {
+    PyObject *numerator = PyNumber_FloorDivide(*result_numerator, gcd);
     if (!numerator) {
       Py_DECREF(gcd);
       return -1;
     }
-    denominator = PyNumber_FloorDivide(denominator, gcd);
+    PyObject *denominator = PyNumber_FloorDivide(*result_denominator, gcd);
     if (!denominator) {
       Py_DECREF(numerator);
       Py_DECREF(gcd);
       return -1;
     }
-    tmp = *result_numerator;
+    PyObject *tmp = *result_numerator;
     *result_numerator = numerator;
     Py_DECREF(tmp);
     tmp = *result_denominator;
     *result_denominator = denominator;
     Py_DECREF(tmp);
-  } else
-    Py_DECREF(tmp);
+  }
   Py_DECREF(gcd);
   return 0;
 }
