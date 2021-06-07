@@ -21,8 +21,7 @@ static int is_unit_Object(PyObject *self) {
 
 static PyObject *round_Object(PyObject *self) {
   PyObject *round_method_name = PyUnicode_FromString("__round__");
-  if (!round_method_name)
-    return NULL;
+  if (!round_method_name) return NULL;
   PyObject *result =
 #if PY39_OR_MORE
       PyObject_CallMethodNoArgs(self, round_method_name)
