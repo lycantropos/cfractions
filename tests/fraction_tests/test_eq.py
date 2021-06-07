@@ -1,4 +1,5 @@
 import sys
+from numbers import Complex
 
 from hypothesis import given
 
@@ -26,8 +27,8 @@ def test_transitivity(first: Fraction,
     assert implication(first == second and second == third, first == third)
 
 
-@given(strategies.fractions, strategies.fractions)
-def test_connection_with_inequality(first: Fraction, second: Fraction) -> None:
+@given(strategies.fractions, strategies.numbers)
+def test_connection_with_inequality(first: Fraction, second: Complex) -> None:
     assert equivalence(not first == second, first != second)
 
 

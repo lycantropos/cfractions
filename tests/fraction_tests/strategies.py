@@ -91,3 +91,4 @@ zero_rationals = zero_builtin_rationals | zero_custom_rationals
 zero_non_fractions = zero_builtin_non_fractions | zero_custom_rationals
 zero_numbers = (zero_builtin_non_fractions | zero_fractions
                 | zero_custom_rationals)
+numbers = finite_numbers | infinite_floats | nans
