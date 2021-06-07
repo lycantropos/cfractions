@@ -359,7 +359,16 @@ static PyObject *Fraction_richcompare(FractionObject *self, PyObject *other,
     }
   } else if (PyFloat_Check(other)) {
     double other_value = PyFloat_AS_DOUBLE(other);
-    if (!isfinite(other_value)) Py_RETURN_FALSE;
+    if (!isfinite(other_value)) switch (op) {
+        case Py_GT:
+        case Py_GE:
+          return PyBool_FromLong(isinf(other_value) && other_value < 0.);
+        case Py_LT:
+        case Py_LE:
+          return PyBool_FromLong(isinf(other_value) && other_value > 0.);
+        default:
+          Py_RETURN_FALSE;
+      }
     PyObject *other_denominator, *other_numerator;
     if (parse_Fraction_components_from_double(other_value, &other_numerator,
                                               &other_denominator) < 0)
