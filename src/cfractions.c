@@ -1245,11 +1245,11 @@ static PyObject *Fraction_remainder(PyObject *self, PyObject *other) {
 
 static PyObject *Long_Fraction_power(PyObject *self, FractionObject *exponent,
                                      PyObject *modulo) {
-  int comparison_signal = is_unit_Object(exponent->denominator);
+  int comparison_signal = is_integral_Fraction(exponent);
   if (comparison_signal < 0)
     return NULL;
   else if (comparison_signal) {
-    comparison_signal = is_negative_Object(exponent->numerator);
+    comparison_signal = is_negative_Fraction(exponent);
     if (comparison_signal < 0)
       return NULL;
     else if (comparison_signal) {
