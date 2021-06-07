@@ -334,17 +334,17 @@ static PyObject *Fraction_richcompare(FractionObject *self, PyObject *other,
     return Fractions_richcompare(self, (FractionObject *)other, op);
   else if (PyLong_Check(other)) {
     if (op == Py_EQ) {
-      int signal = is_integral_Fraction(self);
-      if (signal < 0)
+      int is_integral = is_integral_Fraction(self);
+      if (is_integral < 0)
         return NULL;
-      else if (!signal)
+      else if (!is_integral)
         Py_RETURN_FALSE;
       return PyObject_RichCompare(self->numerator, other, op);
     } else if (op == Py_NE) {
-      int signal = is_integral_Fraction(self);
-      if (signal < 0)
+      int is_integral = is_integral_Fraction(self);
+      if (is_integral < 0)
         return NULL;
-      else if (!signal)
+      else if (!is_integral)
         Py_RETURN_TRUE;
       return PyObject_RichCompare(self->numerator, other, op);
     } else {
