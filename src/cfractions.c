@@ -106,26 +106,24 @@ static int normalize_Fraction_components_moduli(PyObject **result_numerator,
 
 static int normalize_Fraction_components_signs(PyObject **result_numerator,
                                                PyObject **result_denominator) {
-  PyObject *denominator = *result_denominator, *numerator = *result_numerator,
-           *tmp;
-  tmp = PyLong_FromLong(0);
-  if (PyObject_RichCompareBool(denominator, tmp, Py_LT)) {
-    Py_DECREF(tmp);
-    numerator = PyNumber_Negative(numerator);
+  int comparison_signal = is_negative_Object(*result_denominator);
+  if (comparison_signal < 0)
+    return -1;
+  else if (comparison_signal) {
+    PyObject *numerator = PyNumber_Negative(*result_numerator);
     if (!numerator) return -1;
-    denominator = PyNumber_Negative(denominator);
+    PyObject *denominator = PyNumber_Negative(*result_denominator);
     if (!denominator) {
       Py_DECREF(numerator);
       return -1;
     }
-    tmp = *result_numerator;
+    PyObject *tmp = *result_numerator;
     *result_numerator = numerator;
     Py_DECREF(tmp);
     tmp = *result_denominator;
     *result_denominator = denominator;
     Py_DECREF(tmp);
-  } else
-    Py_DECREF(tmp);
+  }
   return 0;
 }
 
