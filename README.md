@@ -71,7 +71,11 @@ Fraction(1, 2)
 Fraction(1, 2)
 >>> Fraction(1, 3) * Fraction(3, 2)
 Fraction(1, 2)
+>>> Fraction(1, 3) / Fraction(2, 3)
+Fraction(1, 2)
 >>> Fraction(1, 6) * 3
+Fraction(1, 2)
+>>> Fraction(3, 2) / 3
 Fraction(1, 2)
 >>> str(Fraction(1, 2))
 '1/2'
