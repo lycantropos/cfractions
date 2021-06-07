@@ -20,13 +20,16 @@ static int is_unit_Object(PyObject *self) {
 }
 
 static PyObject *round_Object(PyObject *self) {
-  PyObject *result, *round_method_name;
-  round_method_name = PyUnicode_FromString("__round__");
+  PyObject *round_method_name = PyUnicode_FromString("__round__");
+  if (!round_method_name)
+    return NULL;
+  PyObject *result =
 #if PY39_OR_MORE
-  result = PyObject_CallMethodNoArgs(self, round_method_name);
+      PyObject_CallMethodNoArgs(self, round_method_name)
 #else
-  result = PyObject_CallMethodObjArgs(self, round_method_name, NULL);
+      PyObject_CallMethodObjArgs(self, round_method_name, NULL)
 #endif
+      ;
   Py_DECREF(round_method_name);
   return result;
 }
