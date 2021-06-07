@@ -150,9 +150,6 @@ static int parse_Fraction_components_from_rational(
 
 static int parse_Fraction_components_from_double(
     double value, PyObject **result_numerator, PyObject **result_denominator) {
-  int exponent;
-  PyObject *exponent_object, *tmp, *numerator, *denominator;
-  size_t index;
   if (isinf(value)) {
     PyErr_SetString(PyExc_OverflowError,
                     "Cannot construct Fraction from infinity.");
@@ -162,26 +159,27 @@ static int parse_Fraction_components_from_double(
     PyErr_SetString(PyExc_ValueError, "Cannot construct Fraction from NaN.");
     return -1;
   }
+  int exponent;
   value = frexp(value, &exponent);
-  for (index = 0; index < 300 && value != floor(value); ++index) {
+  for (size_t index = 0; index < 300 && value != floor(value); ++index) {
     value *= 2.0;
     exponent--;
   }
-  numerator = PyLong_FromDouble(value);
+  PyObject *numerator = PyLong_FromDouble(value);
   if (!numerator) return -1;
-  denominator = PyLong_FromLong(1);
+  PyObject *denominator = PyLong_FromLong(1);
   if (!denominator) {
     Py_DECREF(numerator);
     return -1;
   }
-  exponent_object = PyLong_FromLong(abs(exponent));
+  PyObject *exponent_object = PyLong_FromLong(abs(exponent));
   if (!exponent_object) {
     Py_DECREF(numerator);
     Py_DECREF(denominator);
     return -1;
   }
   if (exponent > 0) {
-    tmp = numerator;
+    PyObject *tmp = numerator;
     numerator = PyNumber_Lshift(numerator, exponent_object);
     Py_DECREF(tmp);
     if (!numerator) {
@@ -190,7 +188,7 @@ static int parse_Fraction_components_from_double(
       return -1;
     }
   } else {
-    tmp = denominator;
+    PyObject *tmp = denominator;
     denominator = PyNumber_Lshift(denominator, exponent_object);
     Py_DECREF(tmp);
     if (!denominator) {
