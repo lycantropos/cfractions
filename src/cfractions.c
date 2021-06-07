@@ -399,12 +399,11 @@ static FractionObject *Fraction_negative(FractionObject *self) {
 }
 
 static FractionObject *Fraction_absolute(FractionObject *self) {
-  PyObject* result_numerator = PyNumber_Absolute(self->numerator);
-  if (!result_numerator)
-    return NULL;
+  PyObject *result_numerator = PyNumber_Absolute(self->numerator);
+  if (!result_numerator) return NULL;
   Py_INCREF(self->denominator);
-  PyObject* result_denominator = self->denominator;
-  FractionObject* result = PyObject_New(FractionObject, &FractionType);
+  PyObject *result_denominator = self->denominator;
+  FractionObject *result = PyObject_New(FractionObject, &FractionType);
   if (!result) {
     Py_DECREF(result_denominator);
     Py_DECREF(result_numerator);
