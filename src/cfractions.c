@@ -2273,7 +2273,7 @@ static PyNumberMethods Fraction_as_number = {
 
 static PyTypeObject FractionType = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "cfractions.Fraction",
-    .tp_doc = "Represents rational numbers in the exact form.",
+    .tp_doc = PyDoc_STR("Represents rational numbers in the exact form."),
     .tp_basicsize = sizeof(FractionObject),
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
@@ -2292,7 +2292,7 @@ static PyTypeObject FractionType = {
 static PyModuleDef _cfractions_module = {
     PyModuleDef_HEAD_INIT,
     .m_name = "cfractions",
-    .m_doc = "Python C API alternative to `fractions` module.",
+    .m_doc = PyDoc_STR("Python C API alternative to `fractions` module."),
     .m_size = -1,
 };
 
