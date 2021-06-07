@@ -1,4 +1,3 @@
-import math
 import sys
 from numbers import Real
 
@@ -35,7 +34,6 @@ def test_connection_with_inequality(first: Fraction, second: Real) -> None:
 
 @given(strategies.fractions, strategies.floats)
 def test_float_operand(first: Fraction, second: float) -> None:
-    assert not math.isfinite(second) or Fraction(second) == second
     assert equivalence(first == second, float(first) == second)
 
 
