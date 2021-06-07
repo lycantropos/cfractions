@@ -78,9 +78,10 @@ static int normalize_Fraction_components_moduli(PyObject **result_numerator,
   PyObject *gcd = _PyLong_GCD(*result_numerator, *result_denominator);
   if (!gcd) return -1;
   int comparison_signal = is_unit_Object(gcd);
-  if (comparison_signal < 0)
+  if (comparison_signal < 0) {
+    Py_DECREF(gcd);
     return -1;
-  else if (!comparison_signal) {
+  } else if (!comparison_signal) {
     PyObject *numerator = PyNumber_FloorDivide(*result_numerator, gcd);
     if (!numerator) {
       Py_DECREF(gcd);
