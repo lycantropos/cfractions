@@ -926,7 +926,10 @@ static Py_hash_t Fraction_hash(FractionObject *self) {
     Py_DECREF(hash_modulus);
     if (!hash_) return -1;
   }
-  if (is_negative_Fraction(self)) {
+  int is_negative = is_negative_Fraction(self);
+  if (is_negative < 0)
+    return -1;
+  else if (is_negative) {
     tmp = hash_;
     hash_ = PyNumber_Negative(hash_);
     Py_DECREF(tmp);
