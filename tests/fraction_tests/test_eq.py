@@ -1,5 +1,6 @@
+import math
 import sys
-from numbers import Complex
+from numbers import Real
 
 from hypothesis import given
 
@@ -28,8 +29,14 @@ def test_transitivity(first: Fraction,
 
 
 @given(strategies.fractions, strategies.numbers)
-def test_connection_with_inequality(first: Fraction, second: Complex) -> None:
+def test_connection_with_inequality(first: Fraction, second: Real) -> None:
     assert equivalence(not first == second, first != second)
+
+
+@given(strategies.fractions, strategies.floats)
+def test_float_operand(first: Fraction, second: float) -> None:
+    assert not math.isfinite(second) or Fraction(second) == second
+    assert equivalence(first == second, float(first) == second)
 
 
 @skip_reference_counter_test

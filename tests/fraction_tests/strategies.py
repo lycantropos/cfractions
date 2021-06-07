@@ -45,8 +45,8 @@ int64_fractions = strategies.builds(Fraction, integers_64, denominators)
 non_zero_fractions = strategies.builds(Fraction, non_zero_integers,
                                        denominators)
 small_positive_integral_fractions = strategies.builds(Fraction, small_integers)
-finite_non_zero_builtin_numbers = (non_zero_integers | finite_non_zero_floats
-                                   | non_zero_fractions)
+finite_non_zero_reals = (non_zero_integers | finite_non_zero_floats
+                         | non_zero_fractions)
 non_integer_numbers = floats | fractions
 finite_negative_numbers = (negative_integers | finite_negative_floats
                            | negative_fractions)
@@ -65,15 +65,14 @@ class CustomRational:
 custom_rationals = strategies.builds(CustomRational, numerators, denominators)
 builtin_rationals = integers | fractions
 rationals = builtin_rationals | custom_rationals
-finite_builtin_numbers = builtin_rationals | finite_floats
-finite_numbers = finite_builtin_numbers | custom_rationals
+finite_builtin_reals = builtin_rationals | finite_floats
+finite_non_fractions = finite_builtin_reals | custom_rationals
 non_fractions_rationals = integers | custom_rationals
 non_fractions = integers | floats | custom_rationals
 finite_builtin_non_fractions = integers | finite_floats
 non_zero_custom_rationals = strategies.builds(CustomRational,
                                               non_zero_integers, denominators)
-finite_non_zero_numbers = (finite_non_zero_builtin_numbers
-                           | non_zero_custom_rationals)
+finite_non_zero_numbers = finite_non_zero_reals | non_zero_custom_rationals
 non_zero_rationals = (non_zero_integers | non_zero_fractions
                       | non_zero_custom_rationals)
 zero_custom_rationals = strategies.builds(CustomRational, zero_integers,
@@ -85,10 +84,8 @@ small_non_negative_integral_rationals = (
         | small_non_negative_integral_fractions | zero_custom_rationals
         | strategies.builds(CustomRational, small_integers,
                             strategies.just(1)))
-zero_builtin_rationals = zero_integers | zero_fractions
-zero_builtin_non_fractions = zero_builtin_rationals | zero_floats
-zero_rationals = zero_builtin_rationals | zero_custom_rationals
-zero_non_fractions = zero_builtin_non_fractions | zero_custom_rationals
-zero_numbers = (zero_builtin_non_fractions | zero_fractions
-                | zero_custom_rationals)
-numbers = finite_numbers | infinite_floats | nans
+zero_builtin_reals = zero_integers | zero_floats
+zero_rationals = zero_builtin_reals | zero_fractions | zero_custom_rationals
+zero_non_fractions = zero_builtin_reals | zero_custom_rationals
+zero_numbers = zero_builtin_reals | zero_fractions | zero_custom_rationals
+numbers = fractions | finite_non_fractions | infinite_floats | nans

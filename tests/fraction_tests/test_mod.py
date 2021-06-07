@@ -1,6 +1,6 @@
 import math
 import sys
-from numbers import Complex
+from numbers import Real
 
 import pytest
 from hypothesis import given
@@ -71,6 +71,6 @@ def test_reference_counter(first: Fraction, second: Fraction) -> None:
 
 
 @given(strategies.fractions, strategies.zero_numbers)
-def test_zero_divisor(first: Fraction, second: Complex) -> None:
+def test_zero_divisor(first: Fraction, second: Real) -> None:
     with pytest.raises(ZeroDivisionError):
         first % second

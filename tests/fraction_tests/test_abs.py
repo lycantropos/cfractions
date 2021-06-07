@@ -1,5 +1,5 @@
 import sys
-from numbers import Complex
+from numbers import Real
 
 from hypothesis import given
 
@@ -39,38 +39,38 @@ def test_evenness(fraction: Fraction) -> None:
     assert result == abs(-fraction)
 
 
-@given(strategies.fractions, strategies.finite_builtin_numbers)
-def test_multiplicativity(first: Fraction, second: Fraction) -> None:
+@given(strategies.fractions, strategies.finite_builtin_reals)
+def test_multiplicativity(first: Fraction, second: Real) -> None:
     result = abs(first * second)
 
     assert result == abs(first) * abs(second)
 
 
-@given(strategies.fractions, strategies.finite_builtin_numbers)
-def test_triangle_inequality(first: Fraction, second: Fraction) -> None:
+@given(strategies.fractions, strategies.finite_builtin_reals)
+def test_triangle_inequality(first: Fraction, second: Real) -> None:
     result = abs(first + second)
 
     assert result <= abs(first) + abs(second)
 
 
-@given(strategies.fractions, strategies.finite_builtin_numbers)
-def test_mul_operand(first: Fraction, second: Complex) -> None:
+@given(strategies.fractions, strategies.finite_builtin_reals)
+def test_mul_operand(first: Fraction, second: Real) -> None:
     assert abs(first * second) == abs(first) * abs(second)
 
 
-@given(strategies.fractions, strategies.finite_builtin_numbers)
-def test_rmul_operand(first: Complex, second: Fraction) -> None:
+@given(strategies.fractions, strategies.finite_builtin_reals)
+def test_rmul_operand(first: Real, second: Fraction) -> None:
     assert abs(first * second) == abs(first) * abs(second)
 
 
-@given(strategies.fractions, strategies.finite_non_zero_builtin_numbers)
-def test_truediv_operand(first: Fraction, second: Complex) -> None:
+@given(strategies.fractions, strategies.finite_non_zero_reals)
+def test_truediv_operand(first: Fraction, second: Real) -> None:
     assert abs(first / second) == abs(first) / abs(second)
 
 
 @given(strategies.finite_builtin_non_fractions,
-       strategies.finite_non_zero_builtin_numbers)
-def test_rtruediv_operand(first: Complex, second: Fraction) -> None:
+       strategies.finite_non_zero_reals)
+def test_rtruediv_operand(first: Real, second: Fraction) -> None:
     assert abs(first / second) == abs(first) / abs(second)
 
 

@@ -1,5 +1,5 @@
-from numbers import (Complex,
-                     Rational)
+from numbers import (Rational,
+                     Real)
 
 import pytest
 from hypothesis import given
@@ -8,8 +8,8 @@ from cfractions import Fraction
 from . import strategies
 
 
-@given(strategies.finite_numbers, strategies.non_zero_fractions)
-def test_basic(first: Complex, second: Fraction) -> None:
+@given(strategies.finite_non_fractions, strategies.non_zero_fractions)
+def test_basic(first: Real, second: Fraction) -> None:
     result = divmod(first, second)
 
     assert isinstance(result, tuple)
@@ -20,8 +20,8 @@ def test_basic(first: Complex, second: Fraction) -> None:
                       Fraction if isinstance(first, Rational) else float)
 
 
-@given(strategies.finite_numbers, strategies.non_zero_fractions)
-def test_alternatives(first: Complex, second: Fraction) -> None:
+@given(strategies.finite_non_fractions, strategies.non_zero_fractions)
+def test_alternatives(first: Real, second: Fraction) -> None:
     result = divmod(first, second)
 
     assert result == (first // second, first % second)
@@ -30,6 +30,6 @@ def test_alternatives(first: Complex, second: Fraction) -> None:
 
 
 @given(strategies.non_fractions, strategies.zero_fractions)
-def test_zero_divisor(first: Complex, second: Fraction) -> None:
+def test_zero_divisor(first: Real, second: Fraction) -> None:
     with pytest.raises(ZeroDivisionError):
         divmod(first, second)

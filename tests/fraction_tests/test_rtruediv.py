@@ -1,5 +1,5 @@
-from numbers import (Complex,
-                     Rational)
+from numbers import (Rational,
+                     Real)
 
 import pytest
 from hypothesis import given
@@ -16,6 +16,6 @@ def test_connection_with_truediv(first: Rational, second: Fraction) -> None:
 
 
 @given(strategies.non_fractions, strategies.zero_fractions)
-def test_zero_divisor(first: Complex, second: Fraction) -> None:
+def test_zero_divisor(first: Real, second: Fraction) -> None:
     with pytest.raises(ZeroDivisionError):
         first / second
