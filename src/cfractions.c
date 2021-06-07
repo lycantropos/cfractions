@@ -130,10 +130,9 @@ static int normalize_Fraction_components_signs(PyObject **result_numerator,
 static int parse_Fraction_components_from_rational(
     PyObject *rational, PyObject **result_numerator,
     PyObject **result_denominator) {
-  PyObject *numerator, *denominator;
-  numerator = PyObject_GetAttrString(rational, "numerator");
+  PyObject *numerator = PyObject_GetAttrString(rational, "numerator");
   if (!numerator) return -1;
-  denominator = PyObject_GetAttrString(rational, "denominator");
+  PyObject *denominator = PyObject_GetAttrString(rational, "denominator");
   if (!denominator) {
     Py_DECREF(numerator);
     return -1;
