@@ -2284,20 +2284,20 @@ static PyNumberMethods Fraction_as_number = {
 };
 
 static PyTypeObject FractionType = {
-    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "cfractions.Fraction",
-    .tp_doc = PyDoc_STR("Represents rational numbers in the exact form."),
+    PyVarObject_HEAD_INIT(NULL, 0).tp_as_number = &Fraction_as_number,
     .tp_basicsize = sizeof(FractionObject),
-    .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_new = Fraction_new,
-    .tp_init = (initproc)Fraction_init,
     .tp_dealloc = (destructor)Fraction_dealloc,
+    .tp_doc = PyDoc_STR("Represents rational numbers in the exact form."),
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
     .tp_hash = (hashfunc)Fraction_hash,
+    .tp_init = (initproc)Fraction_init,
+    .tp_itemsize = 0,
     .tp_members = Fraction_members,
     .tp_methods = Fraction_methods,
-    .tp_richcompare = (richcmpfunc)Fraction_richcompare,
-    .tp_as_number = &Fraction_as_number,
+    .tp_name = "cfractions.Fraction",
+    .tp_new = Fraction_new,
     .tp_repr = (reprfunc)Fraction_repr,
+    .tp_richcompare = (richcmpfunc)Fraction_richcompare,
     .tp_str = (reprfunc)Fraction_str,
 };
 
