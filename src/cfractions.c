@@ -2303,8 +2303,8 @@ static PyTypeObject FractionType = {
 
 static PyModuleDef _cfractions_module = {
     PyModuleDef_HEAD_INIT,
-    .m_name = "cfractions",
     .m_doc = PyDoc_STR("Python C API alternative to `fractions` module."),
+    .m_name = "cfractions",
     .m_size = -1,
 };
 
