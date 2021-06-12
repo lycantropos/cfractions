@@ -56,8 +56,7 @@ static void Fraction_dealloc(FractionObject *self) {
 
 static PyObject *Fraction_new(PyTypeObject *cls, PyObject *Py_UNUSED(args),
                               PyObject *Py_UNUSED(kwargs)) {
-  FractionObject *self;
-  self = (FractionObject *)(cls->tp_alloc(cls, 0));
+  FractionObject *self = (FractionObject *)(cls->tp_alloc(cls, 0));
   if (self) {
     self->numerator = PyLong_FromLong(0);
     if (!self->numerator) {
