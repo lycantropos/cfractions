@@ -54,24 +54,6 @@ static void Fraction_dealloc(FractionObject *self) {
   Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
-static PyObject *Fraction_new(PyTypeObject *cls, PyObject *Py_UNUSED(args),
-                              PyObject *Py_UNUSED(kwargs)) {
-  FractionObject *self = (FractionObject *)(cls->tp_alloc(cls, 0));
-  if (self) {
-    self->numerator = PyLong_FromLong(0);
-    if (!self->numerator) {
-      Py_DECREF(self);
-      return NULL;
-    }
-    self->denominator = PyLong_FromLong(1);
-    if (!self->denominator) {
-      Py_DECREF(self);
-      return NULL;
-    }
-  }
-  return (PyObject *)self;
-}
-
 static PyTypeObject FractionType;
 
 static int normalize_Fraction_components_moduli(PyObject **result_numerator,
@@ -204,33 +186,49 @@ static int parse_Fraction_components_from_double(
   return 0;
 }
 
-static int Fraction_init(FractionObject *self, PyObject *args) {
-  PyObject *numerator = NULL, *denominator = NULL, *tmp;
-  if (!PyArg_ParseTuple(args, "|OO", &numerator, &denominator)) return -1;
+static FractionObject *construct_Fraction(PyTypeObject *cls,
+                                          PyObject *numerator,
+                                          PyObject *denominator) {
+  FractionObject *result = (FractionObject *)(cls->tp_alloc(cls, 0));
+  if (result) {
+    result->numerator = numerator;
+    result->denominator = denominator;
+  } else {
+    Py_DECREF(denominator);
+    Py_DECREF(numerator);
+  }
+  return result;
+}
+
+static PyObject *Fraction_new(PyTypeObject *cls, PyObject *args,
+                              PyObject *kwargs) {
+  if (!_PyArg_NoKeywords("Fraction", kwargs)) return NULL;
+  PyObject *numerator = NULL, *denominator = NULL;
+  if (!PyArg_ParseTuple(args, "|OO", &numerator, &denominator)) return NULL;
   if (denominator) {
     if (!PyLong_Check(numerator)) {
       PyErr_SetString(PyExc_TypeError, "Numerator should be an integer.");
-      return -1;
+      return NULL;
     }
     if (!PyLong_Check(denominator)) {
       PyErr_SetString(PyExc_TypeError, "Denominator should be an integer.");
-      return -1;
+      return NULL;
     }
     if (PyObject_Not(denominator)) {
       PyErr_SetString(PyExc_ZeroDivisionError,
                       "Denominator should be non-zero.");
-      return -1;
+      return NULL;
     }
     int is_denominator_negative = is_negative_Object(denominator);
     if (is_denominator_negative < 0)
-      return -1;
+      return NULL;
     else if (is_denominator_negative) {
       numerator = PyNumber_Negative(numerator);
-      if (!numerator) return -1;
+      if (!numerator) return NULL;
       denominator = PyNumber_Negative(denominator);
       if (!denominator) {
         Py_DECREF(numerator);
-        return -1;
+        return NULL;
       }
     } else {
       Py_INCREF(numerator);
@@ -239,50 +237,38 @@ static int Fraction_init(FractionObject *self, PyObject *args) {
     if (normalize_Fraction_components_moduli(&numerator, &denominator) < 0) {
       Py_DECREF(numerator);
       Py_DECREF(denominator);
-      return -1;
+      return NULL;
     }
-    tmp = self->numerator;
-    self->numerator = numerator;
-    Py_DECREF(tmp);
-    tmp = self->denominator;
-    self->denominator = denominator;
-    Py_DECREF(tmp);
   } else if (numerator) {
-    if (PyLong_Check(numerator))
+    if (PyLong_Check(numerator)) {
+      denominator = PyLong_FromLong(1);
+      if (!denominator) return NULL;
       Py_INCREF(numerator);
-    else if (PyFloat_Check(numerator)) {
+    } else if (PyFloat_Check(numerator)) {
       if (parse_Fraction_components_from_double(PyFloat_AS_DOUBLE(numerator),
                                                 &numerator, &denominator) < 0)
-        return -1;
-      tmp = self->denominator;
-      self->denominator = denominator;
-      Py_DECREF(tmp);
+        return NULL;
     } else if (PyObject_TypeCheck(numerator, &FractionType)) {
       FractionObject *fraction_numerator = (FractionObject *)numerator;
-      tmp = self->denominator;
       Py_INCREF(fraction_numerator->denominator);
-      self->denominator = fraction_numerator->denominator;
-      Py_DECREF(tmp);
+      denominator = fraction_numerator->denominator;
       Py_INCREF(fraction_numerator->numerator);
       numerator = fraction_numerator->numerator;
     } else if (PyObject_IsInstance(numerator, Rational)) {
       if (parse_Fraction_components_from_rational(numerator, &numerator,
                                                   &denominator) < 0)
-        return -1;
-      tmp = self->denominator;
-      self->denominator = denominator;
-      Py_DECREF(tmp);
+        return NULL;
     } else {
       PyErr_SetString(PyExc_TypeError,
                       "Single argument should be either an integer, "
                       "a floating point or a rational number.");
-      return -1;
+      return NULL;
     }
-    tmp = self->numerator;
-    self->numerator = numerator;
-    Py_DECREF(tmp);
+  } else {
+    denominator = PyLong_FromLong(1);
+    numerator = PyLong_FromLong(0);
   }
-  return 0;
+  return (PyObject *)construct_Fraction(cls, numerator, denominator);
 }
 
 static PyObject *Fractions_components_richcompare(PyObject *numerator,
@@ -2290,7 +2276,6 @@ static PyTypeObject FractionType = {
     .tp_doc = PyDoc_STR("Represents rational numbers in the exact form."),
     .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
     .tp_hash = (hashfunc)Fraction_hash,
-    .tp_init = (initproc)Fraction_init,
     .tp_itemsize = 0,
     .tp_members = Fraction_members,
     .tp_methods = Fraction_methods,
