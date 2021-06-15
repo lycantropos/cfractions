@@ -949,16 +949,8 @@ static FractionObject *Fractions_components_multiply(
     Py_DECREF(result_numerator);
     return NULL;
   }
-  FractionObject *result =
-      PyObject_New(FractionObject, (PyTypeObject *)&FractionType);
-  if (!result) {
-    Py_DECREF(result_numerator);
-    Py_DECREF(result_denominator);
-    return NULL;
-  }
-  result->numerator = result_numerator;
-  result->denominator = result_denominator;
-  return result;
+  return construct_Fraction(&FractionType, result_numerator,
+                            result_denominator);
 }
 
 static FractionObject *Fractions_multiply(FractionObject *self,
@@ -999,16 +991,8 @@ static FractionObject *Fraction_Long_multiply(FractionObject *self,
     Py_DECREF(result_denominator);
     return NULL;
   }
-  FractionObject *result =
-      PyObject_New(FractionObject, (PyTypeObject *)&FractionType);
-  if (!result) {
-    Py_DECREF(result_numerator);
-    Py_DECREF(result_denominator);
-    return NULL;
-  }
-  result->numerator = result_numerator;
-  result->denominator = result_denominator;
-  return result;
+  return construct_Fraction(&FractionType, result_numerator,
+                            result_denominator);
 }
 
 static FractionObject *Fraction_Rational_multiply(FractionObject *self,
