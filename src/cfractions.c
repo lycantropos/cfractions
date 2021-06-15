@@ -732,15 +732,12 @@ static PyObject *Fractions_components_divmod(PyObject *numerator,
     Py_DECREF(quotient);
     return NULL;
   }
-  FractionObject *remainder = PyObject_New(FractionObject, &FractionType);
+  FractionObject *remainder = construct_Fraction(
+      &FractionType, remainder_numerator, remainder_denominator);
   if (!remainder) {
-    Py_DECREF(remainder_denominator);
-    Py_DECREF(remainder_numerator);
     Py_DECREF(quotient);
     return NULL;
   }
-  remainder->numerator = remainder_numerator;
-  remainder->denominator = remainder_denominator;
   return PyTuple_Pack(2, quotient, remainder);
 }
 
@@ -765,15 +762,12 @@ static PyObject *Fraction_Long_divmod(FractionObject *self, PyObject *other) {
     Py_DECREF(quotient);
     return NULL;
   }
-  FractionObject *remainder = PyObject_New(FractionObject, &FractionType);
+  FractionObject *remainder = construct_Fraction(
+      &FractionType, remainder_numerator, remainder_denominator);
   if (!remainder) {
-    Py_DECREF(remainder_denominator);
-    Py_DECREF(remainder_numerator);
     Py_DECREF(quotient);
     return NULL;
   }
-  remainder->numerator = remainder_numerator;
-  remainder->denominator = remainder_denominator;
   return PyTuple_Pack(2, quotient, remainder);
 }
 
@@ -793,15 +787,12 @@ static PyObject *Long_Fraction_divmod(PyObject *self, FractionObject *other) {
     Py_DECREF(quotient);
     return NULL;
   }
-  FractionObject *remainder = PyObject_New(FractionObject, &FractionType);
+  FractionObject *remainder = construct_Fraction(
+      &FractionType, remainder_numerator, remainder_denominator);
   if (!remainder) {
-    Py_DECREF(remainder_denominator);
-    Py_DECREF(remainder_numerator);
     Py_DECREF(quotient);
     return NULL;
   }
-  remainder->numerator = remainder_numerator;
-  remainder->denominator = remainder_denominator;
   return PyTuple_Pack(2, quotient, remainder);
 }
 
