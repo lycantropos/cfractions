@@ -1778,16 +1778,8 @@ static FractionObject *Fractions_components_true_divide(
     Py_INCREF(result_numerator);
     return NULL;
   }
-  FractionObject *result =
-      PyObject_New(FractionObject, (PyTypeObject *)&FractionType);
-  if (!result) {
-    Py_DECREF(result_numerator);
-    Py_DECREF(result_denominator);
-    return NULL;
-  }
-  result->numerator = result_numerator;
-  result->denominator = result_denominator;
-  return result;
+  return construct_Fraction(&FractionType, result_numerator,
+                            result_denominator);
 }
 
 static FractionObject *Fractions_true_divide(FractionObject *self,
@@ -1828,16 +1820,8 @@ static FractionObject *Fraction_Long_true_divide(FractionObject *self,
     Py_INCREF(result_numerator);
     return NULL;
   }
-  FractionObject *result =
-      PyObject_New(FractionObject, (PyTypeObject *)&FractionType);
-  if (!result) {
-    Py_DECREF(result_denominator);
-    Py_DECREF(result_numerator);
-    return NULL;
-  }
-  result->numerator = result_numerator;
-  result->denominator = result_denominator;
-  return result;
+  return construct_Fraction(&FractionType, result_numerator,
+                            result_denominator);
 }
 
 static FractionObject *Long_Fraction_true_divide(PyObject *self,
@@ -1872,16 +1856,8 @@ static FractionObject *Long_Fraction_true_divide(PyObject *self,
     Py_INCREF(result_numerator);
     return NULL;
   }
-  FractionObject *result =
-      PyObject_New(FractionObject, (PyTypeObject *)&FractionType);
-  if (!result) {
-    Py_DECREF(result_denominator);
-    Py_DECREF(result_numerator);
-    return NULL;
-  }
-  result->numerator = result_numerator;
-  result->denominator = result_denominator;
-  return result;
+  return construct_Fraction(&FractionType, result_numerator,
+                            result_denominator);
 }
 
 static FractionObject *Fraction_Rational_true_divide(FractionObject *self,
