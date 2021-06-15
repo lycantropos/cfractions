@@ -386,19 +386,11 @@ static FractionObject *Fraction_negative(FractionObject *self) {
 }
 
 static FractionObject *Fraction_absolute(FractionObject *self) {
-  PyObject *result_numerator = PyNumber_Absolute(self->numerator);
-  if (!result_numerator) return NULL;
+  PyObject *numerator = PyNumber_Absolute(self->numerator);
+  if (!numerator) return NULL;
   Py_INCREF(self->denominator);
-  PyObject *result_denominator = self->denominator;
-  FractionObject *result = PyObject_New(FractionObject, &FractionType);
-  if (!result) {
-    Py_DECREF(result_denominator);
-    Py_DECREF(result_numerator);
-    return NULL;
-  }
-  result->numerator = result_numerator;
-  result->denominator = result_denominator;
-  return result;
+  PyObject *denominator = self->denominator;
+  return construct_Fraction(&FractionType, numerator, denominator);
 }
 
 static PyObject *Fraction_float(FractionObject *self) {
