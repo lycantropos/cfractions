@@ -1190,16 +1190,9 @@ static PyObject *Long_Fraction_power(PyObject *self, FractionObject *exponent,
         Py_DECREF(result_denominator);
         return NULL;
       }
-      FractionObject *result =
-          PyObject_New(FractionObject, (PyTypeObject *)&FractionType);
-      if (!result) {
-        Py_DECREF(result_numerator);
-        Py_DECREF(result_denominator);
-        return NULL;
-      }
-      result->numerator = result_numerator;
-      result->denominator = result_denominator;
-      if (modulo != Py_None) {
+      FractionObject *result = construct_Fraction(
+          &FractionType, result_numerator, result_denominator);
+      if (!!result && modulo != Py_None) {
         PyObject *remainder = FractionObject_remainder(result, modulo);
         Py_DECREF(result);
         return remainder;
@@ -1214,16 +1207,8 @@ static PyObject *Long_Fraction_power(PyObject *self, FractionObject *exponent,
         Py_DECREF(result_numerator);
         return NULL;
       }
-      FractionObject *result =
-          PyObject_New(FractionObject, (PyTypeObject *)&FractionType);
-      if (!result) {
-        Py_DECREF(result_denominator);
-        Py_DECREF(result_numerator);
-        return NULL;
-      }
-      result->numerator = result_numerator;
-      result->denominator = result_denominator;
-      return (PyObject *)result;
+      return (PyObject *)construct_Fraction(&FractionType, result_numerator,
+                                            result_denominator);
     }
   } else {
     PyObject *float_exponent =
@@ -1250,16 +1235,8 @@ static PyObject *Fractions_components_positive_Long_power(PyObject *numerator,
       Py_DECREF(result_numerator);
       return NULL;
     }
-    FractionObject *result =
-        PyObject_New(FractionObject, (PyTypeObject *)&FractionType);
-    if (!result) {
-      Py_DECREF(result_denominator);
-      Py_DECREF(result_numerator);
-      return NULL;
-    }
-    result->numerator = result_numerator;
-    result->denominator = result_denominator;
-    return (PyObject *)result;
+    return (PyObject *)construct_Fraction(&FractionType, result_numerator,
+                                          result_denominator);
   } else {
     PyObject *result_numerator = PyNumber_Power(numerator, exponent, Py_None);
     if (!result_numerator) return NULL;
@@ -1270,15 +1247,8 @@ static PyObject *Fractions_components_positive_Long_power(PyObject *numerator,
       return NULL;
     }
     FractionObject *result =
-        PyObject_New(FractionObject, (PyTypeObject *)&FractionType);
-    if (!result) {
-      Py_DECREF(result_denominator);
-      Py_DECREF(result_numerator);
-      return NULL;
-    }
-    result->numerator = result_numerator;
-    result->denominator = result_denominator;
-    if (modulo != Py_None) {
+        construct_Fraction(&FractionType, result_numerator, result_denominator);
+    if (!!result && modulo != Py_None) {
       PyObject *remainder = FractionObject_remainder(result, modulo);
       Py_DECREF(result);
       return remainder;
