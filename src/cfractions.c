@@ -2043,15 +2043,8 @@ static PyObject *Fraction_round(FractionObject *self, PyObject *args) {
       return NULL;
     }
   }
-  FractionObject *result = PyObject_New(FractionObject, &FractionType);
-  if (!result) {
-    Py_DECREF(result_numerator);
-    Py_DECREF(result_denominator);
-    return NULL;
-  }
-  result->numerator = result_numerator;
-  result->denominator = result_denominator;
-  return (PyObject *)result;
+  return (PyObject *)construct_Fraction(&FractionType, result_numerator,
+                                        result_denominator);
 }
 
 static PyObject *Fraction_repr(FractionObject *self) {
