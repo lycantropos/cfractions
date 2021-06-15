@@ -378,18 +378,11 @@ static PyObject *Fraction_richcompare(FractionObject *self, PyObject *other,
 }
 
 static FractionObject *Fraction_negative(FractionObject *self) {
-  PyObject *numerator_negative = PyNumber_Negative(self->numerator);
-  if (!numerator_negative) return NULL;
-  FractionObject *result =
-      PyObject_New(FractionObject, (PyTypeObject *)&FractionType);
-  if (!result) {
-    Py_DECREF(numerator_negative);
-    return NULL;
-  }
-  result->numerator = numerator_negative;
+  PyObject *numerator = PyNumber_Negative(self->numerator);
+  if (!numerator) return NULL;
   Py_INCREF(self->denominator);
-  result->denominator = self->denominator;
-  return result;
+  PyObject *denominator = self->denominator;
+  return construct_Fraction(&FractionType, numerator, denominator);
 }
 
 static FractionObject *Fraction_absolute(FractionObject *self) {
