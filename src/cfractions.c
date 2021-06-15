@@ -1056,16 +1056,8 @@ static FractionObject *Fractions_components_remainder(
     Py_DECREF(result_numerator);
     return NULL;
   }
-  FractionObject *result =
-      PyObject_New(FractionObject, (PyTypeObject *)&FractionType);
-  if (!result) {
-    Py_DECREF(result_denominator);
-    Py_DECREF(result_numerator);
-    return NULL;
-  }
-  result->numerator = result_numerator;
-  result->denominator = result_denominator;
-  return result;
+  return construct_Fraction(&FractionType, result_numerator,
+                            result_denominator);
 }
 
 static FractionObject *Fractions_remainder(FractionObject *self,
@@ -1089,16 +1081,8 @@ static FractionObject *Fraction_Long_remainder(FractionObject *self,
     Py_DECREF(result_numerator);
     return NULL;
   }
-  FractionObject *result =
-      PyObject_New(FractionObject, (PyTypeObject *)&FractionType);
-  if (!result) {
-    Py_DECREF(result_denominator);
-    Py_DECREF(result_numerator);
-    return NULL;
-  }
-  result->numerator = result_numerator;
-  result->denominator = result_denominator;
-  return result;
+  return construct_Fraction(&FractionType, result_numerator,
+                            result_denominator);
 }
 
 static FractionObject *Long_Fraction_remainder(PyObject *self,
@@ -1115,16 +1099,8 @@ static FractionObject *Long_Fraction_remainder(PyObject *self,
     Py_DECREF(result_denominator);
     Py_DECREF(result_numerator);
   }
-  FractionObject *result =
-      PyObject_New(FractionObject, (PyTypeObject *)&FractionType);
-  if (!result) {
-    Py_DECREF(result_denominator);
-    Py_DECREF(result_numerator);
-    return NULL;
-  }
-  result->numerator = result_numerator;
-  result->denominator = result_denominator;
-  return result;
+  return construct_Fraction(&FractionType, result_numerator,
+                            result_denominator);
 }
 
 static FractionObject *Fraction_Rational_remainder(FractionObject *self,
