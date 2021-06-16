@@ -276,35 +276,39 @@ static PyObject *Fractions_components_richcompare(PyObject *numerator,
                                                   PyObject *other_numerator,
                                                   PyObject *other_denominator,
                                                   int op) {
-  if (op == Py_EQ) {
-    int comparison_signal =
-        PyObject_RichCompareBool(numerator, other_numerator, op);
-    if (comparison_signal < 0)
-      return NULL;
-    else if (!comparison_signal)
-      Py_RETURN_FALSE;
-    return PyObject_RichCompare(denominator, other_denominator, op);
-  } else if (op == Py_NE) {
-    int comparison_signal =
-        PyObject_RichCompareBool(numerator, other_numerator, op);
-    if (comparison_signal < 0)
-      return NULL;
-    else if (comparison_signal)
-      Py_RETURN_TRUE;
-    return PyObject_RichCompare(denominator, other_denominator, op);
-  } else {
-    PyObject *result, *left, *right;
-    left = PyNumber_Multiply(numerator, other_denominator);
-    if (!left) return NULL;
-    right = PyNumber_Multiply(other_numerator, denominator);
-    if (!right) {
-      Py_DECREF(left);
-      return NULL;
+  switch (op) {
+    case Py_EQ: {
+      int comparison_signal =
+          PyObject_RichCompareBool(numerator, other_numerator, op);
+      if (comparison_signal < 0)
+        return NULL;
+      else if (!comparison_signal)
+        Py_RETURN_FALSE;
+      return PyObject_RichCompare(denominator, other_denominator, op);
     }
-    result = PyObject_RichCompare(left, right, op);
-    Py_DECREF(left);
-    Py_DECREF(right);
-    return result;
+    case Py_NE: {
+      int comparison_signal =
+          PyObject_RichCompareBool(numerator, other_numerator, op);
+      if (comparison_signal < 0)
+        return NULL;
+      else if (comparison_signal)
+        Py_RETURN_TRUE;
+      return PyObject_RichCompare(denominator, other_denominator, op);
+    }
+    default: {
+      PyObject *result, *left, *right;
+      left = PyNumber_Multiply(numerator, other_denominator);
+      if (!left) return NULL;
+      right = PyNumber_Multiply(other_numerator, denominator);
+      if (!right) {
+        Py_DECREF(left);
+        return NULL;
+      }
+      result = PyObject_RichCompare(left, right, op);
+      Py_DECREF(left);
+      Py_DECREF(right);
+      return result;
+    }
   }
 }
 
