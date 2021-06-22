@@ -69,7 +69,7 @@ def test_truediv_operand(first: Fraction, second: Real) -> None:
 
 
 @given(strategies.finite_builtin_non_fractions,
-       strategies.finite_non_zero_reals)
+       strategies.non_zero_fractions)
 def test_rtruediv_operand(first: Real, second: Fraction) -> None:
     assert abs(first / second) == abs(first) / abs(second)
 
