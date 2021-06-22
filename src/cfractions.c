@@ -2070,7 +2070,8 @@ static PyObject *Fraction_str(FractionObject *self) {
                                                     self->denominator);
 }
 
-static PyObject *Fraction_trunc(FractionObject *self, PyObject *args) {
+static PyObject *Fraction_trunc(FractionObject *self,
+                                PyObject *Py_UNUSED(args)) {
   int is_negative = is_negative_Fraction(self);
   if (is_negative < 0)
     return NULL;
