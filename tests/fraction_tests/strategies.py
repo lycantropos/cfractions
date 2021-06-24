@@ -44,6 +44,8 @@ negative_fractions = strategies.builds(Fraction, negative_integers,
 int64_fractions = strategies.builds(Fraction, integers_64, denominators)
 non_zero_fractions = strategies.builds(Fraction, non_zero_integers,
                                        denominators)
+ones = strategies.just(1)
+ones |= strategies.builds(Fraction, ones)
 small_positive_integral_fractions = strategies.builds(Fraction, small_integers)
 finite_non_zero_reals = (non_zero_integers | finite_non_zero_floats
                          | non_zero_fractions)

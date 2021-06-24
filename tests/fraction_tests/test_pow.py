@@ -34,7 +34,12 @@ def test_ternary_form(base: Fraction, exponent: Rational, modulo: Rational
 
 
 @given(strategies.zero_fractions, strategies.small_positive_integral_fractions)
-def test_neutral_element(first: Fraction, second: Fraction) -> None:
+def test_left_absorbing_element(first: Fraction, second: Fraction) -> None:
+    assert first ** second == first
+
+
+@given(strategies.fractions, strategies.ones)
+def test_right_neutral_element(first: Fraction, second: Rational) -> None:
     assert first ** second == first
 
 
