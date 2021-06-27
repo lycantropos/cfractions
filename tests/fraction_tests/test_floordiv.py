@@ -1,6 +1,7 @@
 import math
 import sys
-from numbers import Real
+from numbers import (Rational,
+                     Real)
 
 import pytest
 from hypothesis import given
@@ -12,14 +13,14 @@ from . import strategies
 
 
 @given(strategies.fractions, strategies.non_zero_rationals)
-def test_basic(first: Fraction, second: Fraction) -> None:
+def test_basic(first: Fraction, second: Rational) -> None:
     result = first // second
 
     assert isinstance(result, int)
 
 
 @given(strategies.fractions, strategies.non_zero_rationals)
-def test_value(first: Fraction, second: Fraction) -> None:
+def test_value(first: Fraction, second: Rational) -> None:
     result = first // second
 
     assert (first % second == 0 and result == first / second

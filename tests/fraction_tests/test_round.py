@@ -1,4 +1,3 @@
-from fractions import Fraction
 from typing import Optional
 
 from hypothesis import given

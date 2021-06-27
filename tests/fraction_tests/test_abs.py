@@ -58,7 +58,7 @@ def test_mul_operand(first: Fraction, second: Real) -> None:
     assert abs(first * second) == abs(first) * abs(second)
 
 
-@given(strategies.fractions, strategies.finite_builtin_reals)
+@given(strategies.finite_builtin_reals, strategies.fractions)
 def test_rmul_operand(first: Real, second: Fraction) -> None:
     assert abs(first * second) == abs(first) * abs(second)
 
