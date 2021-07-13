@@ -1,5 +1,6 @@
 import math
 import re
+import sys
 from numbers import Rational
 
 from hypothesis import strategies
@@ -17,7 +18,12 @@ denominators = non_zero_integers = negative_integers | positive_integers
 fraction_pattern = re.compile(
         r'\A\s*(?P<sign>[-+]?)(?=\d|\.\d)(?P<num>\d*|\d+(_\d+)*)'
         r'(?:(?:/(?P<denom>\d+(_\d+)*))?|(?:\.(?P<decimal>\d*|\d+(_\d+)*))?'
-        r'(?:E(?P<exp>[-+]?\d{1,2}(_\d{1,2}){0,1}))?)\s*\Z', re.IGNORECASE)
+        r'(?:E(?P<exp>[-+]?\d{1,2}(_\d{1,2}){0,1}))?)\s*\Z'
+        if sys.version_info >= (3, 6)
+        else
+        r'\A\s*(?P<sign>[-+]?)(?=\d|\.\d)(?P<num>\d*)'
+        r'(?:(?:/(?P<denom>\d+))?|(?:\.(?P<decimal>\d*))?'
+        r'(?:E(?P<exp>[-+]?\d{1,4}))?)\s*\Z', re.IGNORECASE)
 strings = strategies.from_regex(fraction_pattern) | strategies.text()
 
 
