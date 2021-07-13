@@ -41,7 +41,8 @@ def test_string_argument(value: str) -> None:
     try:
         Fraction(value)
     except ZeroDivisionError:
-        return
+        assert ('/' in value
+                and int(value[value.find('/') + 1:len(value.rstrip())]) == 0)
     except ValueError:
         assert fraction_pattern.fullmatch(value) is None
 
