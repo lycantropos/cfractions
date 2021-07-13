@@ -238,6 +238,13 @@ static Py_ssize_t search_unsigned_PyLong(int kind, const void *data,
   return index;
 }
 
+static Py_ssize_t search_signed_PyLong(int kind, const void *data,
+                                       Py_ssize_t size, Py_ssize_t start) {
+  return search_unsigned_PyLong(
+      kind, data, size,
+      start + is_sign_character(PyUnicode_READ(kind, data, start)));
+}
+
 static PyObject *parse_PyLong(PyObject *self, Py_ssize_t start,
                               Py_ssize_t stop) {
   PyObject *result_unicode = PyUnicode_Substring(self, start, stop);
@@ -247,13 +254,25 @@ static PyObject *parse_PyLong(PyObject *self, Py_ssize_t start,
   return result;
 }
 
+static PyObject *append_zeros(PyObject *self, PyObject *exponent) {
+  PyObject *base = PyLong_FromLong(10);
+  if (!base) return NULL;
+  PyObject *scale = PyNumber_Power(base, exponent, Py_None);
+  Py_DECREF(base);
+  if (!scale) return NULL;
+  PyObject *result = PyNumber_Multiply(self, scale);
+  Py_DECREF(scale);
+  return result;
+}
+
 static int parse_Fraction_components_from_PyUnicode(
     PyObject *value, PyObject **result_numerator,
     PyObject **result_denominator) {
   Py_ssize_t size = PyUnicode_GET_LENGTH(value);
   int kind = PyUnicode_KIND(value);
   const void *data = PyUnicode_DATA(value);
-  Py_ssize_t start = is_sign_character(PyUnicode_READ(kind, data, 0));
+  Py_UCS4 first_character = PyUnicode_READ(kind, data, 0);
+  Py_ssize_t start = is_sign_character(first_character);
   Py_ssize_t numerator_stop = search_unsigned_PyLong(kind, data, size, start);
   if (numerator_stop == size) {
     *result_numerator = PyLong_FromUnicodeObject(value, 10);
@@ -265,6 +284,7 @@ static int parse_Fraction_components_from_PyUnicode(
     }
     return 0;
   }
+  int is_negative = first_character == '-';
   *result_numerator = numerator_stop != start
                           ? parse_PyLong(value, start, numerator_stop)
                           : PyLong_FromLong(0);
@@ -275,12 +295,11 @@ static int parse_Fraction_components_from_PyUnicode(
     return -1;
   }
   Py_UCS4 character = PyUnicode_READ(kind, data, numerator_stop);
-  if (character == '/' && start < numerator_stop &&
-             numerator_stop < size - 1) {
+  if (character == '/' && start < numerator_stop && numerator_stop < size - 1) {
     Py_ssize_t denominator_stop =
         search_unsigned_PyLong(kind, data, size, numerator_stop + 1);
     if (denominator_stop == size) {
-      *result_numerator = parse_PyLong(value, 0, numerator_stop);
+      *result_numerator = parse_PyLong(value, start, numerator_stop);
       if (!*result_numerator) return -1;
       *result_denominator =
           parse_PyLong(value, numerator_stop + 1, denominator_stop);
@@ -288,8 +307,182 @@ static int parse_Fraction_components_from_PyUnicode(
         Py_DECREF(*result_numerator);
         return -1;
       }
+      if (is_negative) {
+        PyObject *tmp = *result_numerator;
+        *result_numerator = PyNumber_Negative(*result_numerator);
+        Py_DECREF(tmp);
+      }
       return normalize_Fraction_components_moduli(result_numerator,
                                                   result_denominator);
+    }
+  } else if (character == '.') {
+    Py_ssize_t decimal_part_stop =
+        search_unsigned_PyLong(kind, data, size, numerator_stop + 1);
+    if (decimal_part_stop != numerator_stop + 1) {
+      PyObject *decimal_part =
+          parse_PyLong(value, numerator_stop + 1, decimal_part_stop);
+      if (!decimal_part) {
+        Py_DECREF(*result_numerator);
+        return -1;
+      }
+      PyObject *exponent =
+          PyLong_FromSsize_t(decimal_part_stop - numerator_stop - 1);
+      if (!exponent) {
+        Py_DECREF(decimal_part);
+        Py_DECREF(*result_numerator);
+        return -1;
+      }
+      PyObject *tmp = *result_numerator;
+      *result_numerator = append_zeros(*result_numerator, exponent);
+      Py_DECREF(tmp);
+      if (!*result_numerator) {
+        Py_DECREF(exponent);
+        Py_DECREF(decimal_part);
+        Py_DECREF(*result_denominator);
+        return -1;
+      }
+      tmp = *result_numerator;
+      *result_numerator = PyNumber_Add(*result_numerator, decimal_part);
+      Py_DECREF(tmp);
+      Py_DECREF(decimal_part);
+      if (!*result_numerator) {
+        Py_DECREF(exponent);
+        Py_DECREF(*result_denominator);
+        return -1;
+      }
+      tmp = *result_denominator;
+      *result_denominator = append_zeros(*result_denominator, exponent);
+      Py_DECREF(tmp);
+      Py_DECREF(exponent);
+      if (!*result_denominator) {
+        Py_DECREF(*result_numerator);
+        return -1;
+      }
+    }
+    if (decimal_part_stop == size) {
+      if (is_negative) {
+        PyObject *tmp = *result_numerator;
+        *result_numerator = PyNumber_Negative(*result_numerator);
+        Py_DECREF(tmp);
+      }
+      return normalize_Fraction_components_moduli(result_numerator,
+                                                  result_denominator);
+    } else {
+      character = PyUnicode_READ(kind, data, decimal_part_stop);
+      if (character == 'e' || character == 'E') {
+        Py_ssize_t exponent_stop =
+            search_signed_PyLong(kind, data, size, decimal_part_stop + 1);
+        if (exponent_stop == size) {
+          PyObject *exponent =
+              parse_PyLong(value, decimal_part_stop + 1, exponent_stop);
+          if (!exponent) {
+            Py_DECREF(*result_denominator);
+            Py_DECREF(*result_numerator);
+            return -1;
+          }
+          int is_exponent_negative = is_negative_Object(exponent);
+          if (is_exponent_negative < 0) {
+            Py_DECREF(exponent);
+            Py_DECREF(*result_denominator);
+            Py_DECREF(*result_numerator);
+            return -1;
+          } else if (is_exponent_negative) {
+            PyObject *tmp = exponent;
+            exponent = PyNumber_Negative(exponent);
+            Py_DECREF(tmp);
+            if (!exponent) {
+              Py_DECREF(*result_denominator);
+              Py_DECREF(*result_numerator);
+              return -1;
+            }
+            tmp = *result_denominator;
+            *result_denominator = append_zeros(*result_denominator, exponent);
+            Py_DECREF(tmp);
+            Py_DECREF(exponent);
+            if (!*result_denominator) {
+              Py_DECREF(*result_numerator);
+              return -1;
+            }
+            if (is_negative) {
+              PyObject *tmp = *result_numerator;
+              *result_numerator = PyNumber_Negative(*result_numerator);
+              Py_DECREF(tmp);
+            }
+            return normalize_Fraction_components_moduli(result_numerator,
+                                                        result_denominator);
+          } else {
+            PyObject *tmp = *result_numerator;
+            *result_numerator = append_zeros(*result_numerator, exponent);
+            Py_DECREF(tmp);
+            Py_DECREF(exponent);
+            if (!*result_numerator) {
+              Py_DECREF(*result_denominator);
+              return -1;
+            }
+            return normalize_Fraction_components_moduli(result_numerator,
+                                                        result_denominator);
+          }
+        }
+      }
+    }
+  } else if (character == 'e' || character == 'E') {
+    Py_ssize_t exponent_stop =
+        search_signed_PyLong(kind, data, size, numerator_stop + 1);
+    if (exponent_stop == size) {
+      PyObject *exponent =
+          parse_PyLong(value, numerator_stop + 1, exponent_stop);
+      if (!exponent) {
+        Py_DECREF(*result_denominator);
+        Py_DECREF(*result_numerator);
+        return -1;
+      }
+      int is_exponent_negative = is_negative_Object(exponent);
+      if (is_exponent_negative < 0) {
+        Py_DECREF(exponent);
+        Py_DECREF(*result_denominator);
+        Py_DECREF(*result_numerator);
+        return -1;
+      } else if (is_exponent_negative) {
+        PyObject *tmp = exponent;
+        exponent = PyNumber_Negative(exponent);
+        Py_DECREF(tmp);
+        if (!exponent) {
+          Py_DECREF(*result_denominator);
+          Py_DECREF(*result_numerator);
+          return -1;
+        }
+        tmp = *result_denominator;
+        *result_denominator = append_zeros(*result_denominator, exponent);
+        Py_DECREF(tmp);
+        Py_DECREF(exponent);
+        if (!*result_denominator) {
+          Py_DECREF(*result_numerator);
+          return -1;
+        }
+        if (is_negative) {
+          PyObject *tmp = *result_numerator;
+          *result_numerator = PyNumber_Negative(*result_numerator);
+          Py_DECREF(tmp);
+        }
+        return normalize_Fraction_components_moduli(result_numerator,
+                                                    result_denominator);
+      } else {
+        PyObject *tmp = *result_numerator;
+        *result_numerator = append_zeros(*result_numerator, exponent);
+        Py_DECREF(tmp);
+        Py_DECREF(exponent);
+        if (!*result_numerator) {
+          Py_DECREF(*result_denominator);
+          return -1;
+        }
+        if (is_negative) {
+          PyObject *tmp = *result_numerator;
+          *result_numerator = PyNumber_Negative(*result_numerator);
+          Py_DECREF(tmp);
+        }
+        return normalize_Fraction_components_moduli(result_numerator,
+                                                    result_denominator);
+      }
     }
   }
   PyErr_Format(PyExc_ValueError, "Invalid literal for Fraction: %R", value);
