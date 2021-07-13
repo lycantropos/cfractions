@@ -1,6 +1,5 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
-#include <ctype.h>
 #include <math.h>
 #include <structmember.h>
 
@@ -191,15 +190,36 @@ static int parse_Fraction_components_from_double(
   return 0;
 }
 
+const Py_UCS1 ascii_whitespaces[] = {
+    0, 0, 0, 0, 0, 0, 0, 0,
+    /*     case 0x0009: * CHARACTER TABULATION */
+    /*     case 0x000A: * LINE FEED */
+    /*     case 0x000B: * LINE TABULATION */
+    /*     case 0x000C: * FORM FEED */
+    /*     case 0x000D: * CARRIAGE RETURN */
+    0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    /*     case 0x001C: * FILE SEPARATOR */
+    /*     case 0x001D: * GROUP SEPARATOR */
+    /*     case 0x001E: * RECORD SEPARATOR */
+    /*     case 0x001F: * UNIT SEPARATOR */
+    0, 0, 0, 0, 1, 1, 1, 1,
+    /*     case 0x0020: * SPACE */
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0,
+
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
 static PyObject *PyUnicode_strip(PyObject *self) {
   Py_ssize_t size = PyUnicode_GET_LENGTH(self);
   Py_ssize_t start, stop;
   if (PyUnicode_is_ascii(self)) {
     const Py_UCS1 *data = PyUnicode_1BYTE_DATA(self);
     start = 0;
-    while (start < size && isspace(data[start])) start++;
+    while (start < size && ascii_whitespaces[data[start]]) start++;
     stop = size - 1;
-    while (stop >= start && isspace(data[stop])) stop--;
+    while (stop >= start && ascii_whitespaces[data[stop]]) stop--;
     stop++;
   } else {
     int kind = PyUnicode_KIND(self);
