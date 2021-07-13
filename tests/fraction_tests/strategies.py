@@ -39,6 +39,7 @@ nans = strategies.just(math.nan)
 zero_fractions = strategies.builds(Fraction)
 fractions = (strategies.builds(Fraction, numerators, denominators)
              | strategies.builds(Fraction, finite_floats))
+fractions_strings = fractions.map(str)
 negative_fractions = strategies.builds(Fraction, negative_integers,
                                        positive_integers)
 int64_fractions = strategies.builds(Fraction, integers_64, denominators)
