@@ -1,5 +1,6 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
+#include <ctype.h>
 #include <math.h>
 #include <structmember.h>
 
@@ -31,6 +32,10 @@ static PyObject *round_Object(PyObject *self) {
       ;
   Py_DECREF(round_method_name);
   return result;
+}
+
+static int PyUnicode_is_ascii(PyObject *self) {
+  return ((PyASCIIObject *)self)->state.ascii;
 }
 
 static PyObject *Rational = NULL;
@@ -186,6 +191,111 @@ static int parse_Fraction_components_from_double(
   return 0;
 }
 
+static PyObject *PyUnicode_strip(PyObject *self) {
+  Py_ssize_t size = PyUnicode_GET_LENGTH(self);
+  Py_ssize_t start, stop;
+  if (PyUnicode_is_ascii(self)) {
+    const Py_UCS1 *data = PyUnicode_1BYTE_DATA(self);
+    start = 0;
+    while (start < size && isspace(data[start])) start++;
+    stop = size - 1;
+    while (stop >= start && isspace(data[stop])) stop--;
+    stop++;
+  } else {
+    int kind = PyUnicode_KIND(self);
+    const void *data = PyUnicode_DATA(self);
+    start = 0;
+    while (start < size &&
+           Py_UNICODE_ISSPACE(PyUnicode_READ(kind, data, start)))
+      start++;
+    stop = size - 1;
+    while (stop >= start &&
+           Py_UNICODE_ISSPACE(PyUnicode_READ(kind, data, stop)))
+      stop--;
+    stop++;
+  }
+  return PyUnicode_Substring(self, start, stop);
+}
+
+static int is_sign_character(Py_UCS4 character) {
+  return character == '+' || character == '-';
+}
+
+static Py_ssize_t search_unsigned_PyLong(int kind, const void *data,
+                                         Py_ssize_t size, Py_ssize_t start) {
+  Py_ssize_t index = start;
+  for (int follows_underscore = 1; index < size; ++index) {
+    Py_UCS4 character = PyUnicode_READ(kind, data, index);
+    if (Py_UNICODE_ISDIGIT(character)) {
+      follows_underscore = 0;
+      continue;
+    } else if (!follows_underscore && character == '_') {
+      follows_underscore = !follows_underscore;
+      continue;
+    }
+    break;
+  }
+  return index;
+}
+
+static PyObject *parse_PyLong(PyObject *self, Py_ssize_t start,
+                              Py_ssize_t stop) {
+  PyObject *result_unicode = PyUnicode_Substring(self, start, stop);
+  if (!result_unicode) return NULL;
+  PyObject *result = PyLong_FromUnicodeObject(result_unicode, 10);
+  Py_DECREF(result_unicode);
+  return result;
+}
+
+static int parse_Fraction_components_from_PyUnicode(
+    PyObject *value, PyObject **result_numerator,
+    PyObject **result_denominator) {
+  Py_ssize_t size = PyUnicode_GET_LENGTH(value);
+  int kind = PyUnicode_KIND(value);
+  const void *data = PyUnicode_DATA(value);
+  Py_ssize_t start = is_sign_character(PyUnicode_READ(kind, data, 0));
+  Py_ssize_t numerator_stop = search_unsigned_PyLong(kind, data, size, start);
+  if (numerator_stop == size) {
+    *result_numerator = PyLong_FromUnicodeObject(value, 10);
+    if (!*result_numerator) return -1;
+    *result_denominator = PyLong_FromLong(1);
+    if (!*result_denominator) {
+      Py_DECREF(*result_numerator);
+      return -1;
+    }
+    return 0;
+  }
+  *result_numerator = numerator_stop != start
+                          ? parse_PyLong(value, start, numerator_stop)
+                          : PyLong_FromLong(0);
+  if (!*result_numerator) return -1;
+  *result_denominator = PyLong_FromLong(1);
+  if (!*result_denominator) {
+    Py_DECREF(*result_numerator);
+    return -1;
+  }
+  Py_UCS4 character = PyUnicode_READ(kind, data, numerator_stop);
+  if (character == '/' && start < numerator_stop &&
+             numerator_stop < size - 1) {
+    Py_ssize_t denominator_stop =
+        search_unsigned_PyLong(kind, data, size, numerator_stop + 1);
+    if (denominator_stop == size) {
+      *result_numerator = parse_PyLong(value, 0, numerator_stop);
+      if (!*result_numerator) return -1;
+      *result_denominator =
+          parse_PyLong(value, numerator_stop + 1, denominator_stop);
+      if (!*result_denominator) {
+        Py_DECREF(*result_numerator);
+        return -1;
+      }
+      return normalize_Fraction_components_moduli(result_numerator,
+                                                  result_denominator);
+    }
+  }
+  PyErr_Format(PyExc_ValueError, "Invalid literal for Fraction: %R", value);
+  return -1;
+}
+
 static FractionObject *construct_Fraction(PyTypeObject *cls,
                                           PyObject *numerator,
                                           PyObject *denominator) {
@@ -258,10 +368,17 @@ static PyObject *Fraction_new(PyTypeObject *cls, PyObject *args,
       if (parse_Fraction_components_from_rational(numerator, &numerator,
                                                   &denominator) < 0)
         return NULL;
+    } else if (PyUnicode_Check(numerator)) {
+      PyObject *stripped_unicode = PyUnicode_strip(numerator);
+      int flag = parse_Fraction_components_from_PyUnicode(
+          stripped_unicode, &numerator, &denominator);
+      Py_DECREF(stripped_unicode);
+      if (flag < 0) return NULL;
     } else {
       PyErr_SetString(PyExc_TypeError,
                       "Single argument should be either an integer, "
-                      "a floating point or a rational number.");
+                      "a floating point, a rational number or a string "
+                      "representation of a fraction.");
       return NULL;
     }
   } else {
