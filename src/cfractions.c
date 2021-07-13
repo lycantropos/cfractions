@@ -3,8 +3,7 @@
 #include <math.h>
 #include <structmember.h>
 
-#define PY39_OR_MORE PY_VERSION_HEX >= 0x03090000
-#define PY36_OR_MORE PY_VERSION_HEX >= 0x03060000
+#define PY3_9_OR_MORE PY_VERSION_HEX >= 0x03090000
 
 static int is_negative_Object(PyObject *self) {
   PyObject *tmp = PyLong_FromLong(0);
@@ -24,7 +23,7 @@ static PyObject *round_Object(PyObject *self) {
   PyObject *round_method_name = PyUnicode_FromString("__round__");
   if (!round_method_name) return NULL;
   PyObject *result =
-#if PY39_OR_MORE
+#if PY3_9_OR_MORE
       PyObject_CallMethodNoArgs(self, round_method_name)
 #else
       PyObject_CallMethodObjArgs(self, round_method_name, NULL)
@@ -240,24 +239,6 @@ static int is_sign_character(Py_UCS4 character) {
   return character == '+' || character == '-';
 }
 
-#ifdef PY36_OR_MORE
-static Py_ssize_t search_unsigned_PyLong(int kind, const void *data,
-                                         Py_ssize_t size, Py_ssize_t start) {
-  Py_ssize_t index = start;
-  for (int follows_underscore = 1; index < size; ++index) {
-    Py_UCS4 character = PyUnicode_READ(kind, data, index);
-    if (Py_UNICODE_ISDIGIT(character)) {
-      follows_underscore = 0;
-      continue;
-    } else if (!follows_underscore && character == '_') {
-      follows_underscore = !follows_underscore;
-      continue;
-    }
-    break;
-  }
-  return index;
-}
-#else
 static Py_ssize_t search_unsigned_PyLong(int kind, const void *data,
                                          Py_ssize_t size, Py_ssize_t start) {
   Py_ssize_t index = start;
@@ -266,7 +247,6 @@ static Py_ssize_t search_unsigned_PyLong(int kind, const void *data,
     ;
   return index;
 }
-#endif
 
 static Py_ssize_t search_signed_PyLong(int kind, const void *data,
                                        Py_ssize_t size, Py_ssize_t start) {
@@ -2494,7 +2474,7 @@ static int mark_as_rational(PyObject *python_type) {
   PyObject *register_method_name = PyUnicode_FromString("register");
   if (!register_method_name) return -1;
   PyObject *tmp =
-#if PY39_OR_MORE
+#if PY3_9_OR_MORE
       PyObject_CallMethodOneArg(Rational, register_method_name, python_type);
 #else
       PyObject_CallMethodObjArgs(Rational, register_method_name, python_type,
