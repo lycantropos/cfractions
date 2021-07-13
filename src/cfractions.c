@@ -339,6 +339,12 @@ static int parse_Fraction_components_from_PyUnicode(
         Py_DECREF(*result_numerator);
         return -1;
       }
+      if (PyObject_Not(*result_denominator)) {
+        Py_DECREF(*result_denominator);
+        Py_DECREF(*result_numerator);
+        PyErr_Format(PyExc_ZeroDivisionError, "Fraction(%S, 0)", *result_numerator);
+        return -1;
+      }
       if (is_negative) {
         PyObject *tmp = *result_numerator;
         *result_numerator = PyNumber_Negative(*result_numerator);
