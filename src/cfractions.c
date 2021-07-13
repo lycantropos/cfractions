@@ -241,9 +241,7 @@ static int is_sign_character(Py_UCS4 character) {
 }
 
 #if PY3_11_OR_MORE
-static int is_delimiter(Py_UCS4 character) {
-  return character == '_';
-}
+static int is_delimiter(Py_UCS4 character) { return character == '_'; }
 
 static Py_ssize_t search_unsigned_PyLong(int kind, const void *data,
                                          Py_ssize_t size, Py_ssize_t start) {
@@ -319,9 +317,9 @@ static int parse_Fraction_components_from_PyUnicode(
     return 0;
   }
   int is_negative = first_character == '-';
-  *result_numerator = numerator_stop != start
-                          ? parse_PyLong(value, start, numerator_stop)
-                          : PyLong_FromLong(0);
+  int has_numerator = numerator_stop != start;
+  *result_numerator = has_numerator ? parse_PyLong(value, start, numerator_stop)
+                                    : PyLong_FromLong(0);
   if (!*result_numerator) return -1;
   *result_denominator = PyLong_FromLong(1);
   if (!*result_denominator) {
@@ -352,7 +350,8 @@ static int parse_Fraction_components_from_PyUnicode(
   } else if (character == '.') {
     Py_ssize_t decimal_part_stop =
         search_unsigned_PyLong(kind, data, size, numerator_stop + 1);
-    if (decimal_part_stop != numerator_stop + 1) {
+    int has_decimal_part = decimal_part_stop != numerator_stop + 1;
+    if (has_decimal_part) {
       PyObject *decimal_part =
           parse_PyLong(value, numerator_stop + 1, decimal_part_stop);
       if (!decimal_part) {
@@ -412,7 +411,12 @@ static int parse_Fraction_components_from_PyUnicode(
                                                   result_denominator);
     } else {
       character = PyUnicode_READ(kind, data, decimal_part_stop);
-      if (character == 'e' || character == 'E') {
+      if ((has_numerator || has_decimal_part) && (character == 'e' || character == 'E')) {
+        if (is_negative) {
+          PyObject *tmp = *result_numerator;
+          *result_numerator = PyNumber_Negative(*result_numerator);
+          Py_DECREF(tmp);
+        }
         Py_ssize_t exponent_stop =
             search_signed_PyLong(kind, data, size, decimal_part_stop + 1);
         if (exponent_stop == size) {
@@ -446,11 +450,6 @@ static int parse_Fraction_components_from_PyUnicode(
               Py_DECREF(*result_numerator);
               return -1;
             }
-            if (is_negative) {
-              PyObject *tmp = *result_numerator;
-              *result_numerator = PyNumber_Negative(*result_numerator);
-              Py_DECREF(tmp);
-            }
             return normalize_Fraction_components_moduli(result_numerator,
                                                         result_denominator);
           } else {
@@ -468,7 +467,12 @@ static int parse_Fraction_components_from_PyUnicode(
         }
       }
     }
-  } else if (character == 'e' || character == 'E') {
+  } else if (has_numerator && (character == 'e' || character == 'E')) {
+    if (is_negative) {
+      PyObject *tmp = *result_numerator;
+      *result_numerator = PyNumber_Negative(*result_numerator);
+      Py_DECREF(tmp);
+    }
     Py_ssize_t exponent_stop =
         search_signed_PyLong(kind, data, size, numerator_stop + 1);
     if (exponent_stop == size) {
@@ -502,11 +506,6 @@ static int parse_Fraction_components_from_PyUnicode(
           Py_DECREF(*result_numerator);
           return -1;
         }
-        if (is_negative) {
-          PyObject *tmp = *result_numerator;
-          *result_numerator = PyNumber_Negative(*result_numerator);
-          Py_DECREF(tmp);
-        }
         return normalize_Fraction_components_moduli(result_numerator,
                                                     result_denominator);
       } else {
@@ -517,11 +516,6 @@ static int parse_Fraction_components_from_PyUnicode(
         if (!*result_numerator) {
           Py_DECREF(*result_denominator);
           return -1;
-        }
-        if (is_negative) {
-          PyObject *tmp = *result_numerator;
-          *result_numerator = PyNumber_Negative(*result_numerator);
-          Py_DECREF(tmp);
         }
         return normalize_Fraction_components_moduli(result_numerator,
                                                     result_denominator);
