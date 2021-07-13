@@ -36,7 +36,7 @@ def test_finite_float_argument(value: float) -> None:
     assert result.denominator == denominator
 
 
-@given(strategies.strings)
+@given(strategies.like_fraction_strings)
 def test_string_argument(value: str) -> None:
     try:
         Fraction(value)

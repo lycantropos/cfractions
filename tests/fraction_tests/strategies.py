@@ -1,7 +1,7 @@
 import math
 import re
-import sys
 from numbers import Rational
+from operator import add
 
 from hypothesis import strategies
 
@@ -20,7 +20,11 @@ fraction_pattern = re.compile(r'\A\s*(?P<sign>[-+]?)(?=\d|\.\d)(?P<num>\d*)'
                               r'|(?:\.(?P<decimal>\d*))?'
                               r'(?:E(?P<exp>[-+]?\d{1,4}))?)\s*\Z',
                               re.IGNORECASE)
-strings = strategies.from_regex(fraction_pattern) | strategies.text()
+fractions_strings = strategies.from_regex(fraction_pattern)
+strings = strategies.text()
+like_fraction_strings = (fractions_strings
+                         | strategies.builds(add, fractions_strings, strings)
+                         | strings)
 
 
 def is_not_interned(value: int) -> bool:
