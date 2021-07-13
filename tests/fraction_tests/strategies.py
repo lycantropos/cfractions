@@ -1,4 +1,5 @@
 import math
+import re
 from numbers import Rational
 
 from hypothesis import strategies
@@ -13,6 +14,11 @@ integers_64 = strategies.integers(min_value=-2 ** 63, max_value=2 ** 63 - 1)
 negative_integers = strategies.integers(max_value=-1)
 positive_integers = strategies.integers(min_value=1)
 denominators = non_zero_integers = negative_integers | positive_integers
+fraction_pattern = re.compile(
+        r'\A\s*(?P<sign>[-+]?)(?=\d|\.\d)(?P<num>\d*|\d+(_\d+)*)'
+        r'(?:(?:/(?P<denom>\d+(_\d+)*))?|(?:\.(?P<decimal>\d*|\d+(_\d+)*))?'
+        r'(?:E(?P<exp>[-+]?\d{1,2}(_\d{1,2}){0,1}))?)\s*\Z', re.IGNORECASE)
+strings = strategies.from_regex(fraction_pattern) | strategies.text()
 
 
 def is_not_interned(value: int) -> bool:
@@ -39,7 +45,6 @@ nans = strategies.just(math.nan)
 zero_fractions = strategies.builds(Fraction)
 fractions = (strategies.builds(Fraction, numerators, denominators)
              | strategies.builds(Fraction, finite_floats))
-fractions_strings = fractions.map(str)
 negative_fractions = strategies.builds(Fraction, negative_integers,
                                        positive_integers)
 int64_fractions = strategies.builds(Fraction, integers_64, denominators)

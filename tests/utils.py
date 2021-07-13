@@ -1,5 +1,6 @@
 import math
 import platform
+import re
 
 import pytest
 
@@ -26,3 +27,7 @@ skip_reference_counter_test = pytest.mark.skipif(
         platform.python_implementation() == 'PyPy',
         reason='PyPy\'s garbage collection '
                'is not based on reference counting.')
+fraction_pattern = re.compile(
+        r'\A\s*(?P<sign>[-+]?)(?=\d|\.\d)(?P<num>\d*|\d+(_\d+)*)'
+        r'(?:(?:/(?P<denom>\d+(_\d+)*))?|(?:\.(?P<decimal>\d*|\d+(_\d+)*))?'
+        r'(?:E(?P<exp>[-+]?\d+(_\d+)*))?)\s*\Z', re.IGNORECASE)

@@ -6,7 +6,8 @@ import pytest
 from hypothesis import given
 
 from cfractions import Fraction
-from tests.utils import skip_reference_counter_test
+from tests.utils import (fraction_pattern,
+                         skip_reference_counter_test)
 from . import strategies
 
 
@@ -35,11 +36,14 @@ def test_finite_float_argument(value: float) -> None:
     assert result.denominator == denominator
 
 
-@given(strategies.fractions_strings)
+@given(strategies.strings)
 def test_string_argument(value: str) -> None:
-    result = Fraction(value)
-
-    assert str(result) == value
+    try:
+        Fraction(value)
+    except ZeroDivisionError:
+        return
+    except ValueError:
+        assert fraction_pattern.fullmatch(value) is None
 
 
 @given(strategies.fractions)
