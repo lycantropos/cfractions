@@ -4,6 +4,7 @@
 #include <structmember.h>
 
 #define PY3_9_OR_MORE PY_VERSION_HEX >= 0x03090000
+#define PY3_11_OR_MORE PY_VERSION_HEX >= 0x030b0000
 
 static int is_negative_Object(PyObject *self) {
   PyObject *tmp = PyLong_FromLong(0);
@@ -239,6 +240,28 @@ static int is_sign_character(Py_UCS4 character) {
   return character == '+' || character == '-';
 }
 
+#if PY3_11_OR_MORE
+static int is_delimiter(Py_UCS4 character) {
+  return character == '_';
+}
+
+static Py_ssize_t search_unsigned_PyLong(int kind, const void *data,
+                                         Py_ssize_t size, Py_ssize_t start) {
+  Py_ssize_t index = start;
+  for (int follows_delimiter = 1; index < size; ++index) {
+    Py_UCS4 character = PyUnicode_READ(kind, data, index);
+    if (Py_UNICODE_ISDIGIT(character)) {
+      follows_delimiter = 0;
+      continue;
+    } else if (!follows_delimiter && is_delimiter(character)) {
+      follows_delimiter = !follows_delimiter;
+      continue;
+    }
+    break;
+  }
+  return index;
+}
+#else
 static Py_ssize_t search_unsigned_PyLong(int kind, const void *data,
                                          Py_ssize_t size, Py_ssize_t start) {
   Py_ssize_t index = start;
@@ -247,6 +270,7 @@ static Py_ssize_t search_unsigned_PyLong(int kind, const void *data,
     ;
   return index;
 }
+#endif
 
 static Py_ssize_t search_signed_PyLong(int kind, const void *data,
                                        Py_ssize_t size, Py_ssize_t start) {
@@ -335,8 +359,17 @@ static int parse_Fraction_components_from_PyUnicode(
         Py_DECREF(*result_numerator);
         return -1;
       }
+#if PY3_11_OR_MORE
+      Py_ssize_t delimiters_count = 0;
+      for (Py_ssize_t index = numerator_stop + 2; index < decimal_part_stop;
+           ++index)
+        if (is_delimiter(PyUnicode_READ(kind, data, index))) ++delimiters_count;
+      PyObject *exponent = PyLong_FromSsize_t(
+          decimal_part_stop - numerator_stop - 1 - delimiters_count);
+#else
       PyObject *exponent =
           PyLong_FromSsize_t(decimal_part_stop - numerator_stop - 1);
+#endif
       if (!exponent) {
         Py_DECREF(decimal_part);
         Py_DECREF(*result_numerator);
