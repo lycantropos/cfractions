@@ -4,6 +4,7 @@
 #include <structmember.h>
 
 #define PY39_OR_MORE PY_VERSION_HEX >= 0x03090000
+#define PY36_OR_MORE PY_VERSION_HEX >= 0x03060000
 
 static int is_negative_Object(PyObject *self) {
   PyObject *tmp = PyLong_FromLong(0);
@@ -239,6 +240,7 @@ static int is_sign_character(Py_UCS4 character) {
   return character == '+' || character == '-';
 }
 
+#ifdef PY36_OR_MORE
 static Py_ssize_t search_unsigned_PyLong(int kind, const void *data,
                                          Py_ssize_t size, Py_ssize_t start) {
   Py_ssize_t index = start;
@@ -255,6 +257,16 @@ static Py_ssize_t search_unsigned_PyLong(int kind, const void *data,
   }
   return index;
 }
+#else
+static Py_ssize_t search_unsigned_PyLong(int kind, const void *data,
+                                         Py_ssize_t size, Py_ssize_t start) {
+  Py_ssize_t index = start;
+  for (; index < size && Py_UNICODE_ISDIGIT(PyUnicode_READ(kind, data, index));
+       ++index)
+    ;
+  return index;
+}
+#endif
 
 static Py_ssize_t search_signed_PyLong(int kind, const void *data,
                                        Py_ssize_t size, Py_ssize_t start) {
