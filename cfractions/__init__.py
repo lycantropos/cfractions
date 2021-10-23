@@ -3,6 +3,7 @@
 __version__ = '1.4.0'
 
 import numbers as _numbers
+import fractions as _fractions
 
 try:
     from _cfractions import Fraction as _Fraction
@@ -21,8 +22,8 @@ _Number = _TypeVar('_Number',
 
 
 class Fraction(_Fraction):
-    def sqrt(self) -> 'Fraction':
-        return Fraction((self.numerator / self.denominator)**.5)
+    def sqrt(self) -> _Union[float, complex]:
+        return (self.numerator / self.denominator)**.5
 
     def limit_denominator(self, max_denominator: int = 10 ** 6
                           ) -> 'Fraction':
@@ -271,9 +272,12 @@ class Fraction(_Fraction):
 
     def __round__(self, precision: _Optional[int] = None
                   ) -> _Union[int, 'Fraction']:
-        result = super().__round__(precision)
+        if isinstance(precision, int):
+            result = super().__round__(precision)
+        else:
+            result = _fractions.Fraction(self).__round__(precision)
         return (Fraction(result.numerator, result.denominator)
-                if isinstance(result, _Fraction)
+                if isinstance(result, _Fraction) or isinstance(result, _fractions.Fraction)
                 else result)
 
     def __rpow__(self,
