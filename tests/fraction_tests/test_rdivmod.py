@@ -9,27 +9,27 @@ from . import strategies
 
 
 @given(strategies.finite_non_fractions, strategies.non_zero_fractions)
-def test_basic(first: Real, second: Fraction) -> None:
-    result = divmod(first, second)
+def test_basic(dividend: Real, divisor: Fraction) -> None:
+    result = divmod(dividend, divisor)
 
     assert isinstance(result, tuple)
     assert len(result) == 2
     assert isinstance(result[0],
-                      int if isinstance(first, Rational) else float)
+                      int if isinstance(dividend, Rational) else float)
     assert isinstance(result[1],
-                      Fraction if isinstance(first, Rational) else float)
+                      Fraction if isinstance(dividend, Rational) else float)
 
 
 @given(strategies.finite_non_fractions, strategies.non_zero_fractions)
-def test_alternatives(first: Real, second: Fraction) -> None:
-    result = divmod(first, second)
+def test_alternatives(dividend: Real, divisor: Fraction) -> None:
+    result = divmod(dividend, divisor)
 
-    assert result == (first // second, first % second)
-    assert (not isinstance(first, Rational)
-            or result == divmod(Fraction(first), second))
+    assert result == (dividend // divisor, dividend % divisor)
+    assert (not isinstance(dividend, Rational)
+            or result == divmod(Fraction(dividend), divisor))
 
 
 @given(strategies.non_fractions, strategies.zero_fractions)
-def test_zero_divisor(first: Real, second: Fraction) -> None:
+def test_zero_divisor(dividend: Real, divisor: Fraction) -> None:
     with pytest.raises(ZeroDivisionError):
-        divmod(first, second)
+        divmod(dividend, divisor)

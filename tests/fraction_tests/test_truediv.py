@@ -14,56 +14,56 @@ from . import strategies
 
 
 @given(strategies.fractions, strategies.non_zero_fractions)
-def test_basic(first: Fraction, second: Fraction) -> None:
-    result = first / second
+def test_basic(dividend: Fraction, divisor: Fraction) -> None:
+    result = dividend / divisor
 
     assert isinstance(result, Fraction)
     assert is_fraction_valid(result)
 
 
 @given(strategies.non_zero_fractions, strategies.non_zero_fractions)
-def test_commutative_case(first: Fraction, second: Fraction) -> None:
-    assert equivalence(first / second == second / first,
-                       abs(first) == abs(second))
+def test_commutative_case(dividend: Fraction, divisor: Fraction) -> None:
+    assert equivalence(dividend / divisor == divisor / dividend,
+                       abs(dividend) == abs(divisor))
 
 
 @given(strategies.zero_fractions, strategies.non_zero_fractions)
-def test_left_absorbing_element(first: Fraction, second: Fraction) -> None:
-    assert first / second == first
+def test_left_absorbing_element(dividend: Fraction, divisor: Fraction) -> None:
+    assert dividend / divisor == dividend
 
 
 @given(strategies.fractions, strategies.non_zero_integers)
-def test_integer_argument(first: Fraction, second: int) -> None:
-    result = first / second
+def test_integer_argument(dividend: Fraction, divisor: int) -> None:
+    result = dividend / divisor
 
-    assert result == first / Fraction(second)
+    assert result == dividend / Fraction(divisor)
 
 
 @given(strategies.fractions, strategies.non_zero_floats)
-def test_float_argument(first: Fraction, second: float) -> None:
-    result = first / second
+def test_float_argument(dividend: Fraction, divisor: float) -> None:
+    result = dividend / divisor
 
     assert isinstance(result, float)
-    assert equivalence(math.isnan(result), math.isnan(second))
-    assert implication(math.isinf(second)
-                       or not first and not math.isnan(second), not result)
+    assert equivalence(math.isnan(result), math.isnan(divisor))
+    assert implication(math.isinf(divisor)
+                       or not dividend and not math.isnan(divisor), not result)
 
 
 @skip_reference_counter_test
 @given(strategies.fractions, strategies.non_zero_fractions)
-def test_reference_counter(first: Fraction, second: Fraction) -> None:
-    first_refcount_before = sys.getrefcount(first)
-    second_refcount_before = sys.getrefcount(second)
+def test_reference_counter(dividend: Fraction, divisor: Fraction) -> None:
+    dividend_refcount_before = sys.getrefcount(dividend)
+    divisor_refcount_before = sys.getrefcount(divisor)
 
-    result = first / second
+    result = dividend / divisor
 
-    first_refcount_after = sys.getrefcount(first)
-    second_refcount_after = sys.getrefcount(second)
-    assert first_refcount_after == first_refcount_before
-    assert second_refcount_after == second_refcount_before
+    dividend_refcount_after = sys.getrefcount(dividend)
+    divisor_refcount_after = sys.getrefcount(divisor)
+    assert dividend_refcount_after == dividend_refcount_before
+    assert divisor_refcount_after == divisor_refcount_before
 
 
 @given(strategies.fractions, strategies.zero_numbers)
-def test_zero_divisor(first: Fraction, second: Real) -> None:
+def test_zero_divisor(dividend: Fraction, divisor: Real) -> None:
     with pytest.raises(ZeroDivisionError):
-        first / second
+        dividend / divisor
