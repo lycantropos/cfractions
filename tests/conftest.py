@@ -7,7 +7,7 @@ from hypothesis import settings
 
 on_ci = bool(os.getenv('CI', False))
 is_pypy = platform.python_implementation() == 'PyPy'
-max_examples = (-(-settings.default.max_examples // 5)
+max_examples = (-(-settings.default.max_examples // 10)
                 if is_pypy and on_ci
                 else settings.default.max_examples)
 settings.register_profile('default',
