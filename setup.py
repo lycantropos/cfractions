@@ -37,11 +37,12 @@ parameters = dict(
         download_url=project_base_url + 'archive/master.zip',
         python_requires='>=3.5')
 if platform.python_implementation() == 'CPython':
+    from glob import glob
+
     from setuptools import Extension
 
-    parameters.update(ext_modules=[Extension('_' + cfractions.__name__,
-                                             [('src/{}.c'
-                                               .format(cfractions.__name__))],
-                                             language='c')],
+    parameters.update(ext_modules=[Extension(cfractions.__name__ + '._'
+                                             + cfractions.__name__,
+                                             glob('src/*.c'))],
                       zip_safe=False)
 setup(**parameters)

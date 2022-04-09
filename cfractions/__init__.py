@@ -3,7 +3,7 @@
 __version__ = '1.4.0'
 
 try:
-    from _cfractions import Fraction
+    from ._cfractions import Fraction
 except ImportError:
     import numbers as _numbers
     from fractions import Fraction as _Fraction
