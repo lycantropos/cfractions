@@ -19,13 +19,6 @@ def test_basic(fraction: Fraction) -> None:
 
 
 @given(strategies.fractions)
-def test_involution(fraction: Fraction) -> None:
-    result = -fraction
-
-    assert fraction == -result
-
-
-@given(strategies.fractions)
 def test_fixed_point(fraction: Fraction) -> None:
     result = -fraction
 
