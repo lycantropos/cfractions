@@ -61,7 +61,7 @@ ones |= strategies.builds(Fraction, ones)
 small_positive_integral_fractions = strategies.builds(Fraction, small_integers)
 finite_non_zero_reals = (non_zero_integers | finite_non_zero_floats
                          | non_zero_fractions)
-non_integer_numbers = floats | fractions
+invalid_components = floats | fractions | fractions_strings
 finite_negative_numbers = (negative_integers | finite_negative_floats
                            | negative_fractions)
 

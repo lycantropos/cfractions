@@ -1,6 +1,7 @@
 import sys
 from numbers import (Rational,
                      Real)
+from typing import Union
 
 import pytest
 from hypothesis import given
@@ -119,13 +120,16 @@ def test_nan_float_argument(value: float) -> None:
         Fraction(value)
 
 
-@given(strategies.numerators, strategies.non_integer_numbers)
-def test_invalid_denominators(numerator: int, denominator: Real) -> None:
+@given(strategies.numerators, strategies.invalid_components)
+def test_invalid_denominators(numerator: int,
+                              denominator: Union[Fraction, float, str]
+                              ) -> None:
     with pytest.raises(TypeError):
         Fraction(numerator, denominator)
 
 
-@given(strategies.non_integer_numbers, strategies.denominators)
-def test_invalid_numerators(numerator: Real, denominator: int) -> None:
+@given(strategies.invalid_components, strategies.denominators)
+def test_invalid_numerators(numerator: Union[Fraction, float, str],
+                            denominator: int) -> None:
     with pytest.raises(TypeError):
         Fraction(numerator, denominator)
