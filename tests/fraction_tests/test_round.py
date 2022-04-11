@@ -17,10 +17,13 @@ def test_basic(fraction: Fraction, precision: Optional[int]) -> None:
 def test_value(fraction: Fraction, precision: Optional[int]) -> None:
     result = round(fraction, precision)
 
+    truncated_fraction = int(fraction)
     base = Fraction(10)
-    assert ((result >= int(fraction)
-             if fraction > 0
-             else result <= int(fraction))
+    assert (((result == truncated_fraction + (-1 if fraction < 0 else 1)
+              if (abs(truncated_fraction - fraction) == Fraction(1, 2)
+                  and truncated_fraction % 2 == 1
+                  or abs(truncated_fraction - fraction) > Fraction(1, 2))
+              else result == truncated_fraction))
             if precision is None
             else result == (round(fraction * base ** precision)
                             / base ** precision))
