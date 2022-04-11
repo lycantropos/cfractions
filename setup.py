@@ -16,6 +16,7 @@ def read_file(path_string: str) -> str:
 parameters = dict(
         name=cfractions.__name__,
         packages=find_packages(exclude=('tests', 'tests.*')),
+        package_data={cfractions.__name__: ['py.typed', '__init__.pyi']},
         version=cfractions.__version__,
         description=cfractions.__doc__,
         long_description=read_file('README.md'),
@@ -35,7 +36,8 @@ parameters = dict(
         ],
         url=project_base_url,
         download_url=project_base_url + 'archive/master.zip',
-        python_requires='>=3.6')
+        python_requires='>=3.6'
+)
 if platform.python_implementation() == 'CPython':
     from glob import glob
 
