@@ -22,17 +22,6 @@ def test_basic(base: Fraction, exponent: Rational) -> None:
     assert is_fraction_valid(result)
 
 
-@given(strategies.fractions, strategies.small_non_negative_integral_rationals,
-       strategies.non_zero_rationals)
-def test_ternary_form(base: Fraction, exponent: Rational, modulo: Rational
-                      ) -> None:
-    result = pow(base, exponent, modulo)
-
-    assert isinstance(result, Fraction)
-    assert is_fraction_valid(result)
-    assert result == (base ** exponent) % modulo
-
-
 @given(strategies.zero_fractions, strategies.small_positive_integral_fractions)
 def test_left_absorbing_element(base: Fraction, exponent: Fraction) -> None:
     assert base ** exponent == base
