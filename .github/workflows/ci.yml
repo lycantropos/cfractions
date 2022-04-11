@@ -55,8 +55,10 @@ jobs:
         run: python -m pip install -U pip setuptools
       - name: 'Install Mypy'
         run: python -m pip install -U mypy
+        if: ${{ !startsWith(matrix.python_version, 'pypy') }}
       - name: 'Run Mypy'
         run: python -m mypy ${{ github.event.repository.name }}
+        if: ${{ !startsWith(matrix.python_version, 'pypy') }}
       - name: 'Install coverage dependencies'
         run: python -m pip install -U coverage
       - name: 'Install С++ coverage dependencies'
