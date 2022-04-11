@@ -15,7 +15,7 @@ written using [`Python C API`](https://docs.python.org/c-api/index.html).
 Main features are:
 - speed & memory efficiency compared to pure-`Python` counterpart,
 - full spectre of arithmetic & comparison operations,
-- `Python3.5+` support,
+- `Python3.6+` support,
 - `PyPy` support (by falling back to `fractions.Fraction` proxy).
 
 ---
