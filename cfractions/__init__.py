@@ -103,7 +103,10 @@ except ImportError:
             return Fraction(result.numerator, result.denominator)
 
         def __pow__(self, exponent):
-            result = super().__pow__(exponent)
+            result = super().__pow__(_Fraction(exponent.numerator,
+                                               exponent.denominator)
+                                     if isinstance(exponent, _numbers.Rational)
+                                     else exponent)
             return (Fraction(result.numerator, result.denominator)
                     if isinstance(result, _Fraction)
                     else result)
@@ -163,7 +166,9 @@ except ImportError:
                     else result)
 
         def __rpow__(self, base):
-            result = super().__rpow__(base)
+            result = (_Fraction(base.numerator, base.denominator).__pow__(self)
+                      if isinstance(base, _numbers.Rational)
+                      else super().__rpow__(base))
             return (Fraction(result.numerator, result.denominator)
                     if isinstance(result, _Fraction)
                     else result)
