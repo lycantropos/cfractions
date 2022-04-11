@@ -1,1 +1,3 @@
+include cfractions/__init__.pyi
+include cfractions/py.typed
 include LICENSE
