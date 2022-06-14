@@ -13,9 +13,6 @@ max_examples = (-(-settings.default.max_examples // 10)
                 if is_pypy and on_ci
                 else settings.default.max_examples)
 settings.register_profile('default',
-                          deadline=(timedelta(hours=1) / max_examples
-                                    if on_ci
-                                    else None),
                           max_examples=max_examples,
                           suppress_health_check=[HealthCheck.too_slow])
 
