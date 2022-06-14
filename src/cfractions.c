@@ -120,7 +120,18 @@ static int parse_Fraction_components_from_rational(
     PyObject **result_denominator) {
   PyObject *numerator = PyObject_GetAttrString(rational, "numerator");
   if (!numerator) return -1;
+  PyObject *tmp = numerator;
+  numerator = PyNumber_Long(numerator);
+  Py_DECREF(tmp);
+  if (!numerator) return -1;
   PyObject *denominator = PyObject_GetAttrString(rational, "denominator");
+  if (!denominator) {
+    Py_DECREF(numerator);
+    return -1;
+  }
+  tmp = denominator;
+  denominator = PyNumber_Long(denominator);
+  Py_DECREF(tmp);
   if (!denominator) {
     Py_DECREF(numerator);
     return -1;
