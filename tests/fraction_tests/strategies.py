@@ -1,8 +1,10 @@
 import math
 import re
+from functools import partialmethod
 from numbers import (Integral,
                      Rational)
 from operator import add
+from typing import Any
 
 from hypothesis import strategies
 
@@ -67,16 +69,35 @@ finite_negative_numbers = (negative_integers | finite_negative_floats
                            | negative_fractions)
 
 
-@Integral.register
-class CustomIntegral:
+def call_unwrapped(self: Integral,
+                   method_name: str,
+                   *args: Any,
+                   **kwargs: Any) -> Any:
+    return getattr(int(self), method_name)(*args, **kwargs)
+
+
+class CustomIntegral(Integral):
+    locals().update(
+            {method_name: partialmethod(call_unwrapped, method_name)
+             for method_name in Integral.__abstractmethods__}
+    )
+
+    @property
+    def denominator(self) -> int:
+        return 1
+
+    @property
+    def numerator(self) -> int:
+        return self._value
+
     def __init__(self, _value: int) -> None:
-        self.numerator, self.denominator = _value, 1
+        self._value = _value
 
     def __int__(self) -> int:
-        return self.numerator
+        return self._value
 
     def __repr__(self) -> str:
-        return f'{type(self).__qualname__}({repr(self.numerator)})'
+        return f'{type(self).__qualname__}({repr(self._value)})'
 
 
 @Rational.register
