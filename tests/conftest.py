@@ -18,23 +18,24 @@ settings.register_profile('default',
                           max_examples=max_examples)
 
 if on_ci:
-    @pytest.hookimpl(tryfirst=True)
-    def pytest_collection_finish(session: pytest.Session) -> None:
-        session.time_left = timedelta(hours=1)
+    time_left = timedelta(hours=1)
 
 
     @pytest.hookimpl(tryfirst=True)
     def pytest_runtest_call(item: pytest.Item) -> None:
-        set_deadline = settings(deadline=item.session.time_left / max_examples)
+        set_deadline = settings(deadline=time_left / max_examples)
         item.obj = set_deadline(item.obj)
-        item.start = time.monotonic()
 
 
-    @pytest.hookimpl(trylast=True)
-    def pytest_runtest_teardown(item: pytest.Item) -> None:
-        duration = timedelta(seconds=item.start - time.monotonic())
-        item.session.time_left = (max(duration, item.session.time_left)
-                                  - duration)
+    @pytest.fixture(scope='function', autouse=True)
+    def time_function_call() -> None:
+        start = time.monotonic()
+        try:
+            yield
+        finally:
+            duration = timedelta(seconds=start - time.monotonic())
+            global time_left
+            time_left = max(duration, time_left) - duration
 
 
 @pytest.hookimpl(trylast=True)
