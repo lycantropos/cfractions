@@ -65,6 +65,14 @@ class Fraction(_numbers.Rational):
     def __divmod__(self, other: float) -> _Tuple[float, float]:
         ...
 
+    @_overload
+    def __eq__(self, other: _numbers.Rational) -> bool:
+        ...
+
+    @_overload
+    def __eq__(self, other: _Any) -> _Any:
+        ...
+
     def __floor__(self) -> int:
         ...
 
