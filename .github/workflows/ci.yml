@@ -128,11 +128,44 @@ jobs:
 
   build-wheels:
     name: 'Build wheels'
-    runs-on: ${{ matrix.os }}-latest
-    needs: pre-deploy
+    runs-on: ${{ matrix.platform.os }}-latest
+#    needs: pre-deploy
     strategy:
       matrix:
-        os: ['ubuntu', 'windows', 'macos']
+        platform: [
+          {
+            os: 'macos-latest',
+            architecture: 'x86_64'
+          },
+          {
+            os: 'macos-latest',
+            architecture: 'arm64'
+          },
+          {
+            os: 'macos-latest',
+            architecture: 'universal2'
+          },
+          {
+            os: 'ubuntu-latest',
+            architecture: 'auto'
+          },
+          {
+            os: 'ubuntu-latest',
+            architecture: 'aarch64'
+          },
+          {
+            os: 'ubuntu-latest',
+            architecture: 'ppc64le'
+          },
+          {
+            os: 'ubuntu-latest',
+            architecture: 's390x'
+          },
+          {
+            os: 'windows-latest',
+            architecture: 'auto'
+          },
+        ]
     steps:
       - name: 'Checkout'
         uses: actions/checkout@v3
@@ -148,8 +181,7 @@ jobs:
       - name: 'Build wheels'
         uses: pypa/cibuildwheel@v2.3.1
         env:
-          CIBW_ARCHS_LINUX: auto aarch64 ppc64le s390x
-          CIBW_ARCHS_MACOS: x86_64 arm64 universal2
+          CIBW_ARCHS: ${{ matrix.platform.architecture }}
           CIBW_BUILD_VERBOSITY: 1
           CIBW_SKIP: pp*
       - name: 'Upload wheels'
