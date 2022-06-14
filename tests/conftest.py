@@ -4,7 +4,8 @@ import time
 from datetime import timedelta
 
 import pytest
-from hypothesis import settings
+from hypothesis import (HealthCheck,
+                        settings)
 
 on_ci = bool(os.getenv('CI', False))
 is_pypy = platform.python_implementation() == 'PyPy'
@@ -15,7 +16,8 @@ settings.register_profile('default',
                           deadline=(timedelta(hours=1) / max_examples
                                     if on_ci
                                     else None),
-                          max_examples=max_examples)
+                          max_examples=max_examples,
+                          suppress_health_check=[HealthCheck.too_slow])
 
 if on_ci:
     time_left = timedelta(hours=1)
