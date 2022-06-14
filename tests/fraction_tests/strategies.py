@@ -70,13 +70,13 @@ finite_negative_numbers = (negative_integers | finite_negative_floats
 @Integral.register
 class CustomIntegral:
     def __init__(self, _value: int) -> None:
-        self._value = _value
+        self.numerator, self.denominator = _value, 1
 
     def __int__(self) -> int:
-        return self._value
+        return self.numerator
 
     def __repr__(self) -> str:
-        return f'{type(self).__qualname__}({repr(self._value)})'
+        return f'{type(self).__qualname__}({repr(self.numerator)})'
 
 
 @Rational.register
