@@ -33,7 +33,7 @@ if on_ci:
         try:
             yield
         finally:
-            duration = timedelta(seconds=start - time.monotonic())
+            duration = timedelta(seconds=time.monotonic() - start)
             global time_left
             time_left = max(duration, time_left) - duration
 
