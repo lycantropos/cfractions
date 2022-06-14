@@ -1,5 +1,6 @@
 import os
 import platform
+import time
 from datetime import timedelta
 
 import pytest
@@ -14,8 +15,26 @@ settings.register_profile('default',
                           deadline=(timedelta(hours=1) / max_examples
                                     if on_ci
                                     else None),
-                          max_examples=10 ** 5,
-                          verbosity=2)
+                          max_examples=max_examples)
+
+if on_ci:
+    @pytest.hookimpl(tryfirst=True)
+    def pytest_collection_finish(session: pytest.Session) -> None:
+        session.time_left = timedelta(hours=1)
+
+
+    @pytest.hookimpl(tryfirst=True)
+    def pytest_runtest_call(item: pytest.Item) -> None:
+        set_deadline = settings(deadline=item.session.time_left / max_examples)
+        item.obj = set_deadline(item.obj)
+        item.start = time.monotonic()
+
+
+    @pytest.hookimpl(trylast=True)
+    def pytest_runtest_teardown(item: pytest.Item) -> None:
+        duration = timedelta(seconds=item.start - time.monotonic())
+        item.session.time_left = (max(duration, item.session.time_left)
+                                  - duration)
 
 
 @pytest.hookimpl(trylast=True)
