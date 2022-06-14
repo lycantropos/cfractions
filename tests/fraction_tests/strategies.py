@@ -1,6 +1,7 @@
 import math
 import re
-from numbers import Rational
+from numbers import (Integral,
+                     Rational)
 from operator import add
 
 from hypothesis import strategies
@@ -66,14 +67,27 @@ finite_negative_numbers = (negative_integers | finite_negative_floats
                            | negative_fractions)
 
 
+@Integral.register
+class CustomIntegral:
+    def __init__(self, _value: int) -> None:
+        self._value = _value
+
+    def __int__(self) -> int:
+        return self._value
+
+    def __repr__(self) -> str:
+        return f'{type(self).__qualname__}({repr(self._value)})'
+
+
 @Rational.register
 class CustomRational:
     def __init__(self, numerator: int, denominator: int) -> None:
-        self.denominator, self.numerator = denominator, numerator
+        self.denominator, self.numerator = (CustomIntegral(denominator),
+                                            CustomIntegral(numerator))
 
     def __repr__(self) -> str:
-        return (type(self).__qualname__ + '(' + str(self.numerator) + ', '
-                + str(self.denominator) + ')')
+        return (type(self).__qualname__ + '(' + repr(self.numerator) + ', '
+                + repr(self.denominator) + ')')
 
 
 custom_rationals = strategies.builds(CustomRational, numerators, denominators)

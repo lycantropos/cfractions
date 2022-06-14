@@ -14,7 +14,8 @@ settings.register_profile('default',
                           deadline=(timedelta(hours=1) / max_examples
                                     if on_ci
                                     else None),
-                          max_examples=max_examples)
+                          max_examples=10 ** 5,
+                          verbosity=2)
 
 
 @pytest.hookimpl(trylast=True)
