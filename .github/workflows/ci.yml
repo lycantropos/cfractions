@@ -129,7 +129,7 @@ jobs:
   build-wheels:
     name: 'Build wheels'
     runs-on: ${{ matrix.platform.os }}
-#    needs: pre-deploy
+    needs: pre-deploy
     strategy:
       matrix:
         python_tag: ['cp36', 'cp37', 'cp38', 'cp39', 'cp310']
