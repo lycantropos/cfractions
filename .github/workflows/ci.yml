@@ -15,7 +15,7 @@ jobs:
     runs-on: ${{ matrix.platform.os }}
     strategy:
       matrix:
-        python_version: ['3.6', '3.7', '3.8', '3.9', '3.10']
+        python_version: ['3.7', '3.8', '3.9', '3.10', '3.11']
         platform: [
           {
             os: 'macos-latest',
@@ -40,6 +40,18 @@ jobs:
           - python_version: 'pypy-3.7'
             platform: { os: 'ubuntu-latest', python_architecture: 'x64' }
           - python_version: 'pypy-3.7'
+            platform: { os: 'windows-latest', python_architecture: 'x64' }
+          - python_version: 'pypy-3.8'
+            platform: { os: 'macos-latest', python_architecture: 'x64' }
+          - python_version: 'pypy-3.8'
+            platform: { os: 'ubuntu-latest', python_architecture: 'x64' }
+          - python_version: 'pypy-3.8'
+            platform: { os: 'windows-latest', python_architecture: 'x64' }
+          - python_version: 'pypy-3.9'
+            platform: { os: 'macos-latest', python_architecture: 'x64' }
+          - python_version: 'pypy-3.9'
+            platform: { os: 'ubuntu-latest', python_architecture: 'x64' }
+          - python_version: 'pypy-3.9'
             platform: { os: 'windows-latest', python_architecture: 'x64' }
     steps:
       - name: 'Checkout'
@@ -132,7 +144,7 @@ jobs:
     needs: pre-deploy
     strategy:
       matrix:
-        python_tag: ['cp36', 'cp37', 'cp38', 'cp39', 'cp310']
+        python_tag: ['cp37', 'cp38', 'cp39', 'cp310', 'cp311']
         platform: [
           {
             architecture: 'x86_64',
@@ -238,6 +250,20 @@ jobs:
               python_architecture: 'x64',
               tag: 'macosx_universal2'
             }
+          - python_tag: 'cp311'
+            platform: {
+              architecture: 'arm64',
+              os: 'macos-latest',
+              python_architecture: 'x64',
+              tag: 'macosx_arm64'
+            }
+          - python_tag: 'cp311'
+            platform: {
+              architecture: 'universal2',
+              os: 'macos-latest',
+              python_architecture: 'x64',
+              tag: 'macosx_universal2'
+            }
     steps:
       - name: 'Checkout'
         uses: actions/checkout@v3
@@ -270,7 +296,7 @@ jobs:
     needs: ['build-sdist', 'build-wheels']
     strategy:
       matrix:
-        python_version: ['3.6', '3.7', '3.8', '3.9', '3.10']
+        python_version: ['3.7', '3.8', '3.9', '3.10', '3.11']
         platform: [
           {
             os: 'macos-latest',
@@ -295,6 +321,18 @@ jobs:
           - python_version: 'pypy-3.7'
             platform: { os: 'ubuntu-latest', python_architecture: 'x64' }
           - python_version: 'pypy-3.7'
+            platform: { os: 'windows-latest', python_architecture: 'x64' }
+          - python_version: 'pypy-3.8'
+            platform: { os: 'macos-latest', python_architecture: 'x64' }
+          - python_version: 'pypy-3.8'
+            platform: { os: 'ubuntu-latest', python_architecture: 'x64' }
+          - python_version: 'pypy-3.8'
+            platform: { os: 'windows-latest', python_architecture: 'x64' }
+          - python_version: 'pypy-3.9'
+            platform: { os: 'macos-latest', python_architecture: 'x64' }
+          - python_version: 'pypy-3.9'
+            platform: { os: 'ubuntu-latest', python_architecture: 'x64' }
+          - python_version: 'pypy-3.9'
             platform: { os: 'windows-latest', python_architecture: 'x64' }
     steps:
       - name: 'Setup Python'

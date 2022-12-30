@@ -26,17 +26,17 @@ parameters = dict(
         license='MIT License',
         classifiers=[
             'License :: OSI Approved :: MIT License',
-            'Programming Language :: Python :: 3.6',
             'Programming Language :: Python :: 3.7',
             'Programming Language :: Python :: 3.8',
             'Programming Language :: Python :: 3.9',
             'Programming Language :: Python :: 3.10',
+            'Programming Language :: Python :: 3.11',
             'Programming Language :: Python :: Implementation :: CPython',
             'Programming Language :: Python :: Implementation :: PyPy',
         ],
         url=project_base_url,
         download_url=project_base_url + 'archive/master.zip',
-        python_requires='>=3.6'
+        python_requires='>=3.7'
 )
 if platform.python_implementation() == 'CPython':
     from glob import glob
