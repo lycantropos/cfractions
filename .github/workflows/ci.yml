@@ -279,7 +279,7 @@ jobs:
           platforms: all
         if: ${{ runner.os == 'Linux' }}
       - name: 'Build wheels'
-        uses: pypa/cibuildwheel@v2
+        uses: pypa/cibuildwheel@v2.11.4
         env:
           CIBW_ARCHS: ${{ matrix.platform.architecture }}
           CIBW_BUILD: ${{ matrix.python_tag }}-${{ matrix.platform.tag }}
