@@ -53,8 +53,8 @@ class Fraction(_numbers.Rational):
     def __copy__(self) -> 'Fraction':
         ...
 
-    def __deepcopy__(self, memo: _Optional[_Dict[int, _Any]] = ...
-                     ) -> 'Fraction':
+    def __deepcopy__(self,
+                     memo: _Optional[_Dict[int, _Any]] = ...) -> 'Fraction':
         ...
 
     @_overload
@@ -67,6 +67,10 @@ class Fraction(_numbers.Rational):
 
     @_overload
     def __eq__(self, other: _numbers.Rational) -> bool:
+        ...
+
+    @_overload
+    def __eq__(self, other: float) -> bool:
         ...
 
     @_overload
@@ -84,18 +88,54 @@ class Fraction(_numbers.Rational):
     def __floordiv__(self, other: float) -> float:
         ...
 
+    @_overload
+    def __ge__(self, other: _numbers.Rational) -> bool:
+        ...
+
+    @_overload
+    def __ge__(self, other: float) -> bool:
+        ...
+
+    @_overload
     def __ge__(self, other: _Any) -> _Any:
         ...
 
+    @_overload
+    def __gt__(self, other: _numbers.Rational) -> bool:
+        ...
+
+    @_overload
+    def __gt__(self, other: float) -> bool:
+        ...
+
+    @_overload
     def __gt__(self, other: _Any) -> _Any:
         ...
 
     def __hash__(self) -> int:
         ...
 
+    @_overload
+    def __le__(self, other: _numbers.Rational) -> bool:
+        ...
+
+    @_overload
+    def __le__(self, other: float) -> bool:
+        ...
+
+    @_overload
     def __le__(self, other: _Any) -> _Any:
         ...
 
+    @_overload
+    def __lt__(self, other: _numbers.Rational) -> bool:
+        ...
+
+    @_overload
+    def __lt__(self, other: float) -> bool:
+        ...
+
+    @_overload
     def __lt__(self, other: _Any) -> _Any:
         ...
 
