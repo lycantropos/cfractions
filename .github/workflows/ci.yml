@@ -65,12 +65,6 @@ jobs:
           architecture: ${{ matrix.platform.python_architecture }}
       - name: 'Install packaging tools'
         run: python -m pip install -U pip setuptools
-      - name: 'Install Mypy'
-        run: python -m pip install -U mypy
-        if: ${{ !startsWith(matrix.python_version, 'pypy') }}
-      - name: 'Run Mypy'
-        run: python -m mypy --strict ${{ github.event.repository.name }}
-        if: ${{ !startsWith(matrix.python_version, 'pypy') }}
       - name: 'Install coverage dependencies'
         run: python -m pip install -U coverage
       - name: 'Install С++ coverage dependencies'
@@ -80,6 +74,12 @@ jobs:
         run: python -m pip -v install -e .
         env:
           CPPFLAGS: --coverage -O0
+      - name: 'Install Mypy'
+        run: python -m pip install -U mypy
+        if: ${{ !startsWith(matrix.python_version, 'pypy') }}
+      - name: 'Run Mypy'
+        run: python -m mypy --strict ${{ github.event.repository.name }}
+        if: ${{ !startsWith(matrix.python_version, 'pypy') }}
       - name: 'Install tests dependencies'
         run: python -m pip install -r requirements-tests.txt
       - name: 'Run doctests'
