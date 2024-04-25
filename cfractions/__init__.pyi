@@ -239,7 +239,7 @@ class Fraction(_numbers.Rational):
         ...
 
     @_overload
-    def __rtruediv__(self, other: _numbers.Rational) -> 'Fraction':
+    def __rtruediv__(self, other: _Union[int, _numbers.Rational]) -> 'Fraction':
         ...
 
     @_overload
@@ -255,7 +255,7 @@ class Fraction(_numbers.Rational):
         ...
 
     @_overload
-    def __truediv__(self, other: _numbers.Rational) -> 'Fraction':
+    def __truediv__(self, other: _Union[int, _numbers.Rational]) -> 'Fraction':
         ...
 
     @_overload
