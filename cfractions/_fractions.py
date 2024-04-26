@@ -85,7 +85,11 @@ class Fraction(_numbers.Rational):
         result = self._value + (
             _Fraction(other) if isinstance(other, _numbers.Rational) else other
         )
-        return Fraction(result) if isinstance(result, _Fraction) else result
+        return (
+            Fraction(result.numerator, result.denominator)
+            if isinstance(result, _Fraction)
+            else result
+        )
 
     def __ceil__(self, /) -> int:
         return self._value.__ceil__()
@@ -212,7 +216,11 @@ class Fraction(_numbers.Rational):
         result = self._value % (
             _Fraction(other) if isinstance(other, _numbers.Rational) else other
         )
-        return Fraction(result) if isinstance(result, _Fraction) else result
+        return (
+            Fraction(result.numerator, result.denominator)
+            if isinstance(result, _Fraction)
+            else result
+        )
 
     @_t.overload
     def __mul__(self, other: _Rational | _te.Self, /) -> _te.Self: ...
@@ -227,7 +235,11 @@ class Fraction(_numbers.Rational):
         result = self._value * (
             _Fraction(other) if isinstance(other, _numbers.Rational) else other
         )
-        return Fraction(result) if isinstance(result, _Fraction) else result
+        return (
+            Fraction(result.numerator, result.denominator)
+            if isinstance(result, _Fraction)
+            else result
+        )
 
     def __neg__(self, /) -> _te.Self:
         return Fraction(-self._value)
@@ -255,7 +267,11 @@ class Fraction(_numbers.Rational):
             if isinstance(exponent, _numbers.Rational)
             else exponent
         )
-        return Fraction(result) if isinstance(result, _Fraction) else result
+        return (
+            Fraction(result.numerator, result.denominator)
+            if isinstance(result, _Fraction)
+            else result
+        )
 
     @_t.overload
     def __radd__(self, other: _Rational, /) -> _te.Self: ...
@@ -268,7 +284,11 @@ class Fraction(_numbers.Rational):
 
     def __radd__(self, other: _t.Any, /) -> _t.Any:
         result = other + self._value
-        return Fraction(result) if isinstance(result, _Fraction) else result
+        return (
+            Fraction(result.numerator, result.denominator)
+            if isinstance(result, _Fraction)
+            else result
+        )
 
     @_t.overload
     def __rdivmod__(self, other: _Rational, /) -> tuple[int, _te.Self]: ...
@@ -310,7 +330,11 @@ class Fraction(_numbers.Rational):
 
     def __rmod__(self, other: _Rational | float, /) -> _te.Self | float:
         result = other % self._value
-        return Fraction(result) if isinstance(result, _Fraction) else result
+        return (
+            Fraction(result.numerator, result.denominator)
+            if isinstance(result, _Fraction)
+            else result
+        )
 
     @_t.overload
     def __rmul__(self, other: _Rational, /) -> _te.Self: ...
@@ -323,7 +347,11 @@ class Fraction(_numbers.Rational):
 
     def __rmul__(self, other: _t.Any, /) -> _t.Any:
         result = other * self._value
-        return Fraction(result) if isinstance(result, _Fraction) else result
+        return (
+            Fraction(result.numerator, result.denominator)
+            if isinstance(result, _Fraction)
+            else result
+        )
 
     @_t.overload
     def __round__(self, precision: None = ..., /) -> int: ...
@@ -333,7 +361,11 @@ class Fraction(_numbers.Rational):
 
     def __round__(self, precision: int | None = None, /) -> int | _te.Self:
         result = round(self._value, precision)
-        return Fraction(result) if isinstance(result, _Fraction) else result
+        return (
+            Fraction(result.numerator, result.denominator)
+            if isinstance(result, _Fraction)
+            else result
+        )
 
     @_t.overload
     def __rpow__(self, base: _Rational, /) -> _te.Self | float: ...
@@ -341,13 +373,20 @@ class Fraction(_numbers.Rational):
     @_t.overload
     def __rpow__(self, base: float, /) -> float: ...
 
-    def __rpow__(self, base: _Rational | float, /) -> _te.Self | float:
+    @_t.overload
+    def __rpow__(self, base: _t.Any, /) -> _t.Any: ...
+
+    def __rpow__(self, base: _t.Any, /) -> _t.Any:
         result = (
-            _Fraction(base.numerator, base.denominator)
+            _Fraction(int(base.numerator), int(base.denominator))
             if isinstance(base, _numbers.Rational)
             else base
         ) ** self._value
-        return Fraction(result) if isinstance(result, _Fraction) else result
+        return (
+            Fraction(result.numerator, result.denominator)
+            if isinstance(result, _Fraction)
+            else result
+        )
 
     @_t.overload
     def __rsub__(self, other: _Rational, /) -> _te.Self: ...
@@ -357,7 +396,11 @@ class Fraction(_numbers.Rational):
 
     def __rsub__(self, other: _Rational | float, /) -> _te.Self | float:
         result = other - self._value
-        return Fraction(result) if isinstance(result, _Fraction) else result
+        return (
+            Fraction(result.numerator, result.denominator)
+            if isinstance(result, _Fraction)
+            else result
+        )
 
     @_t.overload
     def __rtruediv__(self, other: _Rational, /) -> _te.Self: ...
@@ -370,7 +413,11 @@ class Fraction(_numbers.Rational):
 
     def __rtruediv__(self, other: _t.Any, /) -> _t.Any:
         result = other / self._value
-        return Fraction(result) if isinstance(result, _Fraction) else result
+        return (
+            Fraction(result.numerator, result.denominator)
+            if isinstance(result, _Fraction)
+            else result
+        )
 
     def __str__(self) -> str:
         return self._value.__str__()
@@ -388,7 +435,11 @@ class Fraction(_numbers.Rational):
         result = self._value - (
             _Fraction(other) if isinstance(other, _numbers.Rational) else other
         )
-        return Fraction(result) if isinstance(result, _Fraction) else result
+        return (
+            Fraction(result.numerator, result.denominator)
+            if isinstance(result, _Fraction)
+            else result
+        )
 
     @_t.overload
     def __truediv__(self, other: _Rational | _te.Self, /) -> _te.Self: ...
@@ -403,7 +454,11 @@ class Fraction(_numbers.Rational):
         result = self._value / (
             _Fraction(other) if isinstance(other, _numbers.Rational) else other
         )
-        return Fraction(result) if isinstance(result, _Fraction) else result
+        return (
+            Fraction(result.numerator, result.denominator)
+            if isinstance(result, _Fraction)
+            else result
+        )
 
     def __trunc__(self, /) -> int:
         return self._value.__trunc__()
