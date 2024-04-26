@@ -54,6 +54,8 @@ select = [
     "E",
     # Pyflakes
     "F",
+    # flake8-future-annotations
+    "FA",
     # isort
     "I",
     # flake8-simplify
