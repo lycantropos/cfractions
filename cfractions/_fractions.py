@@ -113,8 +113,10 @@ class Fraction(_numbers.Rational):
                 else other
             ),
         )
-        return result[0], (
-            Fraction(result[1]) if isinstance(result, tuple) else result
+        return (
+            (result[0], Fraction(result[1]))
+            if isinstance(result, tuple) and isinstance(result[1], _Fraction)
+            else result
         )
 
     @_t.overload
@@ -279,8 +281,10 @@ class Fraction(_numbers.Rational):
 
     def __rdivmod__(self, other: _t.Any, /) -> _t.Any:
         result = divmod(other, self._value)
-        return result[0], (
-            Fraction(result[1]) if isinstance(result, tuple) else result
+        return (
+            (result[0], Fraction(result[1]))
+            if isinstance(result, tuple) and isinstance(result[1], _Fraction)
+            else result
         )
 
     def __repr__(self) -> str:
