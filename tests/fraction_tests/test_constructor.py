@@ -1,14 +1,13 @@
+from __future__ import annotations
+
 import sys
-from numbers import (Rational,
-                     Real)
-from typing import Union
 
 import pytest
 from hypothesis import given
 
 from cfractions import Fraction
-from tests.utils import (fraction_pattern,
-                         skip_reference_counter_test)
+from tests.utils import Rational, fraction_pattern, skip_reference_counter_test
+
 from . import strategies
 
 
@@ -16,10 +15,16 @@ from . import strategies
 def test_basic(numerator: int, denominator: int) -> None:
     result = Fraction(numerator, denominator)
 
-    assert (not numerator and not result.numerator
-            or not numerator % result.numerator)
-    assert (not numerator and not result.numerator
-            or not denominator % result.denominator)
+    assert (
+        not numerator
+        and not result.numerator
+        or not numerator % result.numerator
+    )
+    assert (
+        not numerator
+        and not result.numerator
+        or not denominator % result.denominator
+    )
 
 
 def test_no_argument() -> None:
@@ -42,8 +47,10 @@ def test_string_argument(value: str) -> None:
     try:
         Fraction(value)
     except ZeroDivisionError:
-        assert ('/' in value
-                and int(value[value.find('/') + 1:len(value.rstrip())]) == 0)
+        assert (
+            '/' in value
+            and int(value[value.find('/') + 1 : len(value.rstrip())]) == 0
+        )
     except ValueError:
         assert fraction_pattern.fullmatch(value) is None
 
@@ -63,8 +70,9 @@ def test_custom_rational_argument(custom_rational: Rational) -> None:
 
 
 @skip_reference_counter_test
-@given(strategies.non_interned_numerators,
-       strategies.non_interned_denominators)
+@given(
+    strategies.non_interned_numerators, strategies.non_interned_denominators
+)
 def test_reference_counter(numerator: int, denominator: int) -> None:
     denominator_refcount_before = sys.getrefcount(denominator)
     numerator_refcount_before = sys.getrefcount(numerator)
@@ -73,13 +81,16 @@ def test_reference_counter(numerator: int, denominator: int) -> None:
 
     denominator_refcount_after = sys.getrefcount(denominator)
     numerator_refcount_after = sys.getrefcount(numerator)
-    assert (denominator_refcount_after
-            == (denominator_refcount_before
-                + (result.denominator == denominator)
-                + (result.numerator == denominator)))
-    assert numerator_refcount_after == (numerator_refcount_before
-                                        + (result.denominator == numerator)
-                                        + (result.numerator == numerator))
+    assert denominator_refcount_after == (
+        denominator_refcount_before
+        + (result.denominator == denominator)
+        + (result.numerator == denominator)
+    )
+    assert numerator_refcount_after == (
+        numerator_refcount_before
+        + (result.denominator == numerator)
+        + (result.numerator == numerator)
+    )
 
 
 @skip_reference_counter_test
@@ -87,7 +98,7 @@ def test_reference_counter(numerator: int, denominator: int) -> None:
 def test_float_reference_counter(value: int) -> None:
     value_refcount_before = sys.getrefcount(value)
 
-    result = Fraction(value)
+    _result = Fraction(value)
 
     value_refcount_after = sys.getrefcount(value)
     assert value_refcount_after == value_refcount_before
@@ -121,15 +132,16 @@ def test_nan_float_argument(value: float) -> None:
 
 
 @given(strategies.numerators, strategies.invalid_components)
-def test_invalid_denominators(numerator: int,
-                              denominator: Union[Fraction, float, str]
-                              ) -> None:
+def test_invalid_denominators(
+    numerator: int, denominator: Fraction | float | str
+) -> None:
     with pytest.raises(TypeError):
-        Fraction(numerator, denominator)
+        Fraction(numerator, denominator)  # type: ignore
 
 
 @given(strategies.invalid_components, strategies.denominators)
-def test_invalid_numerators(numerator: Union[Fraction, float, str],
-                            denominator: int) -> None:
+def test_invalid_numerators(
+    numerator: Fraction | float | str, denominator: int
+) -> None:
     with pytest.raises(TypeError):
-        Fraction(numerator, denominator)
+        Fraction(numerator, denominator)  # type: ignore

@@ -2,6 +2,7 @@ from hypothesis import given
 
 from cfractions import Fraction
 from tests.utils import is_fraction_valid
+
 from . import strategies
 
 
@@ -24,4 +25,4 @@ def test_value(fraction: Fraction, denominator: int) -> None:
 def test_default(fraction: Fraction) -> None:
     result = fraction.limit_denominator()
 
-    assert result.denominator <= 10 ** 6
+    assert result.denominator <= 10**6

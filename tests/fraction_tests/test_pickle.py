@@ -3,6 +3,7 @@ import pickle
 from hypothesis import given
 
 from cfractions import Fraction
+
 from . import strategies
 
 
