@@ -2445,7 +2445,7 @@ static PyMemberDef Fraction_members[] = {
      "Numerator of the fraction."},
     {"denominator", T_OBJECT_EX, offsetof(FractionObject, denominator),
      READONLY, "Denominator of the fraction."},
-    {NULL} /* sentinel */
+    {NULL, 0, 0, 0, NULL} /* sentinel */
 };
 
 static PyMethodDef Fraction_methods[] = {
@@ -2460,7 +2460,7 @@ static PyMethodDef Fraction_methods[] = {
     {"__reduce__", (PyCFunction)Fraction_reduce, METH_NOARGS, NULL},
     {"__round__", (PyCFunction)Fraction_round, METH_VARARGS, NULL},
     {"__trunc__", (PyCFunction)Fraction_trunc, METH_NOARGS, NULL},
-    {NULL, NULL} /* sentinel */
+    {NULL, NULL, 0, NULL} /* sentinel */
 };
 
 static PyNumberMethods Fraction_as_number = {
