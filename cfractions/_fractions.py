@@ -342,7 +342,11 @@ class Fraction(_numbers.Rational):
     def __rpow__(self, base: float, /) -> float: ...
 
     def __rpow__(self, base: _Rational | float, /) -> _te.Self | float:
-        result = base**self._value
+        result = (
+            _Fraction(base.numerator, base.denominator)
+            if isinstance(base, _numbers.Rational)
+            else base
+        ) ** self._value
         return Fraction(result) if isinstance(result, _Fraction) else result
 
     @_t.overload
