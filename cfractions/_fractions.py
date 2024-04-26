@@ -97,6 +97,11 @@ class Fraction(_numbers.Rational):
     def __copy__(self, /) -> _te.Self:
         return self
 
+    def __deepcopy__(
+        self, memo: dict[str, _t.Any] | None = None, /
+    ) -> _te.Self:
+        return self
+
     @_t.overload
     def __divmod__(
         self, other: _Rational | _te.Self, /
