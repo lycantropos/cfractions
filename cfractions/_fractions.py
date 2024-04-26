@@ -268,7 +268,7 @@ class Fraction(_numbers.Rational):
 
     def __pow__(self, exponent: _t.Any, /) -> _t.Any:
         result = self._value ** (
-            _Fraction(exponent)
+            _Fraction(int(exponent.numerator), int(exponent.denominator))
             if isinstance(exponent, _numbers.Rational)
             else exponent
         )
