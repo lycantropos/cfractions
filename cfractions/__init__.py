@@ -2,7 +2,7 @@
 
 import typing as _t
 
-__version__ = '2.3.0-alpha'
+__version__ = '2.3.0'
 
 if _t.TYPE_CHECKING:
     from . import _fractions

@@ -7,7 +7,7 @@ services:
       args:
         - IMAGE_NAME=${CPYTHON_IMAGE_NAME}
         - IMAGE_VERSION=${CPYTHON_IMAGE_VERSION}
-    image: lycantropos/cfractions-cpython:2.3.0-alpha
+    image: lycantropos/cfractions-cpython:2.3.0
     volumes:
       - ./cfractions:/opt/cfractions/cfractions
       - ./pytest.ini:/opt/cfractions/pytest.ini
