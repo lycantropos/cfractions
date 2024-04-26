@@ -1,5 +1,5 @@
 cfractions
-==========
+========
 
 [![](https://github.com/lycantropos/cfractions/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/lycantropos/cfractions/actions/workflows/ci.yml "Github Actions")
 [![](https://codecov.io/gh/lycantropos/cfractions/branch/master/graph/badge.svg)](https://codecov.io/gh/lycantropos/cfractions "Codecov")
@@ -20,8 +20,8 @@ Main features are:
 
 ---
 
-In what follows `python` is an alias for `python3.7` or `pypy3.7`
-or any later version (`python3.8`, `pypy3.8` and so on).
+In what follows `python` is an alias for `python3.8` or `pypy3.8`
+or any later version (`python3.9`, `pypy3.9` and so on).
 
 Installation
 ------------
@@ -48,7 +48,7 @@ cd cfractions
 
 Install
 ```bash
-python setup.py install
+python -m pip install -e .
 ```
 
 Usage
@@ -110,7 +110,7 @@ Bump version
 bump2version --verbose $CATEGORY
 ```
 
-This will set version to `major.minor.patch-alpha`. 
+This will set version to `major.minor.patch-alpha`.
 
 #### Release
 
@@ -128,9 +128,9 @@ This will set version to `major.minor.patch`.
 
 ### Running tests
 
-Install dependencies
+Install with dependencies
 ```bash
-python -m pip install -r requirements-tests.txt
+python -m pip install -e .[tests]
 ```
 
 Plain
