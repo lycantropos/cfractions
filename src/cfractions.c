@@ -275,8 +275,7 @@ static Py_ssize_t search_unsigned_PyLong(int kind, const void *data,
                                          Py_ssize_t size, Py_ssize_t start) {
   Py_ssize_t index = start;
   for (; index < size && Py_UNICODE_ISDIGIT(PyUnicode_READ(kind, data, index));
-       ++index)
-    ;
+       ++index);
   return index;
 }
 #endif
