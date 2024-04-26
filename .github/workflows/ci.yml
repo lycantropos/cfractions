@@ -33,7 +33,7 @@ jobs:
         python_version: [ '3.8', '3.9', '3.10', '3.11', '3.12' ]
         platform: [
           {
-            os: 'macos-latest',
+            os: 'macos-13',
             python_architecture: 'x64'
           },
           {
@@ -51,13 +51,13 @@ jobs:
         ]
         include:
           - python_version: 'pypy-3.8'
-            platform: { os: 'macos-latest', python_architecture: 'x64' }
+            platform: { os: 'macos-13', python_architecture: 'x64' }
           - python_version: 'pypy-3.8'
             platform: { os: 'ubuntu-latest', python_architecture: 'x64' }
           - python_version: 'pypy-3.8'
             platform: { os: 'windows-latest', python_architecture: 'x64' }
           - python_version: 'pypy-3.9'
-            platform: { os: 'macos-latest', python_architecture: 'x64' }
+            platform: { os: 'macos-13', python_architecture: 'x64' }
           - python_version: 'pypy-3.9'
             platform: { os: 'ubuntu-latest', python_architecture: 'x64' }
           - python_version: 'pypy-3.9'
@@ -149,19 +149,19 @@ jobs:
         platform: [
           {
             architecture: 'arm64',
-            os: 'macos-latest',
+            os: 'macos-13',
             python_architecture: 'x64',
             tag: 'macosx_arm64'
           },
           {
             architecture: 'universal2',
-            os: 'macos-latest',
+            os: 'macos-13',
             python_architecture: 'x64',
             tag: 'macosx_universal2'
           },
           {
             architecture: 'x86_64',
-            os: 'macos-latest',
+            os: 'macos-13',
             python_architecture: 'x64',
             tag: 'macosx_x86_64'
           },
@@ -256,7 +256,7 @@ jobs:
         python_version: [ '3.8', '3.9', '3.10', '3.11', '3.12' ]
         platform: [
           {
-            os: 'macos-latest',
+            os: 'macos-13',
             python_architecture: 'x64'
           },
           {
@@ -274,13 +274,13 @@ jobs:
         ]
         include:
           - python_version: 'pypy-3.8'
-            platform: { os: 'macos-latest', python_architecture: 'x64' }
+            platform: { os: 'macos-13', python_architecture: 'x64' }
           - python_version: 'pypy-3.8'
             platform: { os: 'ubuntu-latest', python_architecture: 'x64' }
           - python_version: 'pypy-3.8'
             platform: { os: 'windows-latest', python_architecture: 'x64' }
           - python_version: 'pypy-3.9'
-            platform: { os: 'macos-latest', python_architecture: 'x64' }
+            platform: { os: 'macos-13', python_architecture: 'x64' }
           - python_version: 'pypy-3.9'
             platform: { os: 'ubuntu-latest', python_architecture: 'x64' }
           - python_version: 'pypy-3.9'
