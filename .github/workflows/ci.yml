@@ -64,7 +64,7 @@ jobs:
             platform: { os: 'windows-latest', python_architecture: 'x64' }
     steps:
       - name: 'Checkout'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
       - name: 'Setup Python'
@@ -124,7 +124,7 @@ jobs:
     needs: pre-deploy
     steps:
       - name: 'Checkout'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
       - name: 'Setup Python'
@@ -222,7 +222,7 @@ jobs:
         ]
     steps:
       - name: 'Checkout'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
       - name: 'Setup Python'
