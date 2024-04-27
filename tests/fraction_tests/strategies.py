@@ -105,9 +105,12 @@ class CustomIntegral:
 @_numbers.Rational.register
 class CustomRational:
     def __init__(self, numerator: int, denominator: int) -> None:
+        if denominator < 0:
+            numerator, denominator = -numerator, -denominator
+        gcd = math.gcd(numerator, denominator)
         self.denominator, self.numerator = (
-            CustomIntegral(denominator),
-            CustomIntegral(numerator),
+            CustomIntegral(denominator // gcd),
+            CustomIntegral(numerator // gcd),
         )
 
     def __repr__(self) -> str:
