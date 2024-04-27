@@ -99,7 +99,7 @@ class CustomIntegral:
         return self._value
 
     def __repr__(self) -> str:
-        return f'{type(self).__qualname__}({repr(self._value)})'
+        return f'{type(self).__qualname__}({self._value!r})'
 
 
 @_numbers.Rational.register
@@ -112,12 +112,8 @@ class CustomRational:
 
     def __repr__(self) -> str:
         return (
-            type(self).__qualname__
-            + '('
-            + repr(self.numerator)
-            + ', '
-            + repr(self.denominator)
-            + ')'
+            f'{type(self).__qualname__}'
+            f'({self.numerator!r}, {self.denominator!r})'
         )
 
 
