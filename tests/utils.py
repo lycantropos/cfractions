@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import fractions
 import math
+import numbers
 import platform
 import re
 import typing as t
@@ -11,8 +12,10 @@ import typing_extensions as te
 
 from cfractions import Fraction
 
-Integral: te.TypeAlias = int
-Rational: te.TypeAlias = t.Union[Fraction, Integral, fractions.Fraction]
+Integral: te.TypeAlias = t.Union[int, numbers.Integral]
+Rational: te.TypeAlias = t.Union[
+    Fraction, Integral, fractions.Fraction, numbers.Rational
+]
 Real: te.TypeAlias = t.Union[Rational, float]
 
 
