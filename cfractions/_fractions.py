@@ -6,7 +6,7 @@ from fractions import Fraction as _Fraction
 
 import typing_extensions as _te
 
-_Rational = _t.Union[int, _Fraction]
+_Rational = _t.Union[_Fraction, _numbers.Rational, int]
 
 
 @_t.final
@@ -296,7 +296,10 @@ class Fraction(_numbers.Rational):
     @_t.overload
     def __rmod__(self, dividend: float, /) -> float: ...
 
-    def __rmod__(self, dividend: _Rational | float, /) -> _te.Self | float:
+    @_t.overload
+    def __rmod__(self, dividend: _t.Any, /) -> _t.Any: ...
+
+    def __rmod__(self, dividend: _t.Any, /) -> _t.Any:
         return _to_fraction_if_std_fraction(dividend % self._value)
 
     @_t.overload
@@ -342,7 +345,10 @@ class Fraction(_numbers.Rational):
     @_t.overload
     def __rsub__(self, minuend: float, /) -> float: ...
 
-    def __rsub__(self, minuend: _Rational | float, /) -> _te.Self | float:
+    @_t.overload
+    def __rsub__(self, minuend: _t.Any, /) -> _t.Any: ...
+
+    def __rsub__(self, minuend: _t.Any, /) -> _t.Any:
         return _to_fraction_if_std_fraction(
             _to_std_fraction_if_rational(minuend) - self._value
         )
