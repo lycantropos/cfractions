@@ -52,7 +52,11 @@ class Fraction(_numbers.Rational):
         /,
     ) -> _te.Self:
         if denominator is None:
-            value = _Fraction(numerator)
+            value = (
+                _Fraction(int(numerator.numerator), int(numerator.denominator))
+                if isinstance(numerator, _numbers.Rational)
+                else _Fraction(numerator)
+            )
         else:
             if not isinstance(denominator, int):
                 raise TypeError('Denominator should be an integer.')
@@ -412,7 +416,7 @@ def _to_fraction_if_std_fraction(value: _t.Any, /) -> _t.Any: ...
 
 def _to_fraction_if_std_fraction(value: _t.Any, /) -> _t.Any:
     return (
-        Fraction(int(value.numerator), int(value.denominator))
+        Fraction(value.numerator, value.denominator)
         if isinstance(value, _Fraction)
         else value
     )
