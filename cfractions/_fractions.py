@@ -23,8 +23,9 @@ class Fraction(_numbers.Rational):
         return self.numerator, self.denominator
 
     def limit_denominator(self, max_denominator: int = 10**6, /) -> _te.Self:
-        result = self._value.limit_denominator(max_denominator)
-        return _to_fraction_if_std_fraction(result)
+        return _to_fraction_if_std_fraction(
+            self._value.limit_denominator(max_denominator)
+        )
 
     __module__ = 'cfractions'
     __slots__ = ('_value',)
@@ -78,8 +79,9 @@ class Fraction(_numbers.Rational):
     def __add__(self, other: _t.Any, /) -> _t.Any: ...
 
     def __add__(self, other: _t.Any, /) -> _t.Any:
-        result = self._value + _to_std_fraction_if_rational(other)
-        return _to_fraction_if_std_fraction(result)
+        return _to_fraction_if_std_fraction(
+            self._value + _to_std_fraction_if_rational(other)
+        )
 
     def __ceil__(self, /) -> int:
         return self._value.__ceil__()
@@ -199,8 +201,9 @@ class Fraction(_numbers.Rational):
     def __mod__(self, divisor: _t.Any, /) -> _t.Any: ...
 
     def __mod__(self, divisor: _t.Any, /) -> _t.Any:
-        result = self._value % _to_std_fraction_if_rational(divisor)
-        return _to_fraction_if_std_fraction(result)
+        return _to_fraction_if_std_fraction(
+            self._value % _to_std_fraction_if_rational(divisor)
+        )
 
     @_t.overload
     def __mul__(self, other: _Rational | _te.Self, /) -> _te.Self: ...
@@ -371,8 +374,9 @@ class Fraction(_numbers.Rational):
     def __sub__(self, subtrahend: _t.Any, /) -> _t.Any: ...
 
     def __sub__(self, subtrahend: _t.Any, /) -> _t.Any:
-        result = self._value - _to_std_fraction_if_rational(subtrahend)
-        return _to_fraction_if_std_fraction(result)
+        return _to_fraction_if_std_fraction(
+            self._value - _to_std_fraction_if_rational(subtrahend)
+        )
 
     @_t.overload
     def __truediv__(self, divisor: _Rational | _te.Self, /) -> _te.Self: ...
@@ -384,8 +388,9 @@ class Fraction(_numbers.Rational):
     def __truediv__(self, divisor: _t.Any, /) -> _t.Any: ...
 
     def __truediv__(self, divisor: _t.Any, /) -> _t.Any:
-        result = self._value / _to_std_fraction_if_rational(divisor)
-        return _to_fraction_if_std_fraction(result)
+        return _to_fraction_if_std_fraction(
+            self._value / _to_std_fraction_if_rational(divisor)
+        )
 
     def __trunc__(self, /) -> int:
         return self._value.__trunc__()
