@@ -412,7 +412,7 @@ def _to_fraction_if_std_fraction(value: _t.Any, /) -> _t.Any: ...
 
 def _to_fraction_if_std_fraction(value: _t.Any, /) -> _t.Any:
     return (
-        Fraction(value.numerator, value.denominator)
+        Fraction(int(value.numerator), int(value.denominator))
         if isinstance(value, _Fraction)
         else value
     )
