@@ -9,6 +9,10 @@ on:
     branches:
       - 'master'
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   check:
     name: Check
@@ -19,54 +23,60 @@ jobs:
       - name: 'Setup Python'
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.13'
+      - name: 'Check Python metadata'
+        run: |
+          PROJECT_DESCRIPTION=$(python -c 'import json, pathlib, tomllib; print(json.dumps(tomllib.loads(pathlib.Path("pyproject.toml").read_text())))' | jq --raw-output '.project.description')
+          MODULE_DOCSTRING=$(python -c "import ${REPOSITORY_NAME//-/_} as module; assert module.__doc__ is not None; print(module.__doc__)")
+          if [[ $PROJECT_DESCRIPTION != "$MODULE_DOCSTRING" ]]; then
+            echo "Project description should be equal to module docstring, but found \"$PROJECT_DESCRIPTION\" != \"$MODULE_DOCSTRING\".";
+            exit 1;
+          fi
+        env:
+          REPOSITORY_NAME: ${{ github.event.repository.name }}
       - name: 'Install pre-commit'
         run: python -m pip install -U pre-commit
       - name: 'Run pre-commit'
-        run: pre-commit run --all-files
+        run: pre-commit run --all-files --hook-stage manual
 
   test:
     name: 'Test'
     runs-on: ${{ matrix.platform.os }}
     strategy:
+      fail-fast: false
       matrix:
-        python_version: [ '3.8', '3.9', '3.10', '3.11', '3.12' ]
+        python_version: [ '3.9', '3.10', '3.11', '3.12', '3.13' ]
         platform: [
-          {
-            os: 'macos-13',
-            python_architecture: 'x64'
-          },
-          {
-            os: 'ubuntu-latest',
-            python_architecture: 'x64'
-          },
-          {
-            os: 'windows-latest',
-            python_architecture: 'x64'
-          },
-          {
-            os: 'windows-latest',
-            python_architecture: 'x86'
-          },
+          { os: 'macos-latest', python_architecture: 'x64' },
+          { os: 'ubuntu-latest', python_architecture: 'x64' },
+          { os: 'windows-latest', python_architecture: 'x64' },
+          { os: 'windows-latest', python_architecture: 'x86' },
         ]
+        exclude:
+          - python_version: '3.9'
+            platform: { os: 'macos-latest', python_architecture: 'x64' }
+          - python_version: '3.10'
+            platform: { os: 'macos-latest', python_architecture: 'x64' }
         include:
-          - python_version: 'pypy-3.8'
+          - python_version: '3.9'
             platform: { os: 'macos-13', python_architecture: 'x64' }
-          - python_version: 'pypy-3.8'
+          - python_version: '3.10'
+            platform: { os: 'macos-13', python_architecture: 'x64' }
+          - python_version: 'pypy-3.9'
+            platform: { os: 'macos-13', python_architecture: 'x64' }
+          - python_version: 'pypy-3.9'
             platform: { os: 'ubuntu-latest', python_architecture: 'x64' }
-          - python_version: 'pypy-3.8'
+          - python_version: 'pypy-3.9'
             platform: { os: 'windows-latest', python_architecture: 'x64' }
-          - python_version: 'pypy-3.9'
+          - python_version: 'pypy-3.10'
             platform: { os: 'macos-13', python_architecture: 'x64' }
-          - python_version: 'pypy-3.9'
+          - python_version: 'pypy-3.10'
             platform: { os: 'ubuntu-latest', python_architecture: 'x64' }
-          - python_version: 'pypy-3.9'
+          - python_version: 'pypy-3.10'
             platform: { os: 'windows-latest', python_architecture: 'x64' }
     steps:
       - name: 'Checkout'
         uses: actions/checkout@v4
-        with:
-          submodules: true
       - name: 'Setup Python'
         uses: actions/setup-python@v5
         with:
@@ -80,17 +90,17 @@ jobs:
         run: python -m pip install -U gcovr
         if: ${{ !startsWith(matrix.python_version, 'pypy') && matrix.python_version != '3.12' }}
       - name: 'Install in editable mode'
-        run: python -m pip -v install -e .[tests]
-        env:
-          CPPFLAGS: --coverage -O0
-      - name: 'Run doctests'
         run: >
+          ${{ !startsWith(matrix.python_version, 'pypy') && 'CPPFLAGS=\'--coverage -O0\' ' || '' }}
+          python -m pip -v install -e '.[tests]'
+      - name: 'Run doctests'
+        run: |
           coverage run -m doctest README.md
-          && coverage run --append -m pytest --doctest-modules --ignore=tests
+          coverage run --append -m pytest --doctest-modules --ignore=tests
       - name: 'Run tests'
         run: coverage run --append -m pytest
       - name: 'Collect coverage'
-        run: coverage xml
+        run: coverage xml -o coverage_python.xml
       - name: 'Collect C coverage'
         run: gcovr --filter src/ --xml -o coverage_c.xml
         if: ${{ !startsWith(matrix.python_version, 'pypy') && matrix.python_version != '3.12' }}
@@ -98,15 +108,17 @@ jobs:
         uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: false
-          files: ./coverage.xml
+          files: ./coverage_python.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
         if: ${{ startsWith(matrix.python_version, 'pypy') }}
         continue-on-error: true
       - name: 'Upload СPython coverage'
         uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: false
-          files: ./coverage.xml,./coverage_c.xml
-        if: ${{ !startsWith(matrix.python_version, 'pypy') && matrix.python_version != '3.12' }}
+          files: ./coverage_python.xml,./coverage_c.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+        if: ${{ !startsWith(matrix.python_version, 'pypy') }}
         continue-on-error: true
 
   pre-deploy:
@@ -125,18 +137,18 @@ jobs:
     steps:
       - name: 'Checkout'
         uses: actions/checkout@v4
-        with:
-          submodules: true
       - name: 'Setup Python'
         uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
       - name: 'Install packaging tools'
-        run: python -m pip install -U build pip setuptools
+        run: python -m pip install -U build
       - name: 'Build sdist'
         run: python -m build --sdist
       - name: 'Upload sdist'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: dist
+          name: dist-sdist
           path: dist
 
   build-wheels:
@@ -144,12 +156,13 @@ jobs:
     runs-on: ${{ matrix.platform.os }}
     needs: pre-deploy
     strategy:
+      fail-fast: false
       matrix:
-        python_tag: [ 'cp38', 'cp39', 'cp310', 'cp311', 'cp312' ]
+        python_tag: [ 'cp39', 'cp310', 'cp311', 'cp312', 'cp313' ]
         platform: [
           {
             architecture: 'arm64',
-            os: 'macos-13',
+            os: 'macos-latest',
             python_architecture: 'x64',
             tag: 'macosx_arm64'
           },
@@ -161,7 +174,7 @@ jobs:
           },
           {
             architecture: 'x86_64',
-            os: 'macos-13',
+            os: 'macos-latest',
             python_architecture: 'x64',
             tag: 'macosx_x86_64'
           },
@@ -223,8 +236,6 @@ jobs:
     steps:
       - name: 'Checkout'
         uses: actions/checkout@v4
-        with:
-          submodules: true
       - name: 'Setup Python'
         uses: actions/setup-python@v5
         with:
@@ -235,55 +246,51 @@ jobs:
           platforms: all
         if: ${{ runner.os == 'Linux' }}
       - name: 'Build wheels'
-        uses: pypa/cibuildwheel@v2.17.0
+        uses: pypa/cibuildwheel@v2.21.3
         env:
           CIBW_ARCHS: ${{ matrix.platform.architecture }}
           CIBW_BUILD: ${{ matrix.python_tag }}-${{ matrix.platform.tag }}
           CIBW_BUILD_VERBOSITY: 1
       - name: 'Upload wheels'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: dist
+          name: dist-wheels-${{ matrix.python_tag }}-${{ matrix.platform.tag }}
           path: wheelhouse/*.whl
-          overwrite: true
 
   test-distributions:
-    name: Test distributions
+    name: 'Test distributions'
     runs-on: ${{ matrix.platform.os }}
-    needs: [ 'build-sdist', 'build-wheels' ]
+    needs: [ build-sdist, build-wheels ]
     strategy:
       matrix:
-        python_version: [ '3.8', '3.9', '3.10', '3.11', '3.12' ]
+        python_version: [ '3.9', '3.10', '3.11', '3.12', '3.13' ]
         platform: [
-          {
-            os: 'macos-13',
-            python_architecture: 'x64'
-          },
-          {
-            os: 'ubuntu-latest',
-            python_architecture: 'x64'
-          },
-          {
-            os: 'windows-latest',
-            python_architecture: 'x64'
-          },
-          {
-            os: 'windows-latest',
-            python_architecture: 'x86'
-          },
+          { os: 'macos-latest', python_architecture: 'x64' },
+          { os: 'ubuntu-latest', python_architecture: 'x64' },
+          { os: 'windows-latest', python_architecture: 'x64' },
+          { os: 'windows-latest', python_architecture: 'x86' },
         ]
+        exclude:
+          - python_version: '3.9'
+            platform: { os: 'macos-latest', python_architecture: 'x64' }
+          - python_version: '3.10'
+            platform: { os: 'macos-latest', python_architecture: 'x64' }
         include:
-          - python_version: 'pypy-3.8'
+          - python_version: '3.9'
             platform: { os: 'macos-13', python_architecture: 'x64' }
-          - python_version: 'pypy-3.8'
+          - python_version: '3.10'
+            platform: { os: 'macos-13', python_architecture: 'x64' }
+          - python_version: 'pypy-3.9'
+            platform: { os: 'macos-13', python_architecture: 'x64' }
+          - python_version: 'pypy-3.9'
             platform: { os: 'ubuntu-latest', python_architecture: 'x64' }
-          - python_version: 'pypy-3.8'
+          - python_version: 'pypy-3.9'
             platform: { os: 'windows-latest', python_architecture: 'x64' }
-          - python_version: 'pypy-3.9'
+          - python_version: 'pypy-3.10'
             platform: { os: 'macos-13', python_architecture: 'x64' }
-          - python_version: 'pypy-3.9'
+          - python_version: 'pypy-3.10'
             platform: { os: 'ubuntu-latest', python_architecture: 'x64' }
-          - python_version: 'pypy-3.9'
+          - python_version: 'pypy-3.10'
             platform: { os: 'windows-latest', python_architecture: 'x64' }
     steps:
       - name: 'Setup Python'
@@ -292,26 +299,32 @@ jobs:
           python-version: ${{ matrix.python_version }}
           architecture: ${{ matrix.platform.python_architecture }}
       - name: 'Download distributions'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: dist
+          merge-multiple: true
           path: dist
+          pattern: dist-*
       - name: 'Install from distributions'
-        run: python -m pip install --find-links=dist --no-deps ${{ github.event.repository.name }}
+        run: >
+          python -m pip install --find-links=dist --no-deps
+          "${REPOSITORY_NAME//-/_}"
+        env:
+          REPOSITORY_NAME: ${{ github.event.repository.name }}
 
-  deploy:
-    name: 'Deploy'
+  deploy-pypi:
+    name: 'Deploy to PyPI'
     environment: release
     needs: test-distributions
     runs-on: ubuntu-latest
     steps:
       - name: 'Download distributions'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: dist
+          merge-multiple: true
           path: dist
-      - name: 'PyPI upload'
-        uses: pypa/gh-action-pypi-publish@v1.8.6
+          pattern: dist-*
+      - name: 'Upload'
+        uses: pypa/gh-action-pypi-publish@v1.11.0
         with:
-          packages_dir: dist
+          packages-dir: dist
           password: ${{ secrets.PYPI_API_TOKEN }}
