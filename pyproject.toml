@@ -1,5 +1,6 @@
 [project]
 name = "cfractions"
+description = "Python C API alternative to `fractions` module."
 authors = [{ name = "Azat Ibrakov", email = "azatibrakov@gmail.com" }]
 readme = "README.md"
 license = { file = "LICENSE" }
