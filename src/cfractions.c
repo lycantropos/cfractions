@@ -579,9 +579,17 @@ static FractionObject *construct_Fraction(PyTypeObject *cls,
   return result;
 }
 
+int are_kwargs_passed(PyObject *kwargs) {
+  return kwargs != NULL &&
+         (!PyDict_CheckExact(kwargs) || PyDict_GET_SIZE(kwargs) != 0);
+}
+
 static PyObject *Fraction_new(PyTypeObject *cls, PyObject *args,
                               PyObject *kwargs) {
-  if (!_PyArg_NoKeywords("Fraction", kwargs)) return NULL;
+  if (are_kwargs_passed(kwargs)) {
+    PyErr_Format(PyExc_TypeError, "Fraction() takes no keyword arguments");
+    return NULL;
+  }
   PyObject *numerator = NULL, *denominator = NULL;
   if (!PyArg_ParseTuple(args, "|OO", &numerator, &denominator)) return NULL;
   if (denominator) {
