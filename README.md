@@ -20,8 +20,8 @@ Main features are:
 
 ---
 
-In what follows `python` is an alias for `python3.8` or `pypy3.8`
-or any later version (`python3.9`, `pypy3.9` and so on).
+In what follows `python` is an alias for `python3.9` or `pypy3.9`
+or any later version (`python3.10`, `pypy3.10` and so on).
 
 Installation
 ------------
