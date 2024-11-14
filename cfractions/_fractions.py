@@ -29,6 +29,9 @@ class Fraction(_numbers.Rational):
     def as_integer_ratio(self, /) -> tuple[int, int]:
         return self.numerator, self.denominator
 
+    def is_integer(self, /) -> bool:
+        return self._value.is_integer()
+
     def limit_denominator(self, max_denominator: int = 10**6, /) -> Self:
         return _to_fraction_if_std_fraction(
             self._value.limit_denominator(max_denominator)
