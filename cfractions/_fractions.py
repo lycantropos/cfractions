@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import numbers as _numbers
+import sys
 from fractions import Fraction as _Fraction
 from typing import (
     Any as _Any,
@@ -29,8 +30,15 @@ class Fraction(_numbers.Rational):
     def as_integer_ratio(self, /) -> tuple[int, int]:
         return self.numerator, self.denominator
 
-    def is_integer(self, /) -> bool:
-        return self._value.is_integer()
+    if sys.version_info >= (3, 12):
+
+        def is_integer(self, /) -> bool:
+            return self._value.is_integer()
+
+    else:
+
+        def is_integer(self, /) -> bool:
+            return self.denominator == 1
 
     def limit_denominator(self, max_denominator: int = 10**6, /) -> Self:
         return _to_fraction_if_std_fraction(
