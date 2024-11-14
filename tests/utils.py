@@ -39,7 +39,7 @@ def is_fraction_valid(fraction: Fraction) -> bool:
 
 skip_reference_counter_test = pytest.mark.skipif(
     platform.python_implementation() == 'PyPy',
-    reason="PyPy's garbage collection " 'is not based on reference counting.',
+    reason='PyPy garbage collection is not based on reference counting.',
 )
 fraction_pattern = re.compile(
     r'\A\s*(?P<sign>[-+]?)(?=\d|\.\d)(?P<num>\d*)'
