@@ -185,8 +185,15 @@ class Fraction(_numbers.Rational):
     def __hash__(self, /) -> int:
         return hash(self._value)
 
-    def __int__(self, /) -> int:
-        return self._value.__int__()
+    if sys.version_info >= (3, 11):
+
+        def __int__(self, /) -> int:
+            return self._value.__int__()
+
+    else:
+
+        def __int__(self, /) -> int:
+            return self.__trunc__()
 
     @_overload
     def __le__(self, other: _Rational | Self, /) -> bool: ...
