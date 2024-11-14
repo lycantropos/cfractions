@@ -13,12 +13,10 @@ def test_basic(fraction: Fraction) -> None:
     result = str(fraction)
 
     assert (
-        fraction.denominator == 1
-        and result == str(fraction.numerator)
-        or (
-            str(fraction.numerator) in result
-            and str(fraction.denominator) in result
-        )
+        fraction.denominator == 1 and result == str(fraction.numerator)
+    ) or (
+        str(fraction.numerator) in result
+        and str(fraction.denominator) in result
     )
 
 

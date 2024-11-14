@@ -53,7 +53,7 @@ def test_float_argument(first: Fraction, second: float) -> None:
     assert implication(math.isfinite(result), math.isfinite(second))
     assert equivalence(math.isnan(result), math.isnan(second))
     assert implication(
-        math.isinf(second) or not first and not math.isnan(second),
+        math.isinf(second) or (not first and not math.isnan(second)),
         result == -second,
     )
 

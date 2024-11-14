@@ -27,10 +27,8 @@ def test_value(dividend: Fraction, divisor: Rational) -> None:
     result = dividend // divisor
 
     assert (
-        dividend % divisor == 0
-        and result == dividend / divisor
-        or result < dividend / divisor
-    )
+        dividend % divisor == 0 and result == dividend / divisor
+    ) or result < dividend / divisor
 
 
 @given(strategies.fractions)

@@ -19,11 +19,19 @@ Rational: te.TypeAlias = t.Union[
 Real: te.TypeAlias = t.Union[Rational, float]
 
 
-def equivalence(left_statement: bool, right_statement: bool) -> bool:
+def equivalence(
+    left_statement: bool,  # noqa: FBT001
+    right_statement: bool,  # noqa: FBT001
+    /,
+) -> bool:
     return left_statement is right_statement
 
 
-def implication(antecedent: bool, consequent: bool) -> bool:
+def implication(
+    antecedent: bool,  # noqa: FBT001
+    consequent: bool,  # noqa: FBT001
+    /,
+) -> bool:
     return not antecedent or consequent
 
 

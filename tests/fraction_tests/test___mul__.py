@@ -52,7 +52,7 @@ def test_float_argument(first: Fraction, second: float) -> None:
     assert isinstance(result, float)
     assert equivalence(
         math.isnan(result),
-        math.isnan(second) or not first and math.isinf(second),
+        math.isnan(second) or (not first and math.isinf(second)),
     )
 
 

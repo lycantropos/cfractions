@@ -50,7 +50,7 @@ def test_float_argument(dividend: Fraction, divisor: float) -> None:
     assert isinstance(result, float)
     assert equivalence(math.isnan(result), math.isnan(divisor))
     assert implication(
-        math.isinf(divisor) or not dividend and not math.isnan(divisor),
+        math.isinf(divisor) or (not dividend and not math.isnan(divisor)),
         not result,
     )
 

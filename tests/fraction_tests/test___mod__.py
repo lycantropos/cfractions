@@ -36,11 +36,9 @@ def test_float_argument(dividend: Fraction, divisor: int) -> None:
 def test_value(dividend: Fraction, divisor: Fraction) -> None:
     result = dividend % divisor
 
-    assert (
-        result == 0
-        and (dividend / divisor == dividend // divisor)
-        or (result > 0) is (divisor > 0)
-    )
+    assert (result == 0 and (dividend / divisor == dividend // divisor)) or (
+        result > 0
+    ) is (divisor > 0)
     assert abs(result) < abs(divisor)
 
 

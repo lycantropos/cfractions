@@ -4,7 +4,7 @@ import platform
 import pytest
 from hypothesis import HealthCheck, settings
 
-on_ci = bool(os.getenv('CI', False))
+on_ci = bool(os.getenv('CI'))
 is_pypy = platform.python_implementation() == 'PyPy'
 max_examples = (
     -(-settings.default.max_examples // 10)

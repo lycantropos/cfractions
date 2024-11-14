@@ -16,15 +16,11 @@ def test_basic(numerator: int, denominator: int) -> None:
     result = Fraction(numerator, denominator)
 
     assert (
-        not numerator
-        and not result.numerator
-        or not numerator % result.numerator
-    )
+        not numerator and not result.numerator
+    ) or not numerator % result.numerator
     assert (
-        not numerator
-        and not result.numerator
-        or not denominator % result.denominator
-    )
+        not numerator and not result.numerator
+    ) or not denominator % result.denominator
 
 
 def test_no_argument() -> None:
@@ -47,10 +43,8 @@ def test_string_argument(value: str) -> None:
     try:
         Fraction(value)
     except ZeroDivisionError:
-        assert (
-            '/' in value
-            and int(value[value.find('/') + 1 : len(value.rstrip())]) == 0
-        )
+        assert '/' in value
+        assert int(value[value.find('/') + 1 : len(value.rstrip())]) == 0
     except ValueError:
         assert fraction_pattern.fullmatch(value) is None
 
@@ -127,7 +121,7 @@ def test_infinite_float_argument(value: float) -> None:
 
 @given(strategies.nans)
 def test_nan_float_argument(value: float) -> None:
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011
         Fraction(value)
 
 
