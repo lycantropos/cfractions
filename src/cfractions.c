@@ -2480,6 +2480,7 @@ static PyMethodDef fraction_methods[] = {
     {"__copy__", (PyCFunction)fraction_copy, METH_NOARGS, NULL},
     {"__deepcopy__", (PyCFunction)fraction_copy, METH_VARARGS, NULL},
     {"__floor__", (PyCFunction)fraction_floor, METH_NOARGS, NULL},
+    {"__int__", (PyCFunction)fraction_trunc, METH_NOARGS, NULL},
     {"__reduce__", (PyCFunction)fraction_reduce, METH_NOARGS, NULL},
     {"__round__", (PyCFunction)fraction_round, METH_VARARGS, NULL},
     {"__trunc__", (PyCFunction)fraction_trunc, METH_NOARGS, NULL},
