@@ -15,7 +15,7 @@ static int is_negative_py_object(PyObject *self) {
 
 static int is_unit_py_object_bool(PyObject *self) {
   PyObject *tmp = PyLong_FromLong(1);
-  if (!tmp) return -1;
+  if (tmp == NULL) return -1;
   int result = PyObject_RichCompareBool(self, tmp, Py_EQ);
   Py_DECREF(tmp);
   return result;
@@ -23,7 +23,7 @@ static int is_unit_py_object_bool(PyObject *self) {
 
 static PyObject *is_unit_py_object(PyObject *self) {
   PyObject *tmp = PyLong_FromLong(1);
-  if (!tmp) return NULL;
+  if (tmp == NULL) return NULL;
   PyObject *result = PyObject_RichCompare(self, tmp, Py_EQ);
   Py_DECREF(tmp);
   return result;
@@ -31,7 +31,7 @@ static PyObject *is_unit_py_object(PyObject *self) {
 
 static PyObject *round_py_object(PyObject *self) {
   PyObject *round_method_name = PyUnicode_FromString("__round__");
-  if (!round_method_name) return NULL;
+  if (round_method_name == NULL) return NULL;
   PyObject *result =
 #if PY3_9_OR_MORE
       PyObject_CallMethodNoArgs(self, round_method_name)
@@ -73,19 +73,19 @@ static PyTypeObject FractionType;
 static int normalize_fraction_components_moduli(PyObject **result_numerator,
                                                 PyObject **result_denominator) {
   PyObject *gcd = _PyLong_GCD(*result_numerator, *result_denominator);
-  if (!gcd) return -1;
+  if (gcd == NULL) return -1;
   int is_gcd_unit = is_unit_py_object_bool(gcd);
   if (is_gcd_unit < 0) {
     Py_DECREF(gcd);
     return -1;
   } else if (!is_gcd_unit) {
     PyObject *numerator = PyNumber_FloorDivide(*result_numerator, gcd);
-    if (!numerator) {
+    if (numerator == NULL) {
       Py_DECREF(gcd);
       return -1;
     }
     PyObject *denominator = PyNumber_FloorDivide(*result_denominator, gcd);
-    if (!denominator) {
+    if (denominator == NULL) {
       Py_DECREF(numerator);
       Py_DECREF(gcd);
       return -1;
@@ -108,9 +108,9 @@ static int normalize_fraction_components_signs(PyObject **result_numerator,
     return -1;
   else if (is_denominator_negative) {
     PyObject *numerator = PyNumber_Negative(*result_numerator);
-    if (!numerator) return -1;
+    if (numerator == NULL) return -1;
     PyObject *denominator = PyNumber_Negative(*result_denominator);
-    if (!denominator) {
+    if (denominator == NULL) {
       Py_DECREF(numerator);
       return -1;
     }
@@ -128,20 +128,20 @@ static int parse_fraction_components_from_rational(
     PyObject *rational, PyObject **result_numerator,
     PyObject **result_denominator) {
   PyObject *numerator = PyObject_GetAttrString(rational, "numerator");
-  if (!numerator) return -1;
+  if (numerator == NULL) return -1;
   PyObject *tmp = numerator;
   numerator = PyNumber_Long(numerator);
   Py_DECREF(tmp);
-  if (!numerator) return -1;
+  if (numerator == NULL) return -1;
   PyObject *denominator = PyObject_GetAttrString(rational, "denominator");
-  if (!denominator) {
+  if (denominator == NULL) {
     Py_DECREF(numerator);
     return -1;
   }
   tmp = denominator;
   denominator = PyNumber_Long(denominator);
   Py_DECREF(tmp);
-  if (!denominator) {
+  if (denominator == NULL) {
     Py_DECREF(numerator);
     return -1;
   }
@@ -174,14 +174,14 @@ static int parse_fraction_components_from_double(
     exponent--;
   }
   PyObject *numerator = PyLong_FromDouble(value);
-  if (!numerator) return -1;
+  if (numerator == NULL) return -1;
   PyObject *denominator = PyLong_FromLong(1);
-  if (!denominator) {
+  if (denominator == NULL) {
     Py_DECREF(numerator);
     return -1;
   }
   PyObject *exponent_object = PyLong_FromLong(abs(exponent));
-  if (!exponent_object) {
+  if (exponent_object == NULL) {
     Py_DECREF(numerator);
     Py_DECREF(denominator);
     return -1;
@@ -190,7 +190,7 @@ static int parse_fraction_components_from_double(
     PyObject *tmp = numerator;
     numerator = PyNumber_Lshift(numerator, exponent_object);
     Py_DECREF(tmp);
-    if (!numerator) {
+    if (numerator == NULL) {
       Py_DECREF(denominator);
       Py_DECREF(exponent_object);
       return -1;
@@ -199,7 +199,7 @@ static int parse_fraction_components_from_double(
     PyObject *tmp = denominator;
     denominator = PyNumber_Lshift(denominator, exponent_object);
     Py_DECREF(tmp);
-    if (!denominator) {
+    if (denominator == NULL) {
       Py_DECREF(numerator);
       Py_DECREF(exponent_object);
       return -1;
@@ -299,7 +299,7 @@ static Py_ssize_t search_signed_PyLong(int kind, const void *data,
 static PyObject *parse_PyLong(PyObject *self, Py_ssize_t start,
                               Py_ssize_t stop) {
   PyObject *result_unicode = PyUnicode_Substring(self, start, stop);
-  if (!result_unicode) return NULL;
+  if (result_unicode == NULL) return NULL;
   PyObject *result = PyLong_FromUnicodeObject(result_unicode, 10);
   Py_DECREF(result_unicode);
   return result;
@@ -307,10 +307,10 @@ static PyObject *parse_PyLong(PyObject *self, Py_ssize_t start,
 
 static PyObject *append_zeros(PyObject *self, PyObject *exponent) {
   PyObject *base = PyLong_FromLong(10);
-  if (!base) return NULL;
+  if (base == NULL) return NULL;
   PyObject *scale = PyNumber_Power(base, exponent, Py_None);
   Py_DECREF(base);
-  if (!scale) return NULL;
+  if (scale == NULL) return NULL;
   PyObject *result = PyNumber_Multiply(self, scale);
   Py_DECREF(scale);
   return result;
@@ -327,9 +327,9 @@ static int parse_fraction_components_from_PyUnicode(
   Py_ssize_t numerator_stop = search_unsigned_py_long(kind, data, size, start);
   if (numerator_stop == size) {
     *result_numerator = PyLong_FromUnicodeObject(value, 10);
-    if (!*result_numerator) return -1;
+    if (*result_numerator == NULL) return -1;
     *result_denominator = PyLong_FromLong(1);
-    if (!*result_denominator) {
+    if (*result_denominator == NULL) {
       Py_DECREF(*result_numerator);
       return -1;
     }
@@ -339,9 +339,9 @@ static int parse_fraction_components_from_PyUnicode(
   int has_numerator = numerator_stop != start;
   *result_numerator = has_numerator ? parse_PyLong(value, start, numerator_stop)
                                     : PyLong_FromLong(0);
-  if (!*result_numerator) return -1;
+  if (*result_numerator == NULL) return -1;
   *result_denominator = PyLong_FromLong(1);
-  if (!*result_denominator) {
+  if (*result_denominator == NULL) {
     Py_DECREF(*result_numerator);
     return -1;
   }
@@ -351,13 +351,13 @@ static int parse_fraction_components_from_PyUnicode(
         search_unsigned_py_long(kind, data, size, numerator_stop + 1);
     if (denominator_stop == size) {
       *result_numerator = parse_PyLong(value, start, numerator_stop);
-      if (!*result_numerator) {
+      if (*result_numerator == NULL) {
         Py_DECREF(*result_denominator);
         return -1;
       }
       *result_denominator =
           parse_PyLong(value, numerator_stop + 1, denominator_stop);
-      if (!*result_denominator) {
+      if (*result_denominator == NULL) {
         Py_DECREF(*result_numerator);
         return -1;
       }
@@ -372,7 +372,7 @@ static int parse_fraction_components_from_PyUnicode(
         PyObject *tmp = *result_numerator;
         *result_numerator = PyNumber_Negative(*result_numerator);
         Py_DECREF(tmp);
-        if (!*result_numerator) {
+        if (*result_numerator == NULL) {
           Py_DECREF(*result_denominator);
           return -1;
         }
@@ -387,7 +387,7 @@ static int parse_fraction_components_from_PyUnicode(
     if (has_decimal_part) {
       PyObject *decimal_part =
           parse_PyLong(value, numerator_stop + 1, decimal_part_stop);
-      if (!decimal_part) {
+      if (decimal_part == NULL) {
         Py_DECREF(*result_denominator);
         Py_DECREF(*result_numerator);
         return -1;
@@ -403,7 +403,7 @@ static int parse_fraction_components_from_PyUnicode(
       PyObject *exponent =
           PyLong_FromSsize_t(decimal_part_stop - numerator_stop - 1);
 #endif
-      if (!exponent) {
+      if (exponent == NULL) {
         Py_DECREF(decimal_part);
         Py_DECREF(*result_denominator);
         Py_DECREF(*result_numerator);
@@ -412,7 +412,7 @@ static int parse_fraction_components_from_PyUnicode(
       PyObject *tmp = *result_numerator;
       *result_numerator = append_zeros(*result_numerator, exponent);
       Py_DECREF(tmp);
-      if (!*result_numerator) {
+      if (*result_numerator == NULL) {
         Py_DECREF(exponent);
         Py_DECREF(decimal_part);
         Py_DECREF(*result_denominator);
@@ -422,7 +422,7 @@ static int parse_fraction_components_from_PyUnicode(
       *result_numerator = PyNumber_Add(*result_numerator, decimal_part);
       Py_DECREF(tmp);
       Py_DECREF(decimal_part);
-      if (!*result_numerator) {
+      if (*result_numerator == NULL) {
         Py_DECREF(exponent);
         Py_DECREF(*result_denominator);
         return -1;
@@ -431,7 +431,7 @@ static int parse_fraction_components_from_PyUnicode(
       *result_denominator = append_zeros(*result_denominator, exponent);
       Py_DECREF(tmp);
       Py_DECREF(exponent);
-      if (!*result_denominator) {
+      if (*result_denominator == NULL) {
         Py_DECREF(*result_numerator);
         return -1;
       }
@@ -441,7 +441,7 @@ static int parse_fraction_components_from_PyUnicode(
         PyObject *tmp = *result_numerator;
         *result_numerator = PyNumber_Negative(*result_numerator);
         Py_DECREF(tmp);
-        if (!*result_numerator) {
+        if (*result_numerator == NULL) {
           Py_DECREF(*result_denominator);
           return -1;
         }
@@ -456,7 +456,7 @@ static int parse_fraction_components_from_PyUnicode(
           PyObject *tmp = *result_numerator;
           *result_numerator = PyNumber_Negative(*result_numerator);
           Py_DECREF(tmp);
-          if (!*result_numerator) {
+          if (*result_numerator == NULL) {
             Py_DECREF(*result_denominator);
             return -1;
           }
@@ -466,7 +466,7 @@ static int parse_fraction_components_from_PyUnicode(
         if (exponent_stop == size) {
           PyObject *exponent =
               parse_PyLong(value, decimal_part_stop + 1, exponent_stop);
-          if (!exponent) {
+          if (exponent == NULL) {
             Py_DECREF(*result_denominator);
             Py_DECREF(*result_numerator);
             return -1;
@@ -481,7 +481,7 @@ static int parse_fraction_components_from_PyUnicode(
             PyObject *tmp = exponent;
             exponent = PyNumber_Negative(exponent);
             Py_DECREF(tmp);
-            if (!exponent) {
+            if (exponent == NULL) {
               Py_DECREF(*result_denominator);
               Py_DECREF(*result_numerator);
               return -1;
@@ -490,7 +490,7 @@ static int parse_fraction_components_from_PyUnicode(
             *result_denominator = append_zeros(*result_denominator, exponent);
             Py_DECREF(tmp);
             Py_DECREF(exponent);
-            if (!*result_denominator) {
+            if (*result_denominator == NULL) {
               Py_DECREF(*result_numerator);
               return -1;
             }
@@ -501,7 +501,7 @@ static int parse_fraction_components_from_PyUnicode(
             *result_numerator = append_zeros(*result_numerator, exponent);
             Py_DECREF(tmp);
             Py_DECREF(exponent);
-            if (!*result_numerator) {
+            if (*result_numerator == NULL) {
               Py_DECREF(*result_denominator);
               return -1;
             }
@@ -516,7 +516,7 @@ static int parse_fraction_components_from_PyUnicode(
       PyObject *tmp = *result_numerator;
       *result_numerator = PyNumber_Negative(*result_numerator);
       Py_DECREF(tmp);
-      if (!*result_numerator) {
+      if (*result_numerator == NULL) {
         Py_DECREF(*result_denominator);
         return -1;
       }
@@ -526,7 +526,7 @@ static int parse_fraction_components_from_PyUnicode(
     if (exponent_stop == size) {
       PyObject *exponent =
           parse_PyLong(value, numerator_stop + 1, exponent_stop);
-      if (!exponent) {
+      if (exponent == NULL) {
         Py_DECREF(*result_denominator);
         Py_DECREF(*result_numerator);
         return -1;
@@ -541,7 +541,7 @@ static int parse_fraction_components_from_PyUnicode(
         PyObject *tmp = exponent;
         exponent = PyNumber_Negative(exponent);
         Py_DECREF(tmp);
-        if (!exponent) {
+        if (exponent == NULL) {
           Py_DECREF(*result_denominator);
           Py_DECREF(*result_numerator);
           return -1;
@@ -550,7 +550,7 @@ static int parse_fraction_components_from_PyUnicode(
         *result_denominator = append_zeros(*result_denominator, exponent);
         Py_DECREF(tmp);
         Py_DECREF(exponent);
-        if (!*result_denominator) {
+        if (*result_denominator == NULL) {
           Py_DECREF(*result_numerator);
           return -1;
         }
@@ -561,7 +561,7 @@ static int parse_fraction_components_from_PyUnicode(
         *result_numerator = append_zeros(*result_numerator, exponent);
         Py_DECREF(tmp);
         Py_DECREF(exponent);
-        if (!*result_numerator) {
+        if (*result_numerator == NULL) {
           Py_DECREF(*result_denominator);
           return -1;
         }
@@ -620,9 +620,9 @@ static PyObject *fraction_new(PyTypeObject *cls, PyObject *args,
       return NULL;
     else if (is_denominator_negative) {
       numerator = PyNumber_Negative(numerator);
-      if (!numerator) return NULL;
+      if (numerator == NULL) return NULL;
       denominator = PyNumber_Negative(denominator);
-      if (!denominator) {
+      if (denominator == NULL) {
         Py_DECREF(numerator);
         return NULL;
       }
@@ -638,7 +638,7 @@ static PyObject *fraction_new(PyTypeObject *cls, PyObject *args,
   } else if (numerator) {
     if (PyLong_Check(numerator)) {
       denominator = PyLong_FromLong(1);
-      if (!denominator) return NULL;
+      if (denominator == NULL) return NULL;
       Py_INCREF(numerator);
     } else if (PyFloat_Check(numerator)) {
       if (parse_fraction_components_from_double(PyFloat_AS_DOUBLE(numerator),
@@ -699,15 +699,14 @@ static PyObject *Fractions_components_richcompare(PyObject *numerator,
       return PyObject_RichCompare(denominator, other_denominator, op);
     }
     default: {
-      PyObject *result, *left, *right;
-      left = PyNumber_Multiply(numerator, other_denominator);
-      if (!left) return NULL;
-      right = PyNumber_Multiply(other_numerator, denominator);
-      if (!right) {
+      PyObject *left = PyNumber_Multiply(numerator, other_denominator);
+      if (left == NULL) return NULL;
+      PyObject *right = PyNumber_Multiply(other_numerator, denominator);
+      if (right == NULL) {
         Py_DECREF(left);
         return NULL;
       }
-      result = PyObject_RichCompare(left, right, op);
+      PyObject *result = PyObject_RichCompare(left, right, op);
       Py_DECREF(left);
       Py_DECREF(right);
       return result;
@@ -742,10 +741,9 @@ static PyObject *fraction_richcompare(FractionObject *self, PyObject *other,
         Py_RETURN_TRUE;
       return PyObject_RichCompare(self->numerator, other, op);
     } else {
-      PyObject *result, *tmp;
-      tmp = PyNumber_Multiply(other, self->denominator);
-      if (!tmp) return NULL;
-      result = PyObject_RichCompare(self->numerator, tmp, op);
+      PyObject *tmp = PyNumber_Multiply(other, self->denominator);
+      if (tmp == NULL) return NULL;
+      PyObject *result = PyObject_RichCompare(self->numerator, tmp, op);
       Py_DECREF(tmp);
       return result;
     }
@@ -786,7 +784,7 @@ static PyObject *fraction_richcompare(FractionObject *self, PyObject *other,
 
 static FractionObject *fraction_negative(FractionObject *self) {
   PyObject *numerator = PyNumber_Negative(self->numerator);
-  if (!numerator) return NULL;
+  if (numerator == NULL) return NULL;
   Py_INCREF(self->denominator);
   PyObject *denominator = self->denominator;
   return construct_fraction(&FractionType, numerator, denominator);
@@ -794,7 +792,7 @@ static FractionObject *fraction_negative(FractionObject *self) {
 
 static FractionObject *fraction_absolute(FractionObject *self) {
   PyObject *numerator = PyNumber_Absolute(self->numerator);
-  if (!numerator) return NULL;
+  if (numerator == NULL) return NULL;
   Py_INCREF(self->denominator);
   PyObject *denominator = self->denominator;
   return construct_fraction(&FractionType, numerator, denominator);
@@ -810,10 +808,10 @@ static FractionObject *Fractions_components_add(PyObject *numerator,
                                                 PyObject *other_denominator) {
   PyObject *first_result_numerator_component =
       PyNumber_Multiply(numerator, other_denominator);
-  if (!first_result_numerator_component) return NULL;
+  if (first_result_numerator_component == NULL) return NULL;
   PyObject *second_result_numerator_component =
       PyNumber_Multiply(other_numerator, denominator);
-  if (!second_result_numerator_component) {
+  if (second_result_numerator_component == NULL) {
     Py_DECREF(first_result_numerator_component);
     return NULL;
   }
@@ -821,10 +819,10 @@ static FractionObject *Fractions_components_add(PyObject *numerator,
                                             second_result_numerator_component);
   Py_DECREF(second_result_numerator_component);
   Py_DECREF(first_result_numerator_component);
-  if (!result_numerator) return NULL;
+  if (result_numerator == NULL) return NULL;
   PyObject *result_denominator =
       PyNumber_Multiply(denominator, other_denominator);
-  if (!result_denominator) {
+  if (result_denominator == NULL) {
     Py_DECREF(result_numerator);
     return NULL;
   }
@@ -846,7 +844,7 @@ static FractionObject *Fractions_add(FractionObject *self,
 
 static PyObject *fraction_Float_add(FractionObject *self, PyObject *other) {
   PyObject *tmp = fraction_float(self);
-  if (!tmp) return NULL;
+  if (tmp == NULL) return NULL;
   PyObject *result = PyNumber_Add(tmp, other);
   Py_DECREF(tmp);
   return result;
@@ -855,10 +853,10 @@ static PyObject *fraction_Float_add(FractionObject *self, PyObject *other) {
 static FractionObject *fraction_Long_add(FractionObject *self,
                                          PyObject *other) {
   PyObject *tmp = PyNumber_Multiply(other, self->denominator);
-  if (!tmp) return NULL;
+  if (tmp == NULL) return NULL;
   PyObject *result_numerator = PyNumber_Add(self->numerator, tmp);
   Py_DECREF(tmp);
-  if (!result_numerator) return NULL;
+  if (result_numerator == NULL) return NULL;
   Py_INCREF(self->denominator);
   PyObject *result_denominator = self->denominator;
   if (normalize_fraction_components_moduli(&result_numerator,
@@ -920,10 +918,10 @@ static int fraction_bool(FractionObject *self) {
 
 static PyObject *fraction_ceil_impl(FractionObject *self) {
   PyObject *tmp = PyNumber_Negative(self->numerator);
-  if (!tmp) return NULL;
+  if (tmp == NULL) return NULL;
   PyObject *result = PyNumber_FloorDivide(tmp, self->denominator);
   Py_DECREF(tmp);
-  if (!result) return NULL;
+  if (result == NULL) return NULL;
   tmp = result;
   result = PyNumber_Negative(result);
   Py_DECREF(tmp);
@@ -964,9 +962,9 @@ static PyObject *Fractions_components_floor_divide(
     PyObject *numerator, PyObject *denominator, PyObject *other_numerator,
     PyObject *other_denominator) {
   PyObject *dividend = PyNumber_Multiply(numerator, other_denominator);
-  if (!dividend) return NULL;
+  if (dividend == NULL) return NULL;
   PyObject *divisor = PyNumber_Multiply(denominator, other_numerator);
-  if (!divisor) {
+  if (divisor == NULL) {
     Py_DECREF(dividend);
     return NULL;
   }
@@ -985,21 +983,21 @@ static PyObject *Fractions_floor_divide(FractionObject *self,
 static PyObject *fraction_Long_floor_divide(FractionObject *self,
                                             PyObject *other) {
   PyObject *gcd = _PyLong_GCD(self->numerator, other);
-  if (!gcd) return NULL;
+  if (gcd == NULL) return NULL;
   PyObject *dividend = PyNumber_FloorDivide(self->numerator, gcd);
-  if (!dividend) {
+  if (dividend == NULL) {
     Py_DECREF(gcd);
     return NULL;
   }
   PyObject *other_normalized = PyNumber_FloorDivide(other, gcd);
   Py_DECREF(gcd);
-  if (!other_normalized) {
+  if (other_normalized == NULL) {
     Py_DECREF(dividend);
     return NULL;
   }
   PyObject *divisor = PyNumber_Multiply(self->denominator, other_normalized);
   Py_DECREF(other_normalized);
-  if (!divisor) {
+  if (divisor == NULL) {
     Py_DECREF(dividend);
     return NULL;
   }
@@ -1012,21 +1010,21 @@ static PyObject *fraction_Long_floor_divide(FractionObject *self,
 static PyObject *Long_fraction_floor_divide(PyObject *self,
                                             FractionObject *other) {
   PyObject *gcd = _PyLong_GCD(self, other->numerator);
-  if (!gcd) return NULL;
+  if (gcd == NULL) return NULL;
   PyObject *divisor = PyNumber_FloorDivide(other->numerator, gcd);
-  if (!divisor) {
+  if (divisor == NULL) {
     Py_DECREF(gcd);
     return NULL;
   }
   PyObject *self_normalized = PyNumber_FloorDivide(self, gcd);
   Py_DECREF(gcd);
-  if (!self_normalized) {
+  if (self_normalized == NULL) {
     Py_DECREF(divisor);
     return NULL;
   }
   PyObject *dividend = PyNumber_Multiply(self_normalized, other->denominator);
   Py_DECREF(self_normalized);
-  if (!dividend) {
+  if (dividend == NULL) {
     Py_DECREF(divisor);
     return NULL;
   }
@@ -1070,10 +1068,9 @@ static PyObject *fraction_floor_divide(PyObject *self, PyObject *other) {
     else if (PyLong_Check(other))
       return fraction_Long_floor_divide((FractionObject *)self, other);
     else if (PyFloat_Check(other)) {
-      PyObject *result, *tmp;
-      tmp = fraction_float((FractionObject *)self);
-      if (!tmp) return NULL;
-      result = PyNumber_FloorDivide(tmp, other);
+      PyObject *tmp = fraction_float((FractionObject *)self);
+      if (tmp == NULL) return NULL;
+      PyObject *result = PyNumber_FloorDivide(tmp, other);
       Py_DECREF(tmp);
       return result;
     } else if (PyObject_IsInstance(other, Rational))
@@ -1081,10 +1078,9 @@ static PyObject *fraction_floor_divide(PyObject *self, PyObject *other) {
   } else if (PyLong_Check(self))
     return Long_fraction_floor_divide(self, (FractionObject *)other);
   else if (PyFloat_Check(self)) {
-    PyObject *result, *tmp;
-    tmp = fraction_float((FractionObject *)other);
-    if (!tmp) return NULL;
-    result = PyNumber_FloorDivide(self, tmp);
+    PyObject *tmp = fraction_float((FractionObject *)other);
+    if (tmp == NULL) return NULL;
+    PyObject *result = PyNumber_FloorDivide(self, tmp);
     Py_DECREF(tmp);
     return result;
   } else if (PyObject_IsInstance(self, Rational))
@@ -1096,7 +1092,7 @@ static int Longs_divmod(PyObject *dividend, PyObject *divisor,
                         PyObject **result_quotient,
                         PyObject **result_remainder) {
   PyObject *pair = PyNumber_Divmod(dividend, divisor);
-  if (!pair)
+  if (pair == NULL)
     return -1;
   else if (!PyTuple_Check(pair) || PyTuple_GET_SIZE(pair) != 2) {
     PyErr_SetString(PyExc_TypeError, "divmod should return pair of integers.");
@@ -1118,9 +1114,9 @@ static PyObject *Fractions_components_divmod(PyObject *numerator,
                                              PyObject *other_numerator,
                                              PyObject *other_denominator) {
   PyObject *dividend = PyNumber_Multiply(numerator, other_denominator);
-  if (!dividend) return NULL;
+  if (dividend == NULL) return NULL;
   PyObject *divisor = PyNumber_Multiply(other_numerator, denominator);
-  if (!divisor) {
+  if (divisor == NULL) {
     Py_DECREF(dividend);
     return NULL;
   }
@@ -1132,7 +1128,7 @@ static PyObject *Fractions_components_divmod(PyObject *numerator,
   if (divmod_signal < 0) return NULL;
   PyObject *remainder_denominator =
       PyNumber_Multiply(denominator, other_denominator);
-  if (!remainder_denominator) {
+  if (remainder_denominator == NULL) {
     Py_DECREF(remainder_numerator);
     Py_DECREF(quotient);
     return NULL;
@@ -1146,7 +1142,7 @@ static PyObject *Fractions_components_divmod(PyObject *numerator,
   }
   FractionObject *remainder = construct_fraction(
       &FractionType, remainder_numerator, remainder_denominator);
-  if (!remainder) {
+  if (remainder == NULL) {
     Py_DECREF(quotient);
     return NULL;
   }
@@ -1160,7 +1156,7 @@ static PyObject *Fractions_divmod(FractionObject *self, FractionObject *other) {
 
 static PyObject *fraction_Long_divmod(FractionObject *self, PyObject *other) {
   PyObject *tmp = PyNumber_Multiply(other, self->denominator);
-  if (!tmp) return NULL;
+  if (tmp == NULL) return NULL;
   PyObject *quotient, *remainder_numerator;
   int divmod_signal =
       Longs_divmod(self->numerator, tmp, &quotient, &remainder_numerator);
@@ -1176,7 +1172,7 @@ static PyObject *fraction_Long_divmod(FractionObject *self, PyObject *other) {
   }
   FractionObject *remainder = construct_fraction(
       &FractionType, remainder_numerator, remainder_denominator);
-  if (!remainder) {
+  if (remainder == NULL) {
     Py_DECREF(quotient);
     return NULL;
   }
@@ -1185,7 +1181,7 @@ static PyObject *fraction_Long_divmod(FractionObject *self, PyObject *other) {
 
 static PyObject *Long_fraction_divmod(PyObject *self, FractionObject *other) {
   PyObject *tmp = PyNumber_Multiply(self, other->denominator);
-  if (!tmp) return NULL;
+  if (tmp == NULL) return NULL;
   PyObject *quotient, *remainder_numerator;
   int divmod_signal =
       Longs_divmod(tmp, other->numerator, &quotient, &remainder_numerator);
@@ -1201,7 +1197,7 @@ static PyObject *Long_fraction_divmod(PyObject *self, FractionObject *other) {
   }
   FractionObject *remainder = construct_fraction(
       &FractionType, remainder_numerator, remainder_denominator);
-  if (!remainder) {
+  if (remainder == NULL) {
     Py_DECREF(quotient);
     return NULL;
   }
@@ -1241,10 +1237,9 @@ static PyObject *fraction_divmod(PyObject *self, PyObject *other) {
     else if (PyLong_Check(other))
       return fraction_Long_divmod((FractionObject *)self, other);
     else if (PyFloat_Check(other)) {
-      PyObject *float_self, *result;
-      float_self = fraction_float((FractionObject *)self);
-      if (!float_self) return NULL;
-      result = PyNumber_Divmod(float_self, other);
+      PyObject *float_self = fraction_float((FractionObject *)self);
+      if (float_self == NULL) return NULL;
+      PyObject *result = PyNumber_Divmod(float_self, other);
       Py_DECREF(float_self);
       return result;
     } else if (PyObject_IsInstance(other, Rational))
@@ -1252,10 +1247,9 @@ static PyObject *fraction_divmod(PyObject *self, PyObject *other) {
   } else if (PyLong_Check(self))
     return Long_fraction_divmod(self, (FractionObject *)other);
   else if (PyFloat_Check(self)) {
-    PyObject *float_other, *result;
-    float_other = fraction_float((FractionObject *)other);
-    if (!float_other) return NULL;
-    result = PyNumber_Divmod(self, float_other);
+    PyObject *float_other = fraction_float((FractionObject *)other);
+    if (float_other == NULL) return NULL;
+    PyObject *result = PyNumber_Divmod(self, float_other);
     Py_DECREF(float_other);
     return result;
   } else if (PyObject_IsInstance(self, Rational))
@@ -1265,16 +1259,16 @@ static PyObject *fraction_divmod(PyObject *self, PyObject *other) {
 
 static Py_hash_t fraction_hash(FractionObject *self) {
   PyObject *hash_modulus = PyLong_FromSize_t(_PyHASH_MODULUS);
-  if (!hash_modulus) return -1;
+  if (hash_modulus == NULL) return -1;
   PyObject *tmp = PyLong_FromSize_t(_PyHASH_MODULUS - 2);
-  if (!tmp) {
+  if (tmp == NULL) {
     Py_DECREF(hash_modulus);
     return -1;
   }
   PyObject *inverted_denominator_hash =
       PyNumber_Power(self->denominator, tmp, hash_modulus);
   Py_DECREF(tmp);
-  if (!inverted_denominator_hash) {
+  if (inverted_denominator_hash == NULL) {
     Py_DECREF(hash_modulus);
     return -1;
   }
@@ -1285,7 +1279,7 @@ static Py_hash_t fraction_hash(FractionObject *self) {
     return _PyHASH_INF;
   } else {
     PyObject *numerator_modulus = PyNumber_Absolute(self->numerator);
-    if (!numerator_modulus) {
+    if (numerator_modulus == NULL) {
       Py_DECREF(inverted_denominator_hash);
       Py_DECREF(hash_modulus);
       return -1;
@@ -1296,7 +1290,7 @@ static Py_hash_t fraction_hash(FractionObject *self) {
     Py_DECREF(numerator_modulus);
     Py_DECREF(inverted_denominator_hash);
     Py_DECREF(hash_modulus);
-    if (!hash_) return -1;
+    if (hash_ == NULL) return -1;
   }
   int is_negative = is_negative_fraction(self);
   if (is_negative < 0)
@@ -1316,22 +1310,22 @@ static FractionObject *Fractions_components_multiply(
     PyObject *numerator, PyObject *denominator, PyObject *other_numerator,
     PyObject *other_denominator) {
   PyObject *gcd = _PyLong_GCD(numerator, other_denominator);
-  if (!gcd) return NULL;
+  if (gcd == NULL) return NULL;
   numerator = PyNumber_FloorDivide(numerator, gcd);
-  if (!numerator) {
+  if (numerator == NULL) {
     Py_DECREF(gcd);
     return NULL;
   }
   other_denominator = PyNumber_FloorDivide(other_denominator, gcd);
   Py_DECREF(gcd);
-  if (!other_denominator) {
+  if (other_denominator == NULL) {
     Py_DECREF(numerator);
     return NULL;
   }
   gcd = _PyLong_GCD(other_numerator, denominator);
-  if (!gcd) return NULL;
+  if (gcd == NULL) return NULL;
   other_numerator = PyNumber_FloorDivide(other_numerator, gcd);
-  if (!other_numerator) {
+  if (other_numerator == NULL) {
     Py_DECREF(gcd);
     Py_DECREF(other_denominator);
     Py_DECREF(numerator);
@@ -1339,7 +1333,7 @@ static FractionObject *Fractions_components_multiply(
   }
   denominator = PyNumber_FloorDivide(denominator, gcd);
   Py_DECREF(gcd);
-  if (!denominator) {
+  if (denominator == NULL) {
     Py_DECREF(other_numerator);
     Py_DECREF(other_denominator);
     Py_DECREF(numerator);
@@ -1348,7 +1342,7 @@ static FractionObject *Fractions_components_multiply(
   PyObject *result_numerator = PyNumber_Multiply(numerator, other_numerator);
   Py_DECREF(other_numerator);
   Py_DECREF(numerator);
-  if (!result_numerator) {
+  if (result_numerator == NULL) {
     Py_DECREF(other_denominator);
     Py_DECREF(denominator);
     return NULL;
@@ -1357,7 +1351,7 @@ static FractionObject *Fractions_components_multiply(
       PyNumber_Multiply(denominator, other_denominator);
   Py_DECREF(other_denominator);
   Py_DECREF(denominator);
-  if (!result_denominator) {
+  if (result_denominator == NULL) {
     Py_DECREF(result_numerator);
     return NULL;
   }
@@ -1373,10 +1367,9 @@ static FractionObject *Fractions_multiply(FractionObject *self,
 
 static PyObject *fraction_Float_multiply(FractionObject *self,
                                          PyObject *other) {
-  PyObject *result, *tmp;
-  tmp = fraction_float(self);
-  if (!tmp) return NULL;
-  result = PyNumber_Multiply(tmp, other);
+  PyObject *tmp = fraction_float(self);
+  if (tmp == NULL) return NULL;
+  PyObject *result = PyNumber_Multiply(tmp, other);
   Py_DECREF(tmp);
   return result;
 }
@@ -1384,22 +1377,22 @@ static PyObject *fraction_Float_multiply(FractionObject *self,
 static FractionObject *fraction_Long_multiply(FractionObject *self,
                                               PyObject *other) {
   PyObject *gcd = _PyLong_GCD(other, self->denominator);
-  if (!gcd) return NULL;
+  if (gcd == NULL) return NULL;
   PyObject *other_normalized = PyNumber_FloorDivide(other, gcd);
-  if (!other_normalized) {
+  if (other_normalized == NULL) {
     Py_DECREF(gcd);
     return NULL;
   }
   PyObject *result_denominator = PyNumber_FloorDivide(self->denominator, gcd);
   Py_DECREF(gcd);
-  if (!result_denominator) {
+  if (result_denominator == NULL) {
     Py_DECREF(other_normalized);
     return NULL;
   }
   PyObject *result_numerator =
       PyNumber_Multiply(self->numerator, other_normalized);
   Py_DECREF(other_normalized);
-  if (!result_numerator) {
+  if (result_numerator == NULL) {
     Py_DECREF(result_denominator);
     return NULL;
   }
@@ -1446,19 +1439,19 @@ static FractionObject *Fractions_components_remainder(
     PyObject *numerator, PyObject *denominator, PyObject *other_numerator,
     PyObject *other_denominator) {
   PyObject *dividend = PyNumber_Multiply(numerator, other_denominator);
-  if (!dividend) return NULL;
+  if (dividend == NULL) return NULL;
   PyObject *divisor = PyNumber_Multiply(other_numerator, denominator);
-  if (!divisor) {
+  if (divisor == NULL) {
     Py_DECREF(dividend);
     return NULL;
   }
   PyObject *result_numerator = PyNumber_Remainder(dividend, divisor);
   Py_DECREF(dividend);
   Py_DECREF(divisor);
-  if (!result_numerator) return NULL;
+  if (result_numerator == NULL) return NULL;
   PyObject *result_denominator =
       PyNumber_Multiply(denominator, other_denominator);
-  if (!result_denominator) {
+  if (result_denominator == NULL) {
     Py_DECREF(result_numerator);
     return NULL;
   }
@@ -1481,10 +1474,10 @@ static FractionObject *Fractions_remainder(FractionObject *self,
 static FractionObject *fraction_Long_remainder(FractionObject *self,
                                                PyObject *other) {
   PyObject *tmp = PyNumber_Multiply(other, self->denominator);
-  if (!tmp) return NULL;
+  if (tmp == NULL) return NULL;
   PyObject *result_numerator = PyNumber_Remainder(self->numerator, tmp);
   Py_DECREF(tmp);
-  if (!result_numerator) return NULL;
+  if (result_numerator == NULL) return NULL;
   Py_INCREF(self->denominator);
   PyObject *result_denominator = self->denominator;
   if (normalize_fraction_components_moduli(&result_numerator,
@@ -1500,10 +1493,10 @@ static FractionObject *fraction_Long_remainder(FractionObject *self,
 static FractionObject *Long_fraction_remainder(PyObject *self,
                                                FractionObject *other) {
   PyObject *tmp = PyNumber_Multiply(self, other->denominator);
-  if (!tmp) return NULL;
+  if (tmp == NULL) return NULL;
   PyObject *result_numerator = PyNumber_Remainder(tmp, other->numerator);
   Py_DECREF(tmp);
-  if (!result_numerator) return NULL;
+  if (result_numerator == NULL) return NULL;
   Py_INCREF(other->denominator);
   PyObject *result_denominator = other->denominator;
   if (normalize_fraction_components_moduli(&result_numerator,
@@ -1549,7 +1542,7 @@ static PyObject *FractionObject_remainder(FractionObject *self,
     return (PyObject *)fraction_Long_remainder(self, other);
   else if (PyFloat_Check(other)) {
     PyObject *tmp = fraction_float(self);
-    if (!tmp) return NULL;
+    if (tmp == NULL) return NULL;
     PyObject *result = PyNumber_Remainder(tmp, other);
     Py_DECREF(tmp);
     return result;
@@ -1565,7 +1558,7 @@ static PyObject *fraction_remainder(PyObject *self, PyObject *other) {
     return (PyObject *)Long_fraction_remainder(self, (FractionObject *)other);
   else if (PyFloat_Check(self)) {
     PyObject *tmp = fraction_float((FractionObject *)other);
-    if (!tmp) return NULL;
+    if (tmp == NULL) return NULL;
     PyObject *result = PyNumber_Remainder(self, tmp);
     Py_DECREF(tmp);
     return result;
@@ -1591,13 +1584,13 @@ static PyObject *Long_fraction_power(PyObject *self, FractionObject *exponent) {
         return NULL;
       }
       PyObject *positive_exponent = PyNumber_Negative(exponent->numerator);
-      if (!positive_exponent) return NULL;
+      if (positive_exponent == NULL) return NULL;
       PyObject *result_denominator =
           PyNumber_Power(self, positive_exponent, Py_None);
       Py_DECREF(positive_exponent);
-      if (!result_denominator) return NULL;
+      if (result_denominator == NULL) return NULL;
       PyObject *result_numerator = PyLong_FromLong(1);
-      if (!result_numerator) {
+      if (result_numerator == NULL) {
         Py_DECREF(result_denominator);
         return NULL;
       }
@@ -1606,9 +1599,9 @@ static PyObject *Long_fraction_power(PyObject *self, FractionObject *exponent) {
     } else {
       PyObject *result_numerator =
           PyNumber_Power(self, exponent->numerator, Py_None);
-      if (!result_numerator) return NULL;
+      if (result_numerator == NULL) return NULL;
       PyObject *result_denominator = PyLong_FromLong(1);
-      if (!result_denominator) {
+      if (result_denominator == NULL) {
         Py_DECREF(result_numerator);
         return NULL;
       }
@@ -1618,7 +1611,7 @@ static PyObject *Long_fraction_power(PyObject *self, FractionObject *exponent) {
   } else {
     PyObject *float_exponent =
         PyNumber_TrueDivide(exponent->numerator, exponent->denominator);
-    if (!float_exponent) return NULL;
+    if (float_exponent == NULL) return NULL;
     PyObject *result = PyNumber_Power(self, float_exponent, Py_None);
     Py_DECREF(float_exponent);
     return result;
@@ -1633,9 +1626,9 @@ static PyObject *Fractions_components_positive_Long_power(PyObject *numerator,
     return NULL;
   else if (comparison_signal) {
     PyObject *result_numerator = PyNumber_Power(numerator, exponent, Py_None);
-    if (!result_numerator) return NULL;
+    if (result_numerator == NULL) return NULL;
     PyObject *result_denominator = PyLong_FromLong(1);
-    if (!result_denominator) {
+    if (result_denominator == NULL) {
       Py_DECREF(result_numerator);
       return NULL;
     }
@@ -1643,10 +1636,10 @@ static PyObject *Fractions_components_positive_Long_power(PyObject *numerator,
                                           result_denominator);
   } else {
     PyObject *result_numerator = PyNumber_Power(numerator, exponent, Py_None);
-    if (!result_numerator) return NULL;
+    if (result_numerator == NULL) return NULL;
     PyObject *result_denominator =
         PyNumber_Power(denominator, exponent, Py_None);
-    if (!result_denominator) {
+    if (result_denominator == NULL) {
       Py_DECREF(result_numerator);
       return NULL;
     }
@@ -1669,7 +1662,7 @@ static PyObject *fraction_components_Long_power(PyObject *numerator,
       return NULL;
     }
     PyObject *positive_exponent = PyNumber_Negative(exponent);
-    if (!positive_exponent) return NULL;
+    if (positive_exponent == NULL) return NULL;
     Py_INCREF(denominator);
     PyObject *inverted_numerator = denominator;
     Py_INCREF(numerator);
@@ -1695,7 +1688,7 @@ static PyObject *Float_fraction_components_power(
     PyObject *exponent_denominator) {
   PyObject *float_exponent =
       PyNumber_TrueDivide(exponent_numerator, exponent_denominator);
-  if (!float_exponent) return NULL;
+  if (float_exponent == NULL) return NULL;
   PyObject *result = PyNumber_Power(self, float_exponent, Py_None);
   Py_DECREF(float_exponent);
   return result;
@@ -1719,7 +1712,7 @@ static PyObject *Fractions_components_power(PyObject *numerator,
                                           exponent_numerator);
   else {
     PyObject *float_self = PyNumber_TrueDivide(numerator, denominator);
-    if (!float_self) return NULL;
+    if (float_self == NULL) return NULL;
     PyObject *result = Float_fraction_components_power(
         float_self, exponent_numerator, exponent_denominator);
     Py_DECREF(float_self);
@@ -1798,10 +1791,10 @@ static FractionObject *Fractions_components_subtract(
     PyObject *numerator, PyObject *denominator, PyObject *other_numerator,
     PyObject *other_denominator) {
   PyObject *numerator_minuend = PyNumber_Multiply(numerator, other_denominator);
-  if (!numerator_minuend) return NULL;
+  if (numerator_minuend == NULL) return NULL;
   PyObject *numerator_subtrahend =
       PyNumber_Multiply(other_numerator, denominator);
-  if (!numerator_subtrahend) {
+  if (numerator_subtrahend == NULL) {
     Py_DECREF(numerator_minuend);
     return NULL;
   }
@@ -1809,10 +1802,10 @@ static FractionObject *Fractions_components_subtract(
       PyNumber_Subtract(numerator_minuend, numerator_subtrahend);
   Py_DECREF(numerator_subtrahend);
   Py_DECREF(numerator_minuend);
-  if (!result_numerator) return NULL;
+  if (result_numerator == NULL) return NULL;
   PyObject *result_denominator =
       PyNumber_Multiply(denominator, other_denominator);
-  if (!result_denominator) {
+  if (result_denominator == NULL) {
     Py_DECREF(result_numerator);
     return NULL;
   }
@@ -1835,7 +1828,7 @@ static FractionObject *Fractions_subtract(FractionObject *self,
 static PyObject *fraction_Float_subtract(FractionObject *self,
                                          PyObject *other) {
   PyObject *tmp = fraction_float(self);
-  if (!tmp) return NULL;
+  if (tmp == NULL) return NULL;
   PyObject *result = PyNumber_Subtract(tmp, other);
   Py_DECREF(tmp);
   return result;
@@ -1844,7 +1837,7 @@ static PyObject *fraction_Float_subtract(FractionObject *self,
 static FractionObject *fraction_Long_subtract(FractionObject *self,
                                               PyObject *other) {
   PyObject *tmp = PyNumber_Multiply(other, self->denominator);
-  if (!tmp) return NULL;
+  if (tmp == NULL) return NULL;
   PyObject *result_numerator = PyNumber_Subtract(self->numerator, tmp);
   Py_DECREF(tmp);
   Py_INCREF(self->denominator);
@@ -1886,7 +1879,7 @@ static PyObject *fraction_subtract(PyObject *self, PyObject *other) {
   } else if (PyLong_Check(self)) {
     FractionObject *result =
         fraction_Long_subtract((FractionObject *)other, self);
-    if (!result) return NULL;
+    if (result == NULL) return NULL;
     PyObject *tmp = result->numerator;
     result->numerator = PyNumber_Negative(result->numerator);
     Py_DECREF(tmp);
@@ -1894,14 +1887,14 @@ static PyObject *fraction_subtract(PyObject *self, PyObject *other) {
   } else if (PyFloat_Check(self)) {
     PyObject *tmp =
         (PyObject *)fraction_Float_subtract((FractionObject *)other, self);
-    if (!tmp) return NULL;
+    if (tmp == NULL) return NULL;
     PyObject *result = PyNumber_Negative(tmp);
     Py_DECREF(tmp);
     return result;
   } else if (PyObject_IsInstance(self, Rational)) {
     FractionObject *result =
         fraction_Rational_subtract((FractionObject *)other, self);
-    if (!result) return NULL;
+    if (result == NULL) return NULL;
     PyObject *tmp = result->numerator;
     result->numerator = PyNumber_Negative(result->numerator);
     Py_DECREF(tmp);
@@ -1913,7 +1906,7 @@ static PyObject *fraction_subtract(PyObject *self, PyObject *other) {
 static FractionObject *fraction_limit_denominator_impl(
     FractionObject *self, PyObject *max_denominator) {
   PyObject *tmp = PyLong_FromLong(1);
-  if (!tmp) return NULL;
+  if (tmp == NULL) return NULL;
   int comparison_signal = PyObject_RichCompareBool(max_denominator, tmp, Py_LT);
   Py_DECREF(tmp);
   if (comparison_signal < 0)
@@ -1940,16 +1933,16 @@ static FractionObject *fraction_limit_denominator_impl(
            *second_bound_denominator = PyLong_FromLong(0);
   while (1) {
     PyObject *quotient = PyNumber_FloorDivide(numerator, denominator);
-    if (!quotient) goto error;
+    if (quotient == NULL) goto error;
     PyObject *tmp = PyNumber_Multiply(quotient, second_bound_denominator);
-    if (!tmp) {
+    if (tmp == NULL) {
       Py_DECREF(quotient);
       goto loop_error;
     }
     PyObject *candidate_denominator =
         PyNumber_Add(first_bound_denominator, tmp);
     Py_DECREF(tmp);
-    if (!candidate_denominator) {
+    if (candidate_denominator == NULL) {
       Py_DECREF(quotient);
       goto loop_error;
     }
@@ -1965,14 +1958,14 @@ static FractionObject *fraction_limit_denominator_impl(
       break;
     }
     tmp = PyNumber_Multiply(quotient, denominator);
-    if (!tmp) {
+    if (tmp == NULL) {
       Py_DECREF(candidate_denominator);
       Py_DECREF(quotient);
       goto loop_error;
     }
     PyObject *other_tmp = PyNumber_Subtract(numerator, tmp);
     Py_DECREF(tmp);
-    if (!other_tmp) {
+    if (other_tmp == NULL) {
       Py_DECREF(candidate_denominator);
       Py_DECREF(quotient);
       goto loop_error;
@@ -1984,41 +1977,41 @@ static FractionObject *fraction_limit_denominator_impl(
     second_bound_denominator = candidate_denominator;
     tmp = PyNumber_Multiply(quotient, second_bound_numerator);
     Py_DECREF(quotient);
-    if (!tmp) goto loop_error;
+    if (tmp == NULL) goto loop_error;
     other_tmp = PyNumber_Add(first_bound_numerator, tmp);
     Py_DECREF(tmp);
-    if (!other_tmp) goto loop_error;
+    if (other_tmp == NULL) goto loop_error;
     first_bound_numerator = second_bound_numerator;
     second_bound_numerator = other_tmp;
   }
   Py_DECREF(numerator);
   Py_DECREF(denominator);
   tmp = PyNumber_Subtract(max_denominator, first_bound_denominator);
-  if (!tmp) goto error;
+  if (tmp == NULL) goto error;
   PyObject *scale = PyNumber_FloorDivide(tmp, second_bound_denominator);
   Py_DECREF(tmp);
-  if (!scale) goto error;
+  if (scale == NULL) goto error;
   tmp = PyNumber_Multiply(scale, second_bound_numerator);
-  if (!tmp) {
+  if (tmp == NULL) {
     Py_DECREF(scale);
     goto error;
   }
   PyObject *other_tmp = PyNumber_Add(first_bound_numerator, tmp);
   Py_DECREF(tmp);
-  if (!other_tmp) {
+  if (other_tmp == NULL) {
     Py_DECREF(scale);
     goto error;
   }
   Py_DECREF(first_bound_numerator);
   first_bound_numerator = other_tmp;
   tmp = PyNumber_Multiply(scale, second_bound_denominator);
-  if (!tmp) {
+  if (tmp == NULL) {
     Py_DECREF(scale);
     goto error;
   }
   other_tmp = PyNumber_Add(first_bound_denominator, tmp);
   Py_DECREF(tmp);
-  if (!other_tmp) {
+  if (other_tmp == NULL) {
     Py_DECREF(scale);
     goto error;
   }
@@ -2026,32 +2019,32 @@ static FractionObject *fraction_limit_denominator_impl(
   first_bound_denominator = other_tmp;
   FractionObject *first_bound = construct_fraction(
       &FractionType, first_bound_numerator, first_bound_denominator);
-  if (!first_bound) {
+  if (first_bound == NULL) {
     Py_DECREF(second_bound_denominator);
     Py_DECREF(second_bound_numerator);
     return NULL;
   };
   FractionObject *second_bound = construct_fraction(
       &FractionType, second_bound_numerator, second_bound_denominator);
-  if (!second_bound) {
+  if (second_bound == NULL) {
     Py_DECREF(first_bound);
     return NULL;
   }
   FractionObject *difference = Fractions_subtract(first_bound, self);
-  if (!difference) {
+  if (difference == NULL) {
     Py_DECREF(first_bound);
     Py_DECREF(second_bound);
     return NULL;
   }
   FractionObject *first_bound_distance_to_self = fraction_absolute(difference);
   Py_DECREF(difference);
-  if (!first_bound_distance_to_self) {
+  if (first_bound_distance_to_self == NULL) {
     Py_DECREF(first_bound);
     Py_DECREF(second_bound);
     return NULL;
   }
   difference = Fractions_subtract(second_bound, self);
-  if (!difference) {
+  if (difference == NULL) {
     Py_DECREF(first_bound_distance_to_self);
     Py_DECREF(first_bound);
     Py_DECREF(second_bound);
@@ -2059,7 +2052,7 @@ static FractionObject *fraction_limit_denominator_impl(
   }
   FractionObject *second_bound_distance_to_self = fraction_absolute(difference);
   Py_DECREF(difference);
-  if (!second_bound_distance_to_self) {
+  if (second_bound_distance_to_self == NULL) {
     Py_DECREF(first_bound_distance_to_self);
     Py_DECREF(first_bound);
     Py_DECREF(second_bound);
@@ -2069,7 +2062,7 @@ static FractionObject *fraction_limit_denominator_impl(
       second_bound_distance_to_self, first_bound_distance_to_self, Py_LE);
   Py_DECREF(first_bound_distance_to_self);
   Py_DECREF(second_bound_distance_to_self);
-  if (!comparison_result) {
+  if (comparison_result == NULL) {
     Py_DECREF(first_bound);
     Py_DECREF(second_bound);
     return NULL;
@@ -2097,7 +2090,7 @@ static PyObject *fraction_limit_denominator(FractionObject *self,
                                             PyObject *args) {
   PyObject *max_denominator = NULL;
   if (!PyArg_ParseTuple(args, "|O", &max_denominator)) return NULL;
-  if (!max_denominator) {
+  if (max_denominator == NULL) {
     max_denominator = PyLong_FromLong(1000000);
     PyObject *result =
         (PyObject *)fraction_limit_denominator_impl(self, max_denominator);
@@ -2115,22 +2108,22 @@ static FractionObject *Fractions_components_true_divide(
     return NULL;
   }
   PyObject *gcd = _PyLong_GCD(numerator, other_numerator);
-  if (!gcd) return NULL;
+  if (gcd == NULL) return NULL;
   numerator = PyNumber_FloorDivide(numerator, gcd);
-  if (!numerator) {
+  if (numerator == NULL) {
     Py_DECREF(gcd);
     return NULL;
   }
   other_numerator = PyNumber_FloorDivide(other_numerator, gcd);
   Py_DECREF(gcd);
-  if (!other_numerator) {
+  if (other_numerator == NULL) {
     Py_DECREF(numerator);
     return NULL;
   }
   gcd = _PyLong_GCD(denominator, other_denominator);
-  if (!gcd) return NULL;
+  if (gcd == NULL) return NULL;
   denominator = PyNumber_FloorDivide(denominator, gcd);
-  if (!denominator) {
+  if (denominator == NULL) {
     Py_DECREF(gcd);
     Py_DECREF(other_numerator);
     Py_DECREF(numerator);
@@ -2138,7 +2131,7 @@ static FractionObject *Fractions_components_true_divide(
   }
   other_denominator = PyNumber_FloorDivide(other_denominator, gcd);
   Py_DECREF(gcd);
-  if (!other_denominator) {
+  if (other_denominator == NULL) {
     Py_DECREF(denominator);
     Py_DECREF(other_numerator);
     Py_DECREF(numerator);
@@ -2147,7 +2140,7 @@ static FractionObject *Fractions_components_true_divide(
   PyObject *result_numerator = PyNumber_Multiply(numerator, other_denominator);
   Py_DECREF(other_denominator);
   Py_DECREF(numerator);
-  if (!result_numerator) {
+  if (result_numerator == NULL) {
     Py_DECREF(other_numerator);
     Py_DECREF(denominator);
     return NULL;
@@ -2156,7 +2149,7 @@ static FractionObject *Fractions_components_true_divide(
       PyNumber_Multiply(denominator, other_numerator);
   Py_DECREF(other_numerator);
   Py_DECREF(denominator);
-  if (!result_denominator) {
+  if (result_denominator == NULL) {
     Py_DECREF(result_numerator);
     return NULL;
   }
@@ -2183,22 +2176,22 @@ static FractionObject *fraction_Long_true_divide(FractionObject *self,
     return NULL;
   }
   PyObject *gcd = _PyLong_GCD(self->numerator, other);
-  if (!gcd) return NULL;
+  if (gcd == NULL) return NULL;
   PyObject *result_numerator = PyNumber_FloorDivide(self->numerator, gcd);
-  if (!result_numerator) {
+  if (result_numerator == NULL) {
     Py_DECREF(gcd);
     return NULL;
   }
   PyObject *other_normalized = PyNumber_FloorDivide(other, gcd);
   Py_DECREF(gcd);
-  if (!other_normalized) {
+  if (other_normalized == NULL) {
     Py_DECREF(result_numerator);
     return NULL;
   }
   PyObject *result_denominator =
       PyNumber_Multiply(self->denominator, other_normalized);
   Py_DECREF(other_normalized);
-  if (!result_denominator) {
+  if (result_denominator == NULL) {
     Py_DECREF(result_numerator);
     return NULL;
   }
@@ -2219,22 +2212,22 @@ static FractionObject *Long_fraction_true_divide(PyObject *self,
     return NULL;
   }
   PyObject *gcd = _PyLong_GCD(self, other->numerator);
-  if (!gcd) return NULL;
+  if (gcd == NULL) return NULL;
   PyObject *result_denominator = PyNumber_FloorDivide(other->numerator, gcd);
-  if (!result_denominator) {
+  if (result_denominator == NULL) {
     Py_DECREF(gcd);
     return NULL;
   }
   PyObject *self_normalized = PyNumber_FloorDivide(self, gcd);
   Py_DECREF(gcd);
-  if (!self_normalized) {
+  if (self_normalized == NULL) {
     Py_DECREF(result_denominator);
     return NULL;
   }
   PyObject *result_numerator =
       PyNumber_Multiply(self_normalized, other->denominator);
   Py_DECREF(self_normalized);
-  if (!result_numerator) {
+  if (result_numerator == NULL) {
     Py_DECREF(result_denominator);
     return NULL;
   }
@@ -2284,7 +2277,7 @@ static PyObject *fraction_true_divide(PyObject *self, PyObject *other) {
                                                    other);
     else if (PyFloat_Check(other)) {
       PyObject *tmp = fraction_float((FractionObject *)self);
-      if (!tmp) return NULL;
+      if (tmp == NULL) return NULL;
       PyObject *result = PyNumber_TrueDivide(tmp, other);
       Py_DECREF(tmp);
       return result;
@@ -2295,7 +2288,7 @@ static PyObject *fraction_true_divide(PyObject *self, PyObject *other) {
     return (PyObject *)Long_fraction_true_divide(self, (FractionObject *)other);
   else if (PyFloat_Check(self)) {
     PyObject *tmp = fraction_float((FractionObject *)other);
-    if (!tmp) return NULL;
+    if (tmp == NULL) return NULL;
     PyObject *result = PyNumber_TrueDivide(self, tmp);
     Py_DECREF(tmp);
     return result;
@@ -2316,14 +2309,14 @@ static PyObject *fraction_round_plain(FractionObject *self) {
       Longs_divmod(self->numerator, self->denominator, &quotient, &remainder);
   if (divmod_signal < 0) return NULL;
   PyObject *scalar = PyLong_FromLong(2);
-  if (!scalar) {
+  if (scalar == NULL) {
     Py_DECREF(remainder);
     Py_DECREF(quotient);
     return NULL;
   }
   PyObject *tmp = PyNumber_Multiply(remainder, scalar);
   Py_DECREF(remainder);
-  if (!tmp) {
+  if (tmp == NULL) {
     Py_DECREF(scalar);
     Py_DECREF(quotient);
     return NULL;
@@ -2357,7 +2350,7 @@ static PyObject *fraction_round_plain(FractionObject *self) {
   }
   Py_DECREF(scalar);
   scalar = PyLong_FromLong(1);
-  if (!scalar) {
+  if (scalar == NULL) {
     Py_DECREF(quotient);
     return NULL;
   }
@@ -2371,29 +2364,29 @@ static PyObject *fraction_round_plain(FractionObject *self) {
 static PyObject *fraction_round(FractionObject *self, PyObject *args) {
   PyObject *precision = NULL;
   if (!PyArg_ParseTuple(args, "|O", &precision)) return NULL;
-  if (!precision) return fraction_round_plain(self);
+  if (precision == NULL) return fraction_round_plain(self);
   int comparison_signal = is_negative_py_object(precision);
   if (comparison_signal < 0) return NULL;
   PyObject *result_denominator, *result_numerator;
   if (comparison_signal) {
     PyObject *tmp = PyLong_FromLong(10);
-    if (!tmp) return NULL;
+    if (tmp == NULL) return NULL;
     PyObject *positive_precision = PyNumber_Negative(precision);
-    if (!positive_precision) {
+    if (positive_precision == NULL) {
       Py_DECREF(tmp);
       return NULL;
     }
     PyObject *shift = PyNumber_Power(tmp, positive_precision, Py_None);
     Py_DECREF(tmp);
-    if (!shift) return NULL;
+    if (shift == NULL) return NULL;
     tmp = PyNumber_TrueDivide((PyObject *)self, shift);
-    if (!tmp) {
+    if (tmp == NULL) {
       Py_DECREF(shift);
       return NULL;
     }
     result_numerator = round_py_object(tmp);
     Py_DECREF(tmp);
-    if (!result_numerator) {
+    if (result_numerator == NULL) {
       Py_DECREF(shift);
       return NULL;
     }
@@ -2401,26 +2394,26 @@ static PyObject *fraction_round(FractionObject *self, PyObject *args) {
     result_numerator = PyNumber_Multiply(result_numerator, shift);
     Py_DECREF(tmp);
     Py_DECREF(shift);
-    if (!result_numerator) return NULL;
+    if (result_numerator == NULL) return NULL;
     result_denominator = PyLong_FromLong(1);
-    if (!result_denominator) {
+    if (result_denominator == NULL) {
       Py_DECREF(result_numerator);
       return NULL;
     }
   } else {
     PyObject *tmp = PyLong_FromLong(10);
-    if (!tmp) return NULL;
+    if (tmp == NULL) return NULL;
     result_denominator = PyNumber_Power(tmp, precision, Py_None);
     Py_DECREF(tmp);
-    if (!result_denominator) return NULL;
+    if (result_denominator == NULL) return NULL;
     tmp = PyNumber_Multiply((PyObject *)self, result_denominator);
-    if (!tmp) {
+    if (tmp == NULL) {
       Py_DECREF(result_denominator);
       return NULL;
     }
     result_numerator = round_py_object(tmp);
     Py_DECREF(tmp);
-    if (!result_numerator) {
+    if (result_numerator == NULL) {
       Py_DECREF(result_denominator);
       return NULL;
     }
@@ -2529,7 +2522,7 @@ static PyModuleDef _cfractions_module = {
 
 static int load_rational() {
   PyObject *numbers_module = PyImport_ImportModule("numbers");
-  if (!numbers_module) return -1;
+  if (numbers_module == NULL) return -1;
   Rational = PyObject_GetAttrString(numbers_module, "Rational");
   Py_DECREF(numbers_module);
   return !Rational ? -1 : 0;
@@ -2537,7 +2530,7 @@ static int load_rational() {
 
 static int mark_as_rational(PyObject *python_type) {
   PyObject *register_method_name = PyUnicode_FromString("register");
-  if (!register_method_name) return -1;
+  if (register_method_name == NULL) return -1;
   PyObject *tmp =
 #if PY3_9_OR_MORE
       PyObject_CallMethodOneArg(Rational, register_method_name, python_type);
@@ -2547,7 +2540,7 @@ static int mark_as_rational(PyObject *python_type) {
 #endif
   ;
   Py_DECREF(register_method_name);
-  if (!tmp) return -1;
+  if (tmp == NULL) return -1;
   Py_DECREF(tmp);
   return 0;
 }
