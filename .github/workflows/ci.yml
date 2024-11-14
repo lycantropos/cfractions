@@ -91,7 +91,7 @@ jobs:
         if: ${{ !startsWith(matrix.python_version, 'pypy') && matrix.python_version != '3.12' }}
       - name: 'Install in editable mode'
         run: >
-          ${{ !startsWith(matrix.python_version, 'pypy') && 'CPPFLAGS=\'--coverage -O0\' ' || '' }}
+          ${{ !startsWith(matrix.python_version, 'pypy') && 'CPPFLAGS=''--coverage -O0'' ' || '' }}
           python -m pip -v install -e '.[tests]'
       - name: 'Run doctests'
         run: |
