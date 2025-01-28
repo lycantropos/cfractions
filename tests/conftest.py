@@ -7,9 +7,9 @@ from hypothesis import HealthCheck, settings
 on_ci = bool(os.getenv('CI'))
 is_pypy = platform.python_implementation() == 'PyPy'
 max_examples = (
-    -(-settings.default.max_examples // 10)
+    -(-settings().max_examples // 10)
     if is_pypy and on_ci
-    else settings.default.max_examples
+    else settings().max_examples
 )
 settings.register_profile(
     'default',
