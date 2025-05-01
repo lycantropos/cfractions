@@ -182,7 +182,7 @@ class Fraction(_numbers.Rational):
     def __gt__(self, other: _Any, /) -> _Any:
         return self._value > other
 
-    def __hash__(self, /) -> int:
+    def __hash__(self, /) -> int:  # type: ignore[override]
         return hash(self._value)
 
     if sys.version_info >= (3, 11):
