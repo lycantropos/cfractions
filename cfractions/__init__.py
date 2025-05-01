@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-__version__ = '2.4.1-alpha'
+__version__ = '2.4.1'
 
 if TYPE_CHECKING:
     import numbers as _numbers
