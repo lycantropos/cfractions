@@ -125,7 +125,9 @@ jobs:
     name: 'Pre-deploy'
     runs-on: ubuntu-latest
     needs: test
-    if: github.event_name == 'push' && github.ref_type == 'tag'
+    if:
+      github.event_name == 'push' && github.ref_type == 'tag'
+      || github.actor == 'dependabot[bot]'
     steps:
       - name: '_'
         run: echo "Pre-deploy step"
@@ -323,8 +325,17 @@ jobs:
           merge-multiple: true
           path: dist
           pattern: dist-*
-      - name: 'Upload'
-        uses: pypa/gh-action-pypi-publish@v1.12.4
+      - name: 'Upload to Test PyPI'
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          repository-url: https://test.pypi.org/legacy/
+          skip-existing: ${{ github.actor == 'dependabot[bot]' }}
+        continue-on-error: true
+      - name: 'Upload to PyPI'
+        if: github.actor != 'dependabot[bot]'
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist
           password: ${{ secrets.PYPI_API_TOKEN }}
