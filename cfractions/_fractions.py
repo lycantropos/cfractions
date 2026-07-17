@@ -106,6 +106,9 @@ class Fraction:
             self._value + _to_std_fraction_if_rational(other)
         )
 
+    def __bool__(self, /) -> bool:
+        return bool(self._value)
+
     def __ceil__(self, /) -> int:
         return self._value.__ceil__()
 
