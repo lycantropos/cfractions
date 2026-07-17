@@ -2442,13 +2442,17 @@ static PyObject* fraction_str(FractionObject* self) {
                                                     self->denominator);
 }
 
-static PyObject* fraction_trunc(FractionObject* self,
-                                PyObject* Py_UNUSED(args)) {
+static PyObject* fraction_int(FractionObject* self) {
   int is_negative = is_negative_fraction(self);
   if (is_negative < 0)
     return NULL;
   else
     return is_negative ? fraction_ceil_impl(self) : fraction_floor_impl(self);
+}
+
+static PyObject* fraction_trunc(FractionObject* self,
+                                PyObject* Py_UNUSED(args)) {
+  return fraction_int(self);
 }
 
 static PyMemberDef fraction_members[] = {
@@ -2482,7 +2486,7 @@ static PyNumberMethods fraction_as_number = {
     .nb_divmod = fraction_divmod,
     .nb_float = (unaryfunc)fraction_float,
     .nb_floor_divide = fraction_floor_divide,
-    .nb_int = (unaryfunc)fraction_trunc,
+    .nb_int = (unaryfunc)fraction_int,
     .nb_multiply = fraction_multiply,
     .nb_negative = (unaryfunc)fraction_negative,
     .nb_positive = (unaryfunc)fraction_positive,
