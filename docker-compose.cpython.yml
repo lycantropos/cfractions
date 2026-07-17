@@ -7,7 +7,7 @@ services:
       args:
         - IMAGE_NAME=${CPYTHON_IMAGE_NAME}
         - IMAGE_VERSION=${CPYTHON_IMAGE_VERSION}
-    image: lycantropos/cfractions-cpython:0.0.0
+    image: lycantropos/cfractions-cpython:2.4.1
     volumes:
       - ./pyproject.toml:/opt/cfractions/pyproject.toml
       - ./README.md:/opt/cfractions/README.md
