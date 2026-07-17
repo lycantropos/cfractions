@@ -6,7 +6,7 @@ from fractions import Fraction as _Fraction
 from typing import (
     Any as _Any,
     TYPE_CHECKING,
-    Union as _Union,
+    TypeAlias as _TypeAlias,
     final as _final,
     overload as _overload,
 )
@@ -14,11 +14,12 @@ from typing import (
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    _Rational = _Union[_Fraction, _numbers.Rational, int]
+    _Rational: _TypeAlias = _Fraction | _numbers.Rational | int
 
 
 @_final
-class Fraction(_numbers.Rational):
+@_numbers.Rational.register
+class Fraction:
     @property
     def numerator(self, /) -> int:
         return self._value.numerator
@@ -41,7 +42,7 @@ class Fraction(_numbers.Rational):
             return self.denominator == 1
 
     def limit_denominator(self, max_denominator: int = 10**6, /) -> Self:
-        return _to_fraction_if_std_fraction(
+        return self._to_fraction_if_std_fraction(
             self._value.limit_denominator(max_denominator)
         )
 
@@ -73,7 +74,7 @@ class Fraction(_numbers.Rational):
             value = (
                 _Fraction(int(numerator.numerator), int(numerator.denominator))
                 if isinstance(numerator, _numbers.Rational)
-                else _Fraction(numerator)
+                else _Fraction(numerator)  # pyrefly: ignore[no-matching-overload]
             )
         else:
             if not isinstance(denominator, int):
@@ -89,7 +90,7 @@ class Fraction(_numbers.Rational):
         return self
 
     def __abs__(self, /) -> Self:
-        return Fraction(abs(self._value))
+        return type(self)(abs(self._value))
 
     @_overload
     def __add__(self, other: _Rational | Self, /) -> Self: ...
@@ -101,7 +102,7 @@ class Fraction(_numbers.Rational):
     def __add__(self, other: _Any, /) -> _Any: ...
 
     def __add__(self, other: _Any, /) -> _Any:
-        return _to_fraction_if_std_fraction(
+        return self._to_fraction_if_std_fraction(
             self._value + _to_std_fraction_if_rational(other)
         )
 
@@ -182,7 +183,7 @@ class Fraction(_numbers.Rational):
     def __gt__(self, other: _Any, /) -> _Any:
         return self._value > other
 
-    def __hash__(self, /) -> int:  # type: ignore[override]
+    def __hash__(self, /) -> int:
         return hash(self._value)
 
     if sys.version_info >= (3, 11):
@@ -229,7 +230,7 @@ class Fraction(_numbers.Rational):
     def __mod__(self, divisor: _Any, /) -> _Any: ...
 
     def __mod__(self, divisor: _Any, /) -> _Any:
-        return _to_fraction_if_std_fraction(
+        return self._to_fraction_if_std_fraction(
             self._value % _to_std_fraction_if_rational(divisor)
         )
 
@@ -243,30 +244,29 @@ class Fraction(_numbers.Rational):
     def __mul__(self, other: _Any, /) -> _Any: ...
 
     def __mul__(self, other: _Any, /) -> _Any:
-        return _to_fraction_if_std_fraction(
+        return self._to_fraction_if_std_fraction(
             self._value * _to_std_fraction_if_rational(other)
         )
 
     def __neg__(self, /) -> Self:
-        return Fraction(-self._value)
+        return type(self)(-self._value)
 
     def __pos__(self, /) -> Self:
-        return Fraction(+self._value)
+        return type(self)(+self._value)
 
     @_overload
     def __pow__(self, exponent: int, /) -> Self: ...
 
     @_overload
-    def __pow__(self, exponent: _Rational | Self, /) -> Self | float: ...
-
-    @_overload
-    def __pow__(self, exponent: float, /) -> float: ...
+    def __pow__(
+        self, exponent: _Rational | Self | float, /
+    ) -> Self | float: ...
 
     @_overload
     def __pow__(self, exponent: _Any, /) -> _Any: ...
 
     def __pow__(self, exponent: _Any, /) -> _Any:
-        return _to_fraction_if_std_fraction(
+        return self._to_fraction_if_std_fraction(
             self._value ** _to_std_fraction_if_rational(exponent)
         )
 
@@ -280,7 +280,7 @@ class Fraction(_numbers.Rational):
     def __radd__(self, other: _Any, /) -> _Any: ...
 
     def __radd__(self, other: _Any, /) -> _Any:
-        return _to_fraction_if_std_fraction(
+        return self._to_fraction_if_std_fraction(
             _to_std_fraction_if_rational(other) + self._value
         )
 
@@ -326,7 +326,7 @@ class Fraction(_numbers.Rational):
     def __rmod__(self, dividend: _Any, /) -> _Any: ...
 
     def __rmod__(self, dividend: _Any, /) -> _Any:
-        return _to_fraction_if_std_fraction(dividend % self._value)
+        return self._to_fraction_if_std_fraction(dividend % self._value)
 
     @_overload
     def __rmul__(self, other: _Rational, /) -> Self: ...
@@ -338,7 +338,7 @@ class Fraction(_numbers.Rational):
     def __rmul__(self, other: _Any, /) -> _Any: ...
 
     def __rmul__(self, other: _Any, /) -> _Any:
-        return _to_fraction_if_std_fraction(
+        return self._to_fraction_if_std_fraction(
             _to_std_fraction_if_rational(other) * self._value
         )
 
@@ -349,7 +349,7 @@ class Fraction(_numbers.Rational):
     def __round__(self, precision: int, /) -> Self: ...
 
     def __round__(self, precision: int | None = None, /) -> int | Self:
-        return _to_fraction_if_std_fraction(round(self._value, precision))
+        return self._to_fraction_if_std_fraction(round(self._value, precision))
 
     @_overload
     def __rpow__(self, base: _Rational, /) -> Self | float: ...
@@ -361,7 +361,7 @@ class Fraction(_numbers.Rational):
     def __rpow__(self, base: _Any, /) -> _Any: ...
 
     def __rpow__(self, base: _Any, /) -> _Any:
-        return _to_fraction_if_std_fraction(
+        return self._to_fraction_if_std_fraction(
             _to_std_fraction_if_rational(base) ** self._value
         )
 
@@ -375,7 +375,7 @@ class Fraction(_numbers.Rational):
     def __rsub__(self, minuend: _Any, /) -> _Any: ...
 
     def __rsub__(self, minuend: _Any, /) -> _Any:
-        return _to_fraction_if_std_fraction(
+        return self._to_fraction_if_std_fraction(
             _to_std_fraction_if_rational(minuend) - self._value
         )
 
@@ -389,7 +389,7 @@ class Fraction(_numbers.Rational):
     def __rtruediv__(self, dividend: _Any, /) -> _Any: ...
 
     def __rtruediv__(self, dividend: _Any, /) -> _Any:
-        return _to_fraction_if_std_fraction(
+        return self._to_fraction_if_std_fraction(
             _to_std_fraction_if_rational(dividend) / self._value
         )
 
@@ -406,7 +406,7 @@ class Fraction(_numbers.Rational):
     def __sub__(self, subtrahend: _Any, /) -> _Any: ...
 
     def __sub__(self, subtrahend: _Any, /) -> _Any:
-        return _to_fraction_if_std_fraction(
+        return self._to_fraction_if_std_fraction(
             self._value - _to_std_fraction_if_rational(subtrahend)
         )
 
@@ -420,28 +420,28 @@ class Fraction(_numbers.Rational):
     def __truediv__(self, divisor: _Any, /) -> _Any: ...
 
     def __truediv__(self, divisor: _Any, /) -> _Any:
-        return _to_fraction_if_std_fraction(
+        return self._to_fraction_if_std_fraction(
             self._value / _to_std_fraction_if_rational(divisor)
         )
 
     def __trunc__(self, /) -> int:
         return self._value.__trunc__()
 
+    @classmethod
+    @_overload
+    def _to_fraction_if_std_fraction(cls, value: _Fraction, /) -> Self: ...
 
-@_overload
-def _to_fraction_if_std_fraction(value: _Fraction, /) -> Fraction: ...
+    @classmethod
+    @_overload
+    def _to_fraction_if_std_fraction(cls, value: _Any, /) -> _Any: ...
 
-
-@_overload
-def _to_fraction_if_std_fraction(value: _Any, /) -> _Any: ...
-
-
-def _to_fraction_if_std_fraction(value: _Any, /) -> _Any:
-    return (
-        Fraction(value.numerator, value.denominator)
-        if isinstance(value, _Fraction)
-        else value
-    )
+    @classmethod
+    def _to_fraction_if_std_fraction(cls, value: _Any, /) -> _Any:
+        return (
+            cls(value.numerator, value.denominator)
+            if isinstance(value, _Fraction)
+            else value
+        )
 
 
 @_overload

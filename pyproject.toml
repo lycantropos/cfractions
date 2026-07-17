@@ -6,7 +6,6 @@ readme = "README.md"
 license = { file = "LICENSE" }
 classifiers = [
     "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -14,7 +13,7 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "typing-extensions>=4.12.2,<5.0"
 ]
@@ -38,6 +37,13 @@ source = ["cfractions"]
 
 [tool.mypy]
 strict = true
+
+[tool.pyrefly]
+preset = "legacy"
+project-includes = ["cfractions"]
+
+[tool.pyrefly.errors]
+redundant-cast = "error"
 
 [tool.pytest.ini_options]
 addopts = "--verbose -s --hypothesis-profile=default"

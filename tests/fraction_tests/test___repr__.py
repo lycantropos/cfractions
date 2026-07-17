@@ -20,7 +20,7 @@ def test_basic(fraction: Fraction) -> None:
 def test_round_trip(fraction: Fraction) -> None:
     result = repr(fraction)
 
-    assert eval(result, vars(cfractions)) == fraction
+    assert eval(result, dict(vars(cfractions))) == fraction
 
 
 @skip_reference_counter_test

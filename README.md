@@ -15,13 +15,13 @@ written using [`Python C API`](https://docs.python.org/c-api/index.html).
 Main features are:
 - speed & memory efficiency compared to pure-`Python` counterpart,
 - full spectre of arithmetic & comparison operations,
-- `Python3.9+` support,
+- `Python3.10+` support,
 - `PyPy` support (by falling back to `fractions.Fraction` proxy).
 
 ---
 
-In what follows `python` is an alias for `python3.9` or `pypy3.9`
-or any later version (`python3.10`, `pypy3.10` and so on).
+In what follows `python` is an alias for `python3.10` or `pypy3.10`
+or any later version (`python3.11`, `pypy3.11` and so on).
 
 Installation
 ------------

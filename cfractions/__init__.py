@@ -9,7 +9,7 @@ __version__ = '2.4.1'
 if TYPE_CHECKING:
     import numbers as _numbers
     from fractions import Fraction as _Fraction
-    from typing import Any as _Any, Union as _Union
+    from typing import Any as _Any, TypeAlias as _TypeAlias
 
     from typing_extensions import (
         Self as _Self,
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
         overload as _overload,
     )
 
-    _Rational = _Union[_Fraction, _numbers.Rational, int]
+    _Rational: _TypeAlias = _Fraction | _numbers.Rational | int
 
     @_final
     class Fraction:
@@ -185,10 +185,9 @@ if TYPE_CHECKING:
         def __pow__(self, exponent: int, /) -> _Self: ...
 
         @_overload
-        def __pow__(self, exponent: _Rational | _Self, /) -> _Self | float: ...
-
-        @_overload
-        def __pow__(self, exponent: float, /) -> float: ...
+        def __pow__(
+            self, exponent: _Rational | _Self | float, /
+        ) -> _Self | float: ...
 
         @_overload
         def __pow__(self, exponent: _Any, /) -> _Any: ...
