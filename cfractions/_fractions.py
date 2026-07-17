@@ -74,7 +74,7 @@ class Fraction:
             value = (
                 _Fraction(int(numerator.numerator), int(numerator.denominator))
                 if isinstance(numerator, _numbers.Rational)
-                else _Fraction(numerator)
+                else _Fraction(numerator)  # type: ignore[arg-type]
             )
         else:
             if not isinstance(denominator, int):
