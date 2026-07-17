@@ -130,7 +130,7 @@ This will set version to `major.minor.patch`.
 
 Install with dependencies
 ```bash
-python -m pip install -e .[tests]
+python -m pip install -e '.[tests]'
 ```
 
 Plain
