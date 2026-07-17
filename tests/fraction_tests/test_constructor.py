@@ -121,7 +121,7 @@ def test_infinite_float_argument(value: float) -> None:
 
 @given(strategies.nans)
 def test_nan_float_argument(value: float) -> None:
-    with pytest.raises(ValueError):  # noqa: PT011
+    with pytest.raises(ValueError):  # ruff:ignore[pytest-raises-too-broad]
         Fraction(value)
 
 

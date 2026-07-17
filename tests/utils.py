@@ -5,33 +5,24 @@ import math
 import numbers
 import platform
 import re
-import typing as t
 
 import pytest
 import typing_extensions as te
 
 from cfractions import Fraction
 
-Integral: te.TypeAlias = t.Union[int, numbers.Integral]
-Rational: te.TypeAlias = t.Union[
-    Fraction, Integral, fractions.Fraction, numbers.Rational
-]
-Real: te.TypeAlias = t.Union[Rational, float]
+Integral: te.TypeAlias = int | numbers.Integral
+Rational: te.TypeAlias = (
+    Fraction | Integral | fractions.Fraction | numbers.Rational
+)
+Real: te.TypeAlias = Rational | float
 
 
-def equivalence(
-    left_statement: bool,  # noqa: FBT001
-    right_statement: bool,  # noqa: FBT001
-    /,
-) -> bool:
+def equivalence(left_statement: bool, right_statement: bool, /) -> bool:
     return left_statement is right_statement
 
 
-def implication(
-    antecedent: bool,  # noqa: FBT001
-    consequent: bool,  # noqa: FBT001
-    /,
-) -> bool:
+def implication(antecedent: bool, consequent: bool, /) -> bool:
     return not antecedent or consequent
 
 

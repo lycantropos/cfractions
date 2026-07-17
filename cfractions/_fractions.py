@@ -74,7 +74,7 @@ class Fraction:
             value = (
                 _Fraction(int(numerator.numerator), int(numerator.denominator))
                 if isinstance(numerator, _numbers.Rational)
-                else _Fraction(numerator)  # pyrefly: ignore[no-matching-overload]
+                else _Fraction(numerator)
             )
         else:
             if not isinstance(denominator, int):

@@ -127,6 +127,9 @@ ignore = [
 docstring-quotes = "double"
 inline-quotes = "single"
 
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["FBT001", "RUF069"]
+
 [tool.ruff.lint.isort]
 case-sensitive = true
 combine-as-imports = true
