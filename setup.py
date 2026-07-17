@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import sys
-import typing as t
+from typing import Any
 
 from setuptools import find_packages, setup
 
 project_base_url = 'https://github.com/lycantropos/cfractions/'
-parameters: dict[str, t.Any] = {
+parameters: dict[str, Any] = {
     'packages': find_packages(exclude=('tests', 'tests.*')),
     'url': project_base_url,
     'download_url': project_base_url + 'archive/master.zip',
