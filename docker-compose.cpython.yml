@@ -7,12 +7,11 @@ services:
       args:
         - IMAGE_NAME=${CPYTHON_IMAGE_NAME}
         - IMAGE_VERSION=${CPYTHON_IMAGE_VERSION}
-    image: lycantropos/cfractions-cpython:2.4.1
+    image: lycantropos/cfractions-cpython:0.0.0
     volumes:
-      - ./cfractions:/opt/cfractions/cfractions
+      - ./pyproject.toml:/opt/cfractions/pyproject.toml
       - ./README.md:/opt/cfractions/README.md
-      - ./requirements-tests.txt:/opt/cfractions/requirements-tests.txt
       - ./setup.py:/opt/cfractions/setup.py
-      - ./src:/opt/cfractions/src
       - ./tests:/opt/cfractions/tests
+      - ./cfractions:/opt/cfractions/cfractions
     entrypoint: pytest

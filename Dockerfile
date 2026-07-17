@@ -3,18 +3,16 @@ ARG IMAGE_VERSION
 
 FROM ${IMAGE_NAME}:${IMAGE_VERSION}
 
-RUN pip install --upgrade pip setuptools
-
 WORKDIR /opt/cfractions
 
-COPY requirements-tests.txt .
-RUN pip install -r requirements-tests.txt
-
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends build-essential \
+ && rm -rf /var/lib/apt/lists/*
+COPY pyproject.toml .
 COPY README.md .
-COPY pytest.ini .
 COPY setup.py .
-COPY cfractions cfractions/
-COPY src/ src/
-COPY tests/ tests/
+COPY cfractions cfractions
+COPY src src
+COPY tests tests
 
-RUN pip install -e .
+RUN pip install -e '.[tests]'
