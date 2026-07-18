@@ -275,7 +275,7 @@ jobs:
           python-version: ${{ matrix.python_version }}
           architecture: ${{ matrix.platform.python_architecture }}
       - name: 'Download distributions'
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           merge-multiple: true
           path: dist
@@ -294,7 +294,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Download distributions'
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           merge-multiple: true
           path: dist
