@@ -120,7 +120,45 @@ class CustomRational:
         )
 
 
+class CustomObjectWithAnyReturnAsIntegerRatioMethod:
+    def __init__(self, value: Any, /) -> None:
+        self.value = value
+
+    def as_integer_ratio(self, /) -> Any:
+        return self.value
+
+    def __repr__(self) -> str:
+        return f'{type(self).__qualname__}({self.value!r})'
+
+
 custom_rationals = st.builds(CustomRational, numerators, denominators)
+custom_objects_with_valid_as_integer_ratio_method = st.builds(
+    CustomObjectWithAnyReturnAsIntegerRatioMethod,
+    st.tuples(numerators, denominators),
+)
+custom_objects_with_invalid_return_as_integer_ratio_method = (
+    st.builds(
+        CustomObjectWithAnyReturnAsIntegerRatioMethod,
+        st.lists(st.integers(), max_size=1).map(tuple),
+    )
+    | st.builds(
+        CustomObjectWithAnyReturnAsIntegerRatioMethod,
+        st.lists(st.integers(), min_size=3).map(tuple),
+    )
+    | st.builds(
+        CustomObjectWithAnyReturnAsIntegerRatioMethod,
+        st.from_type(object).filter(
+            lambda value: (
+                not (
+                    isinstance(value, tuple)
+                    and len(value) == 2
+                    and isinstance(value[0], int)
+                    and isinstance(value[1], int)
+                )
+            )
+        ),
+    )
+)
 builtin_rationals = integers | fractions
 rationals = builtin_rationals | custom_rationals
 finite_builtin_reals = builtin_rationals | finite_floats

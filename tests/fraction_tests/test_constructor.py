@@ -1,12 +1,18 @@
 from __future__ import annotations
 
 import sys
+from typing import Any
 
 import pytest
 from hypothesis import given
 
 from cfractions import Fraction
-from tests.utils import Rational, fraction_pattern, skip_reference_counter_test
+from tests.utils import (
+    HasAsIntegerRatioMethod,
+    Rational,
+    fraction_pattern,
+    skip_reference_counter_test,
+)
 
 from . import strategies
 
@@ -41,26 +47,48 @@ def test_finite_float_argument(value: float) -> None:
 @given(strategies.like_fraction_strings)
 def test_string_argument(value: str) -> None:
     try:
-        Fraction(value)
+        result = Fraction(value)
     except ZeroDivisionError:
         assert '/' in value
         assert int(value[value.find('/') + 1 : len(value.rstrip())]) == 0
     except ValueError:
         assert fraction_pattern.fullmatch(value) is None
+    else:
+        assert isinstance(result, Fraction)
 
 
 @given(strategies.fractions)
-def test_fraction_argument(fraction: Fraction) -> None:
-    result = Fraction(fraction)
+def test_fraction_argument(value: Fraction) -> None:
+    result = Fraction(value)
 
-    assert result == fraction
+    assert isinstance(result, Fraction)
+    assert result == value
 
 
 @given(strategies.custom_rationals)
-def test_custom_rational_argument(custom_rational: Rational) -> None:
-    result = Fraction(custom_rational)
+def test_custom_rational_argument(value: Rational) -> None:
+    result = Fraction(value)
 
-    assert result == custom_rational
+    assert isinstance(result, Fraction)
+    assert result == value
+
+
+@given(strategies.custom_objects_with_valid_as_integer_ratio_method)
+def test_custom_object_with_as_integer_ratio_method(
+    value: HasAsIntegerRatioMethod[tuple[int, int]],
+) -> None:
+    result = Fraction(value)
+
+    assert isinstance(result, Fraction)
+    assert result.as_integer_ratio() == value.as_integer_ratio()
+
+
+@given(strategies.custom_objects_with_invalid_return_as_integer_ratio_method)
+def test_custom_object_with_invalid_return_as_integer_ratio_method(
+    value: HasAsIntegerRatioMethod[Any],
+) -> None:
+    with pytest.raises(TypeError):
+        Fraction(value)
 
 
 @skip_reference_counter_test
@@ -96,6 +124,33 @@ def test_float_reference_counter(value: int) -> None:
 
     value_refcount_after = sys.getrefcount(value)
     assert value_refcount_after == value_refcount_before
+
+
+@skip_reference_counter_test
+@given(strategies.custom_objects_with_valid_as_integer_ratio_method)
+def test_custom_object_with_as_integer_ratio_method_reference_counter(
+    value: HasAsIntegerRatioMethod[Any],
+) -> None:
+    ratio_refcount_before = sys.getrefcount(value.as_integer_ratio())
+
+    _result = Fraction(value)
+
+    ratio_refcount_after = sys.getrefcount(value.as_integer_ratio())
+    assert ratio_refcount_after == ratio_refcount_before
+
+
+@skip_reference_counter_test
+@given(strategies.custom_objects_with_invalid_return_as_integer_ratio_method)
+def test_invalid_return_as_integer_ratio_reference_counter(
+    value: HasAsIntegerRatioMethod[Any],
+) -> None:
+    ratio_refcount_before = sys.getrefcount(value.as_integer_ratio())
+
+    with pytest.raises(TypeError):
+        Fraction(value)
+
+    ratio_refcount_after = sys.getrefcount(value.as_integer_ratio())
+    assert ratio_refcount_after == ratio_refcount_before
 
 
 @given(strategies.numerators, strategies.denominators)

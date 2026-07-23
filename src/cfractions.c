@@ -660,11 +660,40 @@ static PyObject* fraction_new(PyTypeObject* cls, PyObject* args,
           stripped_unicode, &numerator, &denominator);
       Py_DECREF(stripped_unicode);
       if (flag < 0) return NULL;
+    } else if (!PyType_Check(numerator) &&
+               PyObject_HasAttrString(numerator, "as_integer_ratio")) {
+      PyObject* ratio =
+          PyObject_CallMethod(numerator, "as_integer_ratio", NULL);
+      if (ratio == NULL) {
+        return NULL;
+      } else {
+        PyObject *ratio_denominator = NULL, *ratio_numerator = NULL;
+        if (PyTuple_Check(ratio) &&
+            !PyArg_UnpackTuple(ratio, "value.as_integer_ratio()", 2, 2,
+                               &ratio_numerator, &ratio_denominator)) {
+          Py_DECREF(ratio);
+          return NULL;
+        }
+        Py_DECREF(ratio);
+        if (ratio_numerator == NULL || ratio_denominator == NULL ||
+            !PyLong_Check(ratio_numerator) ||
+            !PyLong_Check(ratio_denominator)) {
+          PyErr_SetString(
+              PyExc_TypeError,
+              "`value.as_integer_ratio()` should return pair of integers.");
+          return NULL;
+        }
+        Py_INCREF(ratio_numerator);
+        numerator = ratio_numerator;
+        Py_INCREF(ratio_denominator);
+        denominator = ratio_denominator;
+      }
     } else {
       PyErr_SetString(PyExc_TypeError,
                       "Single argument should be either an integer, "
-                      "a floating point, a rational number or a string "
-                      "representation of a fraction.");
+                      "a floating point, a rational number, "
+                      "a string representation of a fraction "
+                      "or have `as_integer_ratio` method.");
       return NULL;
     }
   } else {
@@ -1095,7 +1124,8 @@ static int Longs_divmod(PyObject* dividend, PyObject* divisor,
   if (pair == NULL)
     return -1;
   else if (!PyTuple_Check(pair) || PyTuple_GET_SIZE(pair) != 2) {
-    PyErr_SetString(PyExc_TypeError, "divmod should return pair of integers.");
+    PyErr_SetString(PyExc_TypeError,
+                    "`divmod` should return pair of integers.");
     Py_DECREF(pair);
     return -1;
   }

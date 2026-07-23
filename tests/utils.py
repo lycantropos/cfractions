@@ -5,17 +5,24 @@ import math
 import numbers
 import platform
 import re
+from typing import Protocol, TypeAlias, TypeVar
 
 import pytest
-import typing_extensions as te
 
 from cfractions import Fraction
 
-Integral: te.TypeAlias = int | numbers.Integral
-Rational: te.TypeAlias = (
+_T_co = TypeVar('_T_co', covariant=True)
+
+
+class HasAsIntegerRatioMethod(Protocol[_T_co]):
+    def as_integer_ratio(self, /) -> _T_co: ...
+
+
+Integral: TypeAlias = int | numbers.Integral
+Rational: TypeAlias = (
     Fraction | Integral | fractions.Fraction | numbers.Rational
 )
-Real: te.TypeAlias = Rational | float
+Real: TypeAlias = Rational | float
 
 
 def equivalence(left_statement: bool, right_statement: bool, /) -> bool:

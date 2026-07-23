@@ -12,10 +12,14 @@ if TYPE_CHECKING:
     from typing import Any as _Any, TypeAlias as _TypeAlias
 
     from typing_extensions import (
+        Protocol as _Protocol,
         Self as _Self,
         final as _final,
         overload as _overload,
     )
+
+    class _HasAsIntegerRatio(_Protocol):
+        def as_integer_ratio(self, /) -> tuple[int, int]: ...
 
     _Rational: _TypeAlias = _Fraction | _numbers.Rational | int
 
@@ -37,7 +41,10 @@ if TYPE_CHECKING:
 
         @_overload
         def __new__(
-            cls, value: _Rational | _Self | float | str = ..., _: None = ..., /
+            cls,
+            value: _HasAsIntegerRatio | _Rational | _Self | float | str = ...,
+            _: None = ...,
+            /,
         ) -> _Self: ...
 
         @_overload
@@ -45,7 +52,9 @@ if TYPE_CHECKING:
 
         def __new__(
             cls,
-            numerator: _Rational | _Self | float | str = 0,
+            numerator: (
+                _HasAsIntegerRatio | _Rational | _Self | float | str
+            ) = 0,
             denominator: int | None = None,
             /,
         ) -> _Self: ...

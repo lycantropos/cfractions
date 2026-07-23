@@ -5,8 +5,10 @@ import sys
 from fractions import Fraction as _Fraction
 from typing import (
     Any as _Any,
+    Protocol,
     TYPE_CHECKING,
     TypeAlias as _TypeAlias,
+    TypeGuard,
     final as _final,
     overload as _overload,
 )
@@ -71,11 +73,27 @@ class Fraction:
         /,
     ) -> Self:
         if denominator is None:
-            value = (
-                _Fraction(int(numerator.numerator), int(numerator.denominator))
-                if isinstance(numerator, _numbers.Rational)
-                else _Fraction(numerator)  # type: ignore[arg-type]
-            )
+            if isinstance(numerator, _numbers.Rational):
+                value = _Fraction(
+                    int(numerator.numerator), int(numerator.denominator)
+                )
+            else:
+                if _has_as_integer_ratio_method(numerator):
+                    ratio = numerator.as_integer_ratio()
+                    invalid_ratio_message = (
+                        '`value.as_integer_ratio()` '
+                        'should return pair of integers.'
+                    )
+                    try:
+                        ratio_numerator, ratio_denominator = ratio
+                    except ValueError:
+                        raise TypeError(invalid_ratio_message) from None
+                    else:
+                        if not isinstance(ratio_numerator, int) and isinstance(
+                            ratio_denominator, int
+                        ):
+                            raise TypeError(invalid_ratio_message)
+                value = _Fraction(numerator)  # type: ignore[arg-type]
         else:
             if not isinstance(denominator, int):
                 raise TypeError('Denominator should be an integer.')
@@ -445,6 +463,16 @@ class Fraction:
             if isinstance(value, _Fraction)
             else value
         )
+
+
+class _HasAsIntegerRatio(Protocol):
+    def as_integer_ratio(self, /) -> tuple[int, int]: ...
+
+
+def _has_as_integer_ratio_method(
+    value: _Any, /
+) -> TypeGuard[_HasAsIntegerRatio]:
+    return hasattr(value, 'as_integer_ratio')
 
 
 @_overload
