@@ -120,6 +120,21 @@ class CustomRational:
         )
 
 
+class CustomObjectWithValidAsIntegerRatioMethod:
+    def __init__(self, value: tuple[int, int], /) -> None:
+        numerator, denominator = value
+        if denominator < 0:
+            numerator, denominator = -numerator, -denominator
+        gcd = math.gcd(numerator, denominator)
+        self.value = numerator // gcd, denominator // gcd
+
+    def as_integer_ratio(self, /) -> Any:
+        return self.value
+
+    def __repr__(self) -> str:
+        return f'{type(self).__qualname__}({self.value!r})'
+
+
 class CustomObjectWithAnyReturnAsIntegerRatioMethod:
     def __init__(self, value: Any, /) -> None:
         self.value = value
@@ -133,7 +148,7 @@ class CustomObjectWithAnyReturnAsIntegerRatioMethod:
 
 custom_rationals = st.builds(CustomRational, numerators, denominators)
 custom_objects_with_valid_as_integer_ratio_method = st.builds(
-    CustomObjectWithAnyReturnAsIntegerRatioMethod,
+    CustomObjectWithValidAsIntegerRatioMethod,
     st.tuples(numerators, denominators),
 )
 custom_objects_with_invalid_return_as_integer_ratio_method = (
