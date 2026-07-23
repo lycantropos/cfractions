@@ -77,22 +77,23 @@ class Fraction:
                 value = _Fraction(
                     int(numerator.numerator), int(numerator.denominator)
                 )
+            elif _has_as_integer_ratio_method(numerator):
+                ratio = numerator.as_integer_ratio()
+                invalid_ratio_message = (
+                    '`value.as_integer_ratio()` '
+                    'should return pair of integers.'
+                )
+                try:
+                    ratio_numerator, ratio_denominator = ratio
+                except ValueError:
+                    raise TypeError(invalid_ratio_message) from None
+                else:
+                    if not isinstance(ratio_numerator, int) and isinstance(
+                        ratio_denominator, int
+                    ):
+                        raise TypeError(invalid_ratio_message)
+                value = _Fraction(ratio_numerator, ratio_denominator)
             else:
-                if _has_as_integer_ratio_method(numerator):
-                    ratio = numerator.as_integer_ratio()
-                    invalid_ratio_message = (
-                        '`value.as_integer_ratio()` '
-                        'should return pair of integers.'
-                    )
-                    try:
-                        ratio_numerator, ratio_denominator = ratio
-                    except ValueError:
-                        raise TypeError(invalid_ratio_message) from None
-                    else:
-                        if not isinstance(ratio_numerator, int) and isinstance(
-                            ratio_denominator, int
-                        ):
-                            raise TypeError(invalid_ratio_message)
                 value = _Fraction(numerator)  # type: ignore[arg-type]
         else:
             if not isinstance(denominator, int):
