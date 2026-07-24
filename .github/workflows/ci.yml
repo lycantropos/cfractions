@@ -47,14 +47,14 @@ jobs:
       matrix:
         python_version: [ '3.10', '3.11', '3.12', '3.13', '3.14' ]
         platform: [
-          { os: 'macos-latest', python_architecture: 'x64' },
-          { os: 'ubuntu-latest', python_architecture: 'x64' },
+          { os: 'macos-latest', python_architecture: 'x64', coverage: 'llvm' },
+          { os: 'ubuntu-latest', python_architecture: 'x64', coverage: 'gcovr' },
           { os: 'windows-latest', python_architecture: 'x64' },
           { os: 'windows-latest', python_architecture: 'x86' },
         ]
         exclude:
           - python_version: '3.10'
-            platform: { os: 'macos-latest', python_architecture: 'x64' }
+            platform: { os: 'macos-latest', python_architecture: 'x64', coverage: 'llvm' }
         include:
           - python_version: 'pypy-3.11'
             platform: { os: 'macos-latest', python_architecture: 'x64' }
@@ -74,24 +74,84 @@ jobs:
         run: python -m pip install -U pip setuptools wheel
       - name: 'Install Python coverage dependencies'
         run: python -m pip install -U coverage[toml]
-      - name: 'Install С coverage dependencies'
-        run: python -m pip install -U gcovr
-        if: ${{ !startsWith(matrix.python_version, 'pypy') && matrix.python_version != '3.12' }}
-      - name: 'Install in editable mode'
-        run: >
-          ${{ !startsWith(matrix.python_version, 'pypy') && 'CPPFLAGS=''--coverage -O0'' ' || '' }}
+      - name: 'Install LLVM on macOS'
+        if: ${{ matrix.platform.coverage == 'llvm' && startsWith(matrix.platform.os, 'macos-') }}
+        run: |
+          brew install llvm
+          echo "$(brew --prefix llvm)/bin" >> "$GITHUB_PATH"
+      - name: 'Install gcovr'
+        if: ${{ matrix.platform.coverage == 'gcovr' }}
+        run: pip install gcovr
+      - name: 'Install lcov-cobertura'
+        if: ${{ matrix.platform.coverage == 'llvm' }}
+        run: pip install lcov-cobertura
+      - name: 'Install in editable mode with GCC'
+        run: |
           python -m pip -v install -e '.[tests]'
+          python -m pip install tomli
+          python -c 'import tomli; import pathlib; print(*tomli.loads(pathlib.Path('\''pyproject.toml'\'').read_text(encoding='\''utf-8'\''))['\''build-system'\'']['\''requires'\''])' | xargs python -m pip install
+          python setup.py build_ext --inplace --force
+          find . -name '*.gcno'
+        if: ${{ matrix.platform.coverage == 'gcovr' }}
+        env:
+          CFLAGS: --coverage -O0 -g
+      - name: 'Install in editable mode with LLVM'
+        run: ARCHFLAGS="-arch $(uname -m)" python -m pip -v install -e '.[tests]'
+        if: ${{ matrix.platform.coverage == 'llvm' }}
+        env:
+          CFLAGS: -fprofile-instr-generate -fcoverage-mapping -O0 -g
+          LDFLAGS: -fprofile-instr-generate
+      - name: 'Install in editable mode'
+        run: python -m pip -v install -e '.[tests]'
+        if: ${{ matrix.platform.coverage == null }}
       - name: 'Run doctests'
         run: |
           coverage run -m doctest README.md
           coverage run --append -m pytest --doctest-modules --ignore=tests
+        env:
+          LLVM_PROFILE_FILE: coverage_doctest_%p.profraw
       - name: 'Run tests'
         run: coverage run --append -m pytest
-      - name: 'Collect coverage'
+        env:
+          LLVM_PROFILE_FILE: coverage_pytest_%p.profraw
+      - name: 'Collect Python coverage'
         run: coverage xml -o coverage_python.xml
-      - name: 'Collect C coverage'
-        run: gcovr --filter src/ --xml -o coverage_c.xml
-        if: ${{ !startsWith(matrix.python_version, 'pypy') && matrix.python_version != '3.12' }}
+      - name: 'Collect C coverage using gcovr'
+        if: ${{ matrix.platform.coverage == 'gcovr' }}
+        run: >
+          gcovr \
+            -r . \
+            --filter '^src/' \
+            --xml \
+            -o coverage_c.xml
+      - name: 'Collect C coverage using llvm-cov'
+        if: ${{ matrix.platform.coverage == 'llvm' }}
+        run: |
+          llvm-profdata merge \
+            -sparse \
+            coverage_*.profraw \
+            -o coverage.profdata
+
+
+          libs=()
+          while IFS= read -r -d '' file; do
+              libs+=("$file")
+          done < <(find "${REPOSITORY_NAME//-/_}" \( -name '*.so' -o -name '*.pyd' \) -print0)
+          args=("${libs[0]}")
+          for lib in "${libs[@]:1}"; do
+              args+=(-object "$lib")
+          done
+
+          llvm-cov export \
+            "${args[@]}" \
+            -instr-profile=coverage.profdata \
+            -format=lcov \
+            -ignore-filename-regex='^(?!.*\/src\/).*' \
+            > coverage.lcov
+
+          lcov_cobertura coverage.lcov --output coverage_c.xml
+        env:
+          REPOSITORY_NAME: ${{ github.event.repository.name }}
       - name: 'Upload PyPy coverage'
         uses: codecov/codecov-action@v7
         with:
