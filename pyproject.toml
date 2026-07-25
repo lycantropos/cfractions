@@ -18,8 +18,8 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 tests = [
-    "hypothesis>=6.118.8,<7.0",
-    "pytest>=8.3.3,<9.0"
+    "hypothesis>=6.161.2,<7.0",
+    "pytest>=9.1.1,<10.0"
 ]
 
 [build-system]

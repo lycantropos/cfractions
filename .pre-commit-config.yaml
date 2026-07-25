@@ -41,8 +41,8 @@ repos:
     hooks:
       - id: mypy
         additional_dependencies:
-          - 'hypothesis>=6.118.8,<7.0'
-          - 'pytest>=8.3.3,<9.0'
+          - 'hypothesis>=6.161.2,<7.0'
+          - 'pytest>=9.1.1,<10.0'
           - 'types-setuptools'
   - repo: https://github.com/facebook/pyrefly-pre-commit
     rev: 1.2.0.dev2
@@ -51,8 +51,8 @@ repos:
         name: pyrefly
         pass_filenames: false
         additional_dependencies:
-          - 'hypothesis>=6.118.8,<7.0'
-          - 'pytest>=8.3.3,<9.0'
+          - 'hypothesis>=6.161.2,<7.0'
+          - 'pytest>=9.1.1,<10.0'
           - 'types-setuptools'
   - repo: https://github.com/rhysd/actionlint
     rev: v1.7.12
