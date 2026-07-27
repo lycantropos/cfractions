@@ -674,10 +674,10 @@ static PyObject* fraction_new(PyTypeObject* cls, PyObject* args,
           Py_DECREF(ratio);
           return NULL;
         }
-        Py_DECREF(ratio);
         if (ratio_numerator == NULL || ratio_denominator == NULL ||
             !PyLong_Check(ratio_numerator) ||
             !PyLong_Check(ratio_denominator)) {
+          Py_DECREF(ratio);
           PyErr_SetString(
               PyExc_TypeError,
               "`value.as_integer_ratio()` should return pair of integers.");
@@ -687,6 +687,7 @@ static PyObject* fraction_new(PyTypeObject* cls, PyObject* args,
         numerator = ratio_numerator;
         Py_INCREF(ratio_denominator);
         denominator = ratio_denominator;
+        Py_DECREF(ratio);
       }
     } else {
       PyErr_SetString(PyExc_TypeError,
@@ -1124,9 +1125,9 @@ static int Longs_divmod(PyObject* dividend, PyObject* divisor,
   if (pair == NULL)
     return -1;
   else if (!PyTuple_Check(pair) || PyTuple_GET_SIZE(pair) != 2) {
+    Py_DECREF(pair);
     PyErr_SetString(PyExc_TypeError,
                     "`divmod` should return pair of integers.");
-    Py_DECREF(pair);
     return -1;
   }
   PyObject* quotient = PyTuple_GET_ITEM(pair, 0);
