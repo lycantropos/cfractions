@@ -150,7 +150,7 @@ custom_rationals = st.builds(CustomRational, numerators, denominators)
 custom_objects_with_valid_as_integer_ratio_method = st.builds(
     CustomObjectWithValidAsIntegerRatioMethod,
     st.tuples(numerators, denominators),
-)
+) | st.decimals(allow_infinity=False, allow_nan=False)
 custom_objects_with_invalid_return_as_integer_ratio_method = (
     st.builds(
         CustomObjectWithAnyReturnAsIntegerRatioMethod,
